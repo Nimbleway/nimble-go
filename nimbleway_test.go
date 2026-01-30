@@ -13,7 +13,7 @@ import (
 	"github.com/stainless-sdks/nimbleway-go/option"
 )
 
-func TestNimblewayExtractWithOptionalParams(t *testing.T) {
+func TestExtractWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -258,7 +258,7 @@ func TestNimblewayExtractWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestNimblewayExtractTemplate(t *testing.T) {
+func TestExtractTemplate(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -286,7 +286,7 @@ func TestNimblewayExtractTemplate(t *testing.T) {
 	}
 }
 
-func TestNimblewayMapWithOptionalParams(t *testing.T) {
+func TestMapWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -316,7 +316,7 @@ func TestNimblewayMapWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestNimblewaySearchWithOptionalParams(t *testing.T) {
+func TestSearchWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
