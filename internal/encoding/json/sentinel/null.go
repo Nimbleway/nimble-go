@@ -1,7 +1,7 @@
 package sentinel
 
 import (
-	"github.com/stainless-sdks/nimbleway-go/internal/encoding/json/shims"
+	"github.com/Nimbleway/nimbleway-go/internal/encoding/json/shims"
 	"reflect"
 	"sync"
 )

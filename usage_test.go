@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stainless-sdks/nimbleway-go"
-	"github.com/stainless-sdks/nimbleway-go/internal/testutil"
-	"github.com/stainless-sdks/nimbleway-go/option"
+	"github.com/Nimbleway/nimbleway-go"
+	"github.com/Nimbleway/nimbleway-go/internal/testutil"
+	"github.com/Nimbleway/nimbleway-go/option"
 )
 
 func TestUsage(t *testing.T) {

@@ -7,7 +7,7 @@ package apijson
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"reflect"
 	"strconv"
 	"sync"

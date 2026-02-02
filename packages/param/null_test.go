@@ -2,7 +2,7 @@ package param_test
 
 import (
 	"encoding/json"
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"testing"
 )
 

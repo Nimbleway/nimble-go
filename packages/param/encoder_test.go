@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 )
 
 type Struct struct {

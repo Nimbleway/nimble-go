@@ -3,8 +3,8 @@
 package nimbleway
 
 import (
-	"github.com/stainless-sdks/nimbleway-go/internal/apierror"
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/internal/apierror"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 )
 
 // aliased to make [param.APIUnion] private when embedding
