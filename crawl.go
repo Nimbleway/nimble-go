@@ -4,12 +4,15 @@ package nimbleway
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"slices"
 
 	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
+	"github.com/stainless-sdks/nimbleway-go/internal/apiquery"
 	"github.com/stainless-sdks/nimbleway-go/internal/requestconfig"
 	"github.com/stainless-sdks/nimbleway-go/option"
 	"github.com/stainless-sdks/nimbleway-go/packages/param"
@@ -32,6 +35,14 @@ type CrawlService struct {
 func NewCrawlService(opts ...option.RequestOption) (r CrawlService) {
 	r = CrawlService{}
 	r.Options = opts
+	return
+}
+
+// Get crawl data by filters
+func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...option.RequestOption) (res *CrawlListResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/crawl"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return
 }
 
@@ -65,6 +76,2017 @@ func (r *CrawlService) Terminate(ctx context.Context, id string, opts ...option.
 	path := fmt.Sprintf("v1/crawl/%s", id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return
+}
+
+// Successful get crawl response
+type CrawlListResponse struct {
+	Data       []CrawlListResponseData     `json:"data,required"`
+	Pagination CrawlListResponsePagination `json:"pagination,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Pagination  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponse) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseData struct {
+	ID          string                       `json:"id,required" format:"uuid"`
+	AccountName string                       `json:"accountName,required"`
+	Options     CrawlListResponseDataOptions `json:"options,required"`
+	URL         string                       `json:"url,required" format:"uri"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		AccountName respjson.Field
+		Options     respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseData) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptions struct {
+	// Allows the crawler to follow links to external websites.
+	AllowExternalLinks bool `json:"allow_external_links,required"`
+	// Allows the crawler to follow links to subdomains of the main domain.
+	AllowSubdomains bool `json:"allow_subdomains,required"`
+	// Allows the crawler to follow internal links to sibling or parent URLs, not just
+	// child paths.
+	CrawlEntireDomain bool `json:"crawl_entire_domain,required"`
+	// Do not re-scrape the same path with different (or none) query parameters.
+	IgnoreQueryParameters bool `json:"ignore_query_parameters,required"`
+	// Maximum number of pages to crawl.
+	Limit int64 `json:"limit,required"`
+	// Maximum depth to crawl based on discovery order.
+	MaxDiscoveryDepth int64 `json:"max_discovery_depth,required"`
+	// Sitemap and other methods will be used together to find URLs.
+	//
+	// Any of "skip", "include", "only".
+	Sitemap string `json:"sitemap,required"`
+	// Url to crawl.
+	URL string `json:"url,required" format:"uri"`
+	// Webhook configuration for receiving crawl results.
+	Callback CrawlListResponseDataOptionsCallbackUnion `json:"callback" format:"uri"`
+	// URL pathname regex patterns that exclude matching URLs from the crawl.
+	ExcludePaths   []string                                   `json:"exclude_paths"`
+	ExtractOptions CrawlListResponseDataOptionsExtractOptions `json:"extract_options"`
+	// URL pathname regex patterns that include matching URLs in the crawl.
+	IncludePaths []string `json:"include_paths"`
+	// Name of the crawl.
+	Name string `json:"name"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AllowExternalLinks    respjson.Field
+		AllowSubdomains       respjson.Field
+		CrawlEntireDomain     respjson.Field
+		IgnoreQueryParameters respjson.Field
+		Limit                 respjson.Field
+		MaxDiscoveryDepth     respjson.Field
+		Sitemap               respjson.Field
+		URL                   respjson.Field
+		Callback              respjson.Field
+		ExcludePaths          respjson.Field
+		ExtractOptions        respjson.Field
+		IncludePaths          respjson.Field
+		Name                  respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsCallbackUnion contains all possible properties and
+// values from [CrawlListResponseDataOptionsCallbackObject], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
+type CrawlListResponseDataOptionsCallbackUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field is from variant [CrawlListResponseDataOptionsCallbackObject].
+	URL string `json:"url"`
+	// This field is from variant [CrawlListResponseDataOptionsCallbackObject].
+	Events []string `json:"events"`
+	// This field is from variant [CrawlListResponseDataOptionsCallbackObject].
+	Headers map[string]any `json:"headers"`
+	// This field is from variant [CrawlListResponseDataOptionsCallbackObject].
+	Metadata map[string]any `json:"metadata"`
+	JSON     struct {
+		OfString respjson.Field
+		URL      respjson.Field
+		Events   respjson.Field
+		Headers  respjson.Field
+		Metadata respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsCallbackUnion) AsCrawlListResponseDataOptionsCallbackObject() (v CrawlListResponseDataOptionsCallbackObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsCallbackUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsCallbackObject struct {
+	// Webhook URL to receive crawl results.
+	URL string `json:"url,required" format:"uri"`
+	// Type of events that should be sent to the webhook URL. (default: all)
+	//
+	// Any of "completed", "page", "failed", "started".
+	Events []string `json:"events"`
+	// Headers to send to the webhook URL.
+	Headers map[string]any `json:"headers"`
+	// Custom metadata that will be included in all webhook payloads for this crawl.
+	Metadata map[string]any `json:"metadata"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL         respjson.Field
+		Events      respjson.Field
+		Headers     respjson.Field
+		Metadata    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptions struct {
+	// Country code for geolocation and proxy selection
+	//
+	// Any of "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT",
+	// "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ",
+	// "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA",
+	// "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU",
+	// "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE",
+	// "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB",
+	// "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+	// "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL",
+	// "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG",
+	// "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+	// "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG",
+	// "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV",
+	// "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP",
+	// "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN",
+	// "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB",
+	// "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR",
+	// "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+	// "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US",
+	// "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE",
+	// "YT", "ZA", "ZM", "ZW", "ALL".
+	Country CrawlListResponseDataOptionsExtractOptionsCountry `json:"country,required"`
+	// Debug and troubleshooting options for the request
+	DebugOptions map[string]any `json:"debug_options,required"`
+	// Device type for browser emulation
+	//
+	// Any of "desktop", "mobile", "tablet".
+	Device string `json:"device,required"`
+	// Whether to export the userbrowser session
+	ExportUserbrowser bool `json:"export_userbrowser,required"`
+	// Response format
+	//
+	// Any of "json", "html", "csv", "raw", "json-lines", "markdown".
+	Format string `json:"format,required"`
+	// Custom HTTP headers to include in the request
+	Headers map[string]CrawlListResponseDataOptionsExtractOptionsHeaderUnion `json:"headers,required"`
+	// Whether to use HTTP/2 protocol
+	Http2 bool `json:"http2,required"`
+	// Whether to emulate XMLHttpRequest behavior
+	IsXhr bool `json:"is_xhr,required"`
+	// Locale for browser language and region settings
+	//
+	// Any of "aa-DJ", "aa-ER", "aa-ET", "af", "af-NA", "af-ZA", "ak", "ak-GH", "am",
+	// "am-ET", "an-ES", "ar", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IN", "ar-IQ",
+	// "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA", "ar-SA", "ar-SD",
+	// "ar-SY", "ar-TN", "ar-YE", "as", "as-IN", "asa", "asa-TZ", "ast-ES", "az",
+	// "az-AZ", "az-Cyrl", "az-Cyrl-AZ", "az-Latn", "az-Latn-AZ", "be", "be-BY", "bem",
+	// "bem-ZM", "ber-DZ", "ber-MA", "bez", "bez-TZ", "bg", "bg-BG", "bho-IN", "bm",
+	// "bm-ML", "bn", "bn-BD", "bn-IN", "bo", "bo-CN", "bo-IN", "br-FR", "brx-IN",
+	// "bs", "bs-BA", "byn-ER", "ca", "ca-AD", "ca-ES", "ca-FR", "ca-IT", "cgg",
+	// "cgg-UG", "chr", "chr-US", "crh-UA", "cs", "cs-CZ", "csb-PL", "cv-RU", "cy",
+	// "cy-GB", "da", "da-DK", "dav", "dav-KE", "de", "de-AT", "de-BE", "de-CH",
+	// "de-DE", "de-LI", "de-LU", "dv-MV", "dz-BT", "ebu", "ebu-KE", "ee", "ee-GH",
+	// "ee-TG", "el", "el-CY", "el-GR", "en", "en-AG", "en-AS", "en-AU", "en-BE",
+	// "en-BW", "en-BZ", "en-CA", "en-DK", "en-GB", "en-GU", "en-HK", "en-IE", "en-IN",
+	// "en-JM", "en-MH", "en-MP", "en-MT", "en-MU", "en-NA", "en-NG", "en-NZ", "en-PH",
+	// "en-PK", "en-SG", "en-TT", "en-UM", "en-US", "en-VI", "en-ZA", "en-ZM", "en-ZW",
+	// "eo", "es", "es-419", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU",
+	// "es-DO", "es-EC", "es-ES", "es-GQ", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA",
+	// "es-PE", "es-PR", "es-PY", "es-SV", "es-US", "es-UY", "es-VE", "et", "et-EE",
+	// "eu", "eu-ES", "fa", "fa-AF", "fa-IR", "ff", "ff-SN", "fi", "fi-FI", "fil",
+	// "fil-PH", "fo", "fo-FO", "fr", "fr-BE", "fr-BF", "fr-BI", "fr-BJ", "fr-BL",
+	// "fr-CA", "fr-CD", "fr-CF", "fr-CG", "fr-CH", "fr-CI", "fr-CM", "fr-DJ", "fr-FR",
+	// "fr-GA", "fr-GN", "fr-GP", "fr-GQ", "fr-KM", "fr-LU", "fr-MC", "fr-MF", "fr-MG",
+	// "fr-ML", "fr-MQ", "fr-NE", "fr-RE", "fr-RW", "fr-SN", "fr-TD", "fr-TG",
+	// "fur-IT", "fy-DE", "fy-NL", "ga", "ga-IE", "gd-GB", "gez-ER", "gez-ET", "gl",
+	// "gl-ES", "gsw", "gsw-CH", "gu", "gu-IN", "guz", "guz-KE", "gv", "gv-GB", "ha",
+	// "ha-Latn", "ha-Latn-GH", "ha-Latn-NE", "ha-Latn-NG", "ha-NG", "haw", "haw-US",
+	// "he", "he-IL", "hi", "hi-IN", "hne-IN", "hr", "hr-HR", "hsb-DE", "ht-HT", "hu",
+	// "hu-HU", "hy", "hy-AM", "id", "id-ID", "ig", "ig-NG", "ii", "ii-CN", "ik-CA",
+	// "is", "is-IS", "it", "it-CH", "it-IT", "iu-CA", "iw-IL", "ja", "ja-JP", "jmc",
+	// "jmc-TZ", "ka", "ka-GE", "kab", "kab-DZ", "kam", "kam-KE", "kde", "kde-TZ",
+	// "kea", "kea-CV", "khq", "khq-ML", "ki", "ki-KE", "kk", "kk-Cyrl", "kk-Cyrl-KZ",
+	// "kk-KZ", "kl", "kl-GL", "kln", "kln-KE", "km", "km-KH", "kn", "kn-IN", "ko",
+	// "ko-KR", "kok", "kok-IN", "ks-IN", "ku-TR", "kw", "kw-GB", "ky-KG", "lag",
+	// "lag-TZ", "lb-LU", "lg", "lg-UG", "li-BE", "li-NL", "lij-IT", "lo-LA", "lt",
+	// "lt-LT", "luo", "luo-KE", "luy", "luy-KE", "lv", "lv-LV", "mag-IN", "mai-IN",
+	// "mas", "mas-KE", "mas-TZ", "mer", "mer-KE", "mfe", "mfe-MU", "mg", "mg-MG",
+	// "mhr-RU", "mi-NZ", "mk", "mk-MK", "ml", "ml-IN", "mn-MN", "mr", "mr-IN", "ms",
+	// "ms-BN", "ms-MY", "mt", "mt-MT", "my", "my-MM", "nan-TW", "naq", "naq-NA", "nb",
+	// "nb-NO", "nd", "nd-ZW", "nds-DE", "nds-NL", "ne", "ne-IN", "ne-NP", "nl",
+	// "nl-AW", "nl-BE", "nl-NL", "nn", "nn-NO", "nr-ZA", "nso-ZA", "nyn", "nyn-UG",
+	// "oc-FR", "om", "om-ET", "om-KE", "or", "or-IN", "os-RU", "pa", "pa-Arab",
+	// "pa-Arab-PK", "pa-Guru", "pa-Guru-IN", "pa-IN", "pa-PK", "pap-AN", "pl",
+	// "pl-PL", "ps", "ps-AF", "pt", "pt-BR", "pt-GW", "pt-MZ", "pt-PT", "rm", "rm-CH",
+	// "ro", "ro-MD", "ro-RO", "rof", "rof-TZ", "ru", "ru-MD", "ru-RU", "ru-UA", "rw",
+	// "rw-RW", "rwk", "rwk-TZ", "sa-IN", "saq", "saq-KE", "sc-IT", "sd-IN", "se-NO",
+	// "seh", "seh-MZ", "ses", "ses-ML", "sg", "sg-CF", "shi", "shi-Latn",
+	// "shi-Latn-MA", "shi-Tfng", "shi-Tfng-MA", "shs-CA", "si", "si-LK", "sid-ET",
+	// "sk", "sk-SK", "sl", "sl-SI", "sn", "sn-ZW", "so", "so-DJ", "so-ET", "so-KE",
+	// "so-SO", "sq", "sq-AL", "sq-MK", "sr", "sr-Cyrl", "sr-Cyrl-BA", "sr-Cyrl-ME",
+	// "sr-Cyrl-RS", "sr-Latn", "sr-Latn-BA", "sr-Latn-ME", "sr-Latn-RS", "sr-ME",
+	// "sr-RS", "ss-ZA", "st-ZA", "sv", "sv-FI", "sv-SE", "sw", "sw-KE", "sw-TZ", "ta",
+	// "ta-IN", "ta-LK", "te", "te-IN", "teo", "teo-KE", "teo-UG", "tg-TJ", "th",
+	// "th-TH", "ti", "ti-ER", "ti-ET", "tig-ER", "tk-TM", "tl-PH", "tn-ZA", "to",
+	// "to-TO", "tr", "tr-CY", "tr-TR", "ts-ZA", "tt-RU", "tzm", "tzm-Latn",
+	// "tzm-Latn-MA", "ug-CN", "uk", "uk-UA", "unm-US", "ur", "ur-IN", "ur-PK", "uz",
+	// "uz-Arab", "uz-Arab-AF", "uz-Cyrl", "uz-Cyrl-UZ", "uz-Latn", "uz-Latn-UZ",
+	// "uz-UZ", "ve-ZA", "vi", "vi-VN", "vun", "vun-TZ", "wa-BE", "wae-CH", "wal-ET",
+	// "wo-SN", "xh-ZA", "xog", "xog-UG", "yi-US", "yo", "yo-NG", "yue-HK", "zh",
+	// "zh-CN", "zh-HK", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK", "zh-Hans-MO",
+	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
+	// "zh-TW", "zu", "zu-ZA", "auto".
+	Locale CrawlListResponseDataOptionsExtractOptionsLocale `json:"locale,required"`
+	// HTTP method for the request
+	//
+	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
+	Method string `json:"method,required"`
+	// Whether to exclude HTML from the response
+	NoHTML bool `json:"no_html,required"`
+	// Whether to parse the response content
+	Parse bool `json:"parse,required"`
+	// Configuration options for parsing behavior
+	ParseOptions CrawlListResponseDataOptionsExtractOptionsParseOptions `json:"parse_options,required"`
+	// Proxy provider to use for the request
+	//
+	// Any of "brightdata", "oxylabs", "smartproxy", "proxit", "proxit_preprod",
+	// "local", "rayobyte", "always", "oculusproxies", "froxy", "packetstream",
+	// "911proxy", "direct911proxy", "thesocialproxy", "thesocialproxy2", "nimble-isp",
+	// "nimble-isp-mobile", "proxit-linux", "proxit-macos", "proxit-windows",
+	// "proxit-rental", "ipfoxy", "brightup", "research".
+	ProxyProvider CrawlListResponseDataOptionsExtractOptionsProxyProvider `json:"proxy_provider,required"`
+	// Whether to return raw HTTP headers in response
+	RawHeaders bool `json:"raw_headers,required"`
+	// Whether to save the userbrowser session for reuse
+	SaveUserbrowser bool                                              `json:"save_userbrowser,required"`
+	Session         CrawlListResponseDataOptionsExtractOptionsSession `json:"session,required"`
+	// Type of query or scraping template
+	Type string `json:"type,required"`
+	// Target URL to scrape
+	URL string `json:"url,required" format:"uri"`
+	// Browser type to emulate
+	Browser CrawlListResponseDataOptionsExtractOptionsBrowserUnion `json:"browser"`
+	// City for geolocation
+	City string `json:"city"`
+	// Client-side timeout in milliseconds
+	ClientTimeout float64 `json:"client_timeout"`
+	// Whether to automatically handle cookie consent headers
+	ConsentHeader bool `json:"consent_header"`
+	// Browser cookies as array of cookie objects
+	Cookies CrawlListResponseDataOptionsExtractOptionsCookiesUnion `json:"cookies"`
+	// Whether to disable IP address validation
+	DisableIPCheck bool `json:"disable_ip_check"`
+	// Browser driver to use
+	//
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	Driver string `json:"driver"`
+	// Custom parser configuration as a key-value map
+	DynamicParser map[string]any `json:"dynamic_parser"`
+	// Expected HTTP status codes for successful requests
+	ExpectedStatusCodes []int64 `json:"expected_status_codes"`
+	// Whether to use IPv6 for the request
+	Ip6 bool `json:"ip6"`
+	// Whether to return response in Markdown format
+	Markdown bool `json:"markdown"`
+	// Structured metadata about the request execution context
+	Metadata CrawlListResponseDataOptionsExtractOptionsMetadata `json:"metadata"`
+	// Native execution mode
+	//
+	// Any of "requester", "apm", "direct".
+	NativeMode string `json:"native_mode"`
+	// Filters for capturing network traffic
+	NetworkCapture []CrawlListResponseDataOptionsExtractOptionsNetworkCapture `json:"network_capture"`
+	// Whether to disable browser-based rendering
+	NoUserbrowser bool `json:"no_userbrowser"`
+	// Operating system to emulate
+	//
+	// Any of "windows", "mac os", "linux", "android", "ios".
+	Os string `json:"os"`
+	// Custom parser configuration as a key-value map
+	Parser CrawlListResponseDataOptionsExtractOptionsParserUnion `json:"parser"`
+	// Weighted distribution of proxy providers
+	ProxyProviders map[string]float64 `json:"proxy_providers"`
+	// Query template configuration for structured data extraction
+	QueryTemplate CrawlListResponseDataOptionsExtractOptionsQueryTemplate `json:"query_template"`
+	// Referrer policy for the request
+	//
+	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
+	// "twitter", "instagram".
+	ReferrerType CrawlListResponseDataOptionsExtractOptionsReferrerType `json:"referrer_type"`
+	// Whether to render JavaScript content using a browser
+	Render bool `json:"render"`
+	// Array of actions to perform during browser rendering
+	RenderFlow    []map[string]any `json:"render_flow"`
+	RenderOptions map[string]any   `json:"render_options"`
+	// Request timeout in milliseconds
+	RequestTimeout float64 `json:"request_timeout"`
+	// Whether to return response headers in HTTP headers
+	ReturnResponseHeadersAsHeader bool `json:"return_response_headers_as_header"`
+	// Skills or capabilities required for the request
+	Skill CrawlListResponseDataOptionsExtractOptionsSkillUnion `json:"skill"`
+	// Whether to skip userbrowser creation template processing
+	SkipUbct bool `json:"skip_ubct"`
+	// US state for geolocation (only valid when country is US)
+	//
+	// Any of "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA",
+	// "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+	// "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP",
+	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+	// "VI", "WA", "WV", "WI", "WY".
+	State string `json:"state"`
+	// User-defined tag for request identification
+	Tag string `json:"tag"`
+	// Userbrowser creation template configuration
+	Template CrawlListResponseDataOptionsExtractOptionsTemplate `json:"template"`
+	// Pre-rendered userbrowser creation template configuration
+	UserbrowserCreationTemplateRendered CrawlListResponseDataOptionsExtractOptionsUserbrowserCreationTemplateRendered `json:"userbrowser_creation_template_rendered"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Country                             respjson.Field
+		DebugOptions                        respjson.Field
+		Device                              respjson.Field
+		ExportUserbrowser                   respjson.Field
+		Format                              respjson.Field
+		Headers                             respjson.Field
+		Http2                               respjson.Field
+		IsXhr                               respjson.Field
+		Locale                              respjson.Field
+		Method                              respjson.Field
+		NoHTML                              respjson.Field
+		Parse                               respjson.Field
+		ParseOptions                        respjson.Field
+		ProxyProvider                       respjson.Field
+		RawHeaders                          respjson.Field
+		SaveUserbrowser                     respjson.Field
+		Session                             respjson.Field
+		Type                                respjson.Field
+		URL                                 respjson.Field
+		Browser                             respjson.Field
+		City                                respjson.Field
+		ClientTimeout                       respjson.Field
+		ConsentHeader                       respjson.Field
+		Cookies                             respjson.Field
+		DisableIPCheck                      respjson.Field
+		Driver                              respjson.Field
+		DynamicParser                       respjson.Field
+		ExpectedStatusCodes                 respjson.Field
+		Ip6                                 respjson.Field
+		Markdown                            respjson.Field
+		Metadata                            respjson.Field
+		NativeMode                          respjson.Field
+		NetworkCapture                      respjson.Field
+		NoUserbrowser                       respjson.Field
+		Os                                  respjson.Field
+		Parser                              respjson.Field
+		ProxyProviders                      respjson.Field
+		QueryTemplate                       respjson.Field
+		ReferrerType                        respjson.Field
+		Render                              respjson.Field
+		RenderFlow                          respjson.Field
+		RenderOptions                       respjson.Field
+		RequestTimeout                      respjson.Field
+		ReturnResponseHeadersAsHeader       respjson.Field
+		Skill                               respjson.Field
+		SkipUbct                            respjson.Field
+		State                               respjson.Field
+		Tag                                 respjson.Field
+		Template                            respjson.Field
+		UserbrowserCreationTemplateRendered respjson.Field
+		ExtraFields                         map[string]respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Country code for geolocation and proxy selection
+type CrawlListResponseDataOptionsExtractOptionsCountry string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsCountryAd  CrawlListResponseDataOptionsExtractOptionsCountry = "AD"
+	CrawlListResponseDataOptionsExtractOptionsCountryAe  CrawlListResponseDataOptionsExtractOptionsCountry = "AE"
+	CrawlListResponseDataOptionsExtractOptionsCountryAf  CrawlListResponseDataOptionsExtractOptionsCountry = "AF"
+	CrawlListResponseDataOptionsExtractOptionsCountryAg  CrawlListResponseDataOptionsExtractOptionsCountry = "AG"
+	CrawlListResponseDataOptionsExtractOptionsCountryAI  CrawlListResponseDataOptionsExtractOptionsCountry = "AI"
+	CrawlListResponseDataOptionsExtractOptionsCountryAl  CrawlListResponseDataOptionsExtractOptionsCountry = "AL"
+	CrawlListResponseDataOptionsExtractOptionsCountryAm  CrawlListResponseDataOptionsExtractOptionsCountry = "AM"
+	CrawlListResponseDataOptionsExtractOptionsCountryAo  CrawlListResponseDataOptionsExtractOptionsCountry = "AO"
+	CrawlListResponseDataOptionsExtractOptionsCountryAq  CrawlListResponseDataOptionsExtractOptionsCountry = "AQ"
+	CrawlListResponseDataOptionsExtractOptionsCountryAr  CrawlListResponseDataOptionsExtractOptionsCountry = "AR"
+	CrawlListResponseDataOptionsExtractOptionsCountryAs  CrawlListResponseDataOptionsExtractOptionsCountry = "AS"
+	CrawlListResponseDataOptionsExtractOptionsCountryAt  CrawlListResponseDataOptionsExtractOptionsCountry = "AT"
+	CrawlListResponseDataOptionsExtractOptionsCountryAu  CrawlListResponseDataOptionsExtractOptionsCountry = "AU"
+	CrawlListResponseDataOptionsExtractOptionsCountryAw  CrawlListResponseDataOptionsExtractOptionsCountry = "AW"
+	CrawlListResponseDataOptionsExtractOptionsCountryAx  CrawlListResponseDataOptionsExtractOptionsCountry = "AX"
+	CrawlListResponseDataOptionsExtractOptionsCountryAz  CrawlListResponseDataOptionsExtractOptionsCountry = "AZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryBa  CrawlListResponseDataOptionsExtractOptionsCountry = "BA"
+	CrawlListResponseDataOptionsExtractOptionsCountryBb  CrawlListResponseDataOptionsExtractOptionsCountry = "BB"
+	CrawlListResponseDataOptionsExtractOptionsCountryBd  CrawlListResponseDataOptionsExtractOptionsCountry = "BD"
+	CrawlListResponseDataOptionsExtractOptionsCountryBe  CrawlListResponseDataOptionsExtractOptionsCountry = "BE"
+	CrawlListResponseDataOptionsExtractOptionsCountryBf  CrawlListResponseDataOptionsExtractOptionsCountry = "BF"
+	CrawlListResponseDataOptionsExtractOptionsCountryBg  CrawlListResponseDataOptionsExtractOptionsCountry = "BG"
+	CrawlListResponseDataOptionsExtractOptionsCountryBh  CrawlListResponseDataOptionsExtractOptionsCountry = "BH"
+	CrawlListResponseDataOptionsExtractOptionsCountryBi  CrawlListResponseDataOptionsExtractOptionsCountry = "BI"
+	CrawlListResponseDataOptionsExtractOptionsCountryBj  CrawlListResponseDataOptionsExtractOptionsCountry = "BJ"
+	CrawlListResponseDataOptionsExtractOptionsCountryBl  CrawlListResponseDataOptionsExtractOptionsCountry = "BL"
+	CrawlListResponseDataOptionsExtractOptionsCountryBm  CrawlListResponseDataOptionsExtractOptionsCountry = "BM"
+	CrawlListResponseDataOptionsExtractOptionsCountryBn  CrawlListResponseDataOptionsExtractOptionsCountry = "BN"
+	CrawlListResponseDataOptionsExtractOptionsCountryBo  CrawlListResponseDataOptionsExtractOptionsCountry = "BO"
+	CrawlListResponseDataOptionsExtractOptionsCountryBq  CrawlListResponseDataOptionsExtractOptionsCountry = "BQ"
+	CrawlListResponseDataOptionsExtractOptionsCountryBr  CrawlListResponseDataOptionsExtractOptionsCountry = "BR"
+	CrawlListResponseDataOptionsExtractOptionsCountryBs  CrawlListResponseDataOptionsExtractOptionsCountry = "BS"
+	CrawlListResponseDataOptionsExtractOptionsCountryBt  CrawlListResponseDataOptionsExtractOptionsCountry = "BT"
+	CrawlListResponseDataOptionsExtractOptionsCountryBv  CrawlListResponseDataOptionsExtractOptionsCountry = "BV"
+	CrawlListResponseDataOptionsExtractOptionsCountryBw  CrawlListResponseDataOptionsExtractOptionsCountry = "BW"
+	CrawlListResponseDataOptionsExtractOptionsCountryBy  CrawlListResponseDataOptionsExtractOptionsCountry = "BY"
+	CrawlListResponseDataOptionsExtractOptionsCountryBz  CrawlListResponseDataOptionsExtractOptionsCountry = "BZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryCa  CrawlListResponseDataOptionsExtractOptionsCountry = "CA"
+	CrawlListResponseDataOptionsExtractOptionsCountryCc  CrawlListResponseDataOptionsExtractOptionsCountry = "CC"
+	CrawlListResponseDataOptionsExtractOptionsCountryCd  CrawlListResponseDataOptionsExtractOptionsCountry = "CD"
+	CrawlListResponseDataOptionsExtractOptionsCountryCf  CrawlListResponseDataOptionsExtractOptionsCountry = "CF"
+	CrawlListResponseDataOptionsExtractOptionsCountryCg  CrawlListResponseDataOptionsExtractOptionsCountry = "CG"
+	CrawlListResponseDataOptionsExtractOptionsCountryCh  CrawlListResponseDataOptionsExtractOptionsCountry = "CH"
+	CrawlListResponseDataOptionsExtractOptionsCountryCi  CrawlListResponseDataOptionsExtractOptionsCountry = "CI"
+	CrawlListResponseDataOptionsExtractOptionsCountryCk  CrawlListResponseDataOptionsExtractOptionsCountry = "CK"
+	CrawlListResponseDataOptionsExtractOptionsCountryCl  CrawlListResponseDataOptionsExtractOptionsCountry = "CL"
+	CrawlListResponseDataOptionsExtractOptionsCountryCm  CrawlListResponseDataOptionsExtractOptionsCountry = "CM"
+	CrawlListResponseDataOptionsExtractOptionsCountryCn  CrawlListResponseDataOptionsExtractOptionsCountry = "CN"
+	CrawlListResponseDataOptionsExtractOptionsCountryCo  CrawlListResponseDataOptionsExtractOptionsCountry = "CO"
+	CrawlListResponseDataOptionsExtractOptionsCountryCr  CrawlListResponseDataOptionsExtractOptionsCountry = "CR"
+	CrawlListResponseDataOptionsExtractOptionsCountryCu  CrawlListResponseDataOptionsExtractOptionsCountry = "CU"
+	CrawlListResponseDataOptionsExtractOptionsCountryCv  CrawlListResponseDataOptionsExtractOptionsCountry = "CV"
+	CrawlListResponseDataOptionsExtractOptionsCountryCw  CrawlListResponseDataOptionsExtractOptionsCountry = "CW"
+	CrawlListResponseDataOptionsExtractOptionsCountryCx  CrawlListResponseDataOptionsExtractOptionsCountry = "CX"
+	CrawlListResponseDataOptionsExtractOptionsCountryCy  CrawlListResponseDataOptionsExtractOptionsCountry = "CY"
+	CrawlListResponseDataOptionsExtractOptionsCountryCz  CrawlListResponseDataOptionsExtractOptionsCountry = "CZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryDe  CrawlListResponseDataOptionsExtractOptionsCountry = "DE"
+	CrawlListResponseDataOptionsExtractOptionsCountryDj  CrawlListResponseDataOptionsExtractOptionsCountry = "DJ"
+	CrawlListResponseDataOptionsExtractOptionsCountryDk  CrawlListResponseDataOptionsExtractOptionsCountry = "DK"
+	CrawlListResponseDataOptionsExtractOptionsCountryDm  CrawlListResponseDataOptionsExtractOptionsCountry = "DM"
+	CrawlListResponseDataOptionsExtractOptionsCountryDo  CrawlListResponseDataOptionsExtractOptionsCountry = "DO"
+	CrawlListResponseDataOptionsExtractOptionsCountryDz  CrawlListResponseDataOptionsExtractOptionsCountry = "DZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryEc  CrawlListResponseDataOptionsExtractOptionsCountry = "EC"
+	CrawlListResponseDataOptionsExtractOptionsCountryEe  CrawlListResponseDataOptionsExtractOptionsCountry = "EE"
+	CrawlListResponseDataOptionsExtractOptionsCountryEg  CrawlListResponseDataOptionsExtractOptionsCountry = "EG"
+	CrawlListResponseDataOptionsExtractOptionsCountryEh  CrawlListResponseDataOptionsExtractOptionsCountry = "EH"
+	CrawlListResponseDataOptionsExtractOptionsCountryEr  CrawlListResponseDataOptionsExtractOptionsCountry = "ER"
+	CrawlListResponseDataOptionsExtractOptionsCountryEs  CrawlListResponseDataOptionsExtractOptionsCountry = "ES"
+	CrawlListResponseDataOptionsExtractOptionsCountryEt  CrawlListResponseDataOptionsExtractOptionsCountry = "ET"
+	CrawlListResponseDataOptionsExtractOptionsCountryFi  CrawlListResponseDataOptionsExtractOptionsCountry = "FI"
+	CrawlListResponseDataOptionsExtractOptionsCountryFj  CrawlListResponseDataOptionsExtractOptionsCountry = "FJ"
+	CrawlListResponseDataOptionsExtractOptionsCountryFk  CrawlListResponseDataOptionsExtractOptionsCountry = "FK"
+	CrawlListResponseDataOptionsExtractOptionsCountryFm  CrawlListResponseDataOptionsExtractOptionsCountry = "FM"
+	CrawlListResponseDataOptionsExtractOptionsCountryFo  CrawlListResponseDataOptionsExtractOptionsCountry = "FO"
+	CrawlListResponseDataOptionsExtractOptionsCountryFr  CrawlListResponseDataOptionsExtractOptionsCountry = "FR"
+	CrawlListResponseDataOptionsExtractOptionsCountryGa  CrawlListResponseDataOptionsExtractOptionsCountry = "GA"
+	CrawlListResponseDataOptionsExtractOptionsCountryGB  CrawlListResponseDataOptionsExtractOptionsCountry = "GB"
+	CrawlListResponseDataOptionsExtractOptionsCountryGd  CrawlListResponseDataOptionsExtractOptionsCountry = "GD"
+	CrawlListResponseDataOptionsExtractOptionsCountryGe  CrawlListResponseDataOptionsExtractOptionsCountry = "GE"
+	CrawlListResponseDataOptionsExtractOptionsCountryGf  CrawlListResponseDataOptionsExtractOptionsCountry = "GF"
+	CrawlListResponseDataOptionsExtractOptionsCountryGg  CrawlListResponseDataOptionsExtractOptionsCountry = "GG"
+	CrawlListResponseDataOptionsExtractOptionsCountryGh  CrawlListResponseDataOptionsExtractOptionsCountry = "GH"
+	CrawlListResponseDataOptionsExtractOptionsCountryGi  CrawlListResponseDataOptionsExtractOptionsCountry = "GI"
+	CrawlListResponseDataOptionsExtractOptionsCountryGl  CrawlListResponseDataOptionsExtractOptionsCountry = "GL"
+	CrawlListResponseDataOptionsExtractOptionsCountryGm  CrawlListResponseDataOptionsExtractOptionsCountry = "GM"
+	CrawlListResponseDataOptionsExtractOptionsCountryGn  CrawlListResponseDataOptionsExtractOptionsCountry = "GN"
+	CrawlListResponseDataOptionsExtractOptionsCountryGp  CrawlListResponseDataOptionsExtractOptionsCountry = "GP"
+	CrawlListResponseDataOptionsExtractOptionsCountryGq  CrawlListResponseDataOptionsExtractOptionsCountry = "GQ"
+	CrawlListResponseDataOptionsExtractOptionsCountryGr  CrawlListResponseDataOptionsExtractOptionsCountry = "GR"
+	CrawlListResponseDataOptionsExtractOptionsCountryGs  CrawlListResponseDataOptionsExtractOptionsCountry = "GS"
+	CrawlListResponseDataOptionsExtractOptionsCountryGt  CrawlListResponseDataOptionsExtractOptionsCountry = "GT"
+	CrawlListResponseDataOptionsExtractOptionsCountryGu  CrawlListResponseDataOptionsExtractOptionsCountry = "GU"
+	CrawlListResponseDataOptionsExtractOptionsCountryGw  CrawlListResponseDataOptionsExtractOptionsCountry = "GW"
+	CrawlListResponseDataOptionsExtractOptionsCountryGy  CrawlListResponseDataOptionsExtractOptionsCountry = "GY"
+	CrawlListResponseDataOptionsExtractOptionsCountryHk  CrawlListResponseDataOptionsExtractOptionsCountry = "HK"
+	CrawlListResponseDataOptionsExtractOptionsCountryHm  CrawlListResponseDataOptionsExtractOptionsCountry = "HM"
+	CrawlListResponseDataOptionsExtractOptionsCountryHn  CrawlListResponseDataOptionsExtractOptionsCountry = "HN"
+	CrawlListResponseDataOptionsExtractOptionsCountryHr  CrawlListResponseDataOptionsExtractOptionsCountry = "HR"
+	CrawlListResponseDataOptionsExtractOptionsCountryHt  CrawlListResponseDataOptionsExtractOptionsCountry = "HT"
+	CrawlListResponseDataOptionsExtractOptionsCountryHu  CrawlListResponseDataOptionsExtractOptionsCountry = "HU"
+	CrawlListResponseDataOptionsExtractOptionsCountryID  CrawlListResponseDataOptionsExtractOptionsCountry = "ID"
+	CrawlListResponseDataOptionsExtractOptionsCountryIe  CrawlListResponseDataOptionsExtractOptionsCountry = "IE"
+	CrawlListResponseDataOptionsExtractOptionsCountryIl  CrawlListResponseDataOptionsExtractOptionsCountry = "IL"
+	CrawlListResponseDataOptionsExtractOptionsCountryIm  CrawlListResponseDataOptionsExtractOptionsCountry = "IM"
+	CrawlListResponseDataOptionsExtractOptionsCountryIn  CrawlListResponseDataOptionsExtractOptionsCountry = "IN"
+	CrawlListResponseDataOptionsExtractOptionsCountryIo  CrawlListResponseDataOptionsExtractOptionsCountry = "IO"
+	CrawlListResponseDataOptionsExtractOptionsCountryIq  CrawlListResponseDataOptionsExtractOptionsCountry = "IQ"
+	CrawlListResponseDataOptionsExtractOptionsCountryIr  CrawlListResponseDataOptionsExtractOptionsCountry = "IR"
+	CrawlListResponseDataOptionsExtractOptionsCountryIs  CrawlListResponseDataOptionsExtractOptionsCountry = "IS"
+	CrawlListResponseDataOptionsExtractOptionsCountryIt  CrawlListResponseDataOptionsExtractOptionsCountry = "IT"
+	CrawlListResponseDataOptionsExtractOptionsCountryJe  CrawlListResponseDataOptionsExtractOptionsCountry = "JE"
+	CrawlListResponseDataOptionsExtractOptionsCountryJm  CrawlListResponseDataOptionsExtractOptionsCountry = "JM"
+	CrawlListResponseDataOptionsExtractOptionsCountryJo  CrawlListResponseDataOptionsExtractOptionsCountry = "JO"
+	CrawlListResponseDataOptionsExtractOptionsCountryJp  CrawlListResponseDataOptionsExtractOptionsCountry = "JP"
+	CrawlListResponseDataOptionsExtractOptionsCountryKe  CrawlListResponseDataOptionsExtractOptionsCountry = "KE"
+	CrawlListResponseDataOptionsExtractOptionsCountryKg  CrawlListResponseDataOptionsExtractOptionsCountry = "KG"
+	CrawlListResponseDataOptionsExtractOptionsCountryKh  CrawlListResponseDataOptionsExtractOptionsCountry = "KH"
+	CrawlListResponseDataOptionsExtractOptionsCountryKi  CrawlListResponseDataOptionsExtractOptionsCountry = "KI"
+	CrawlListResponseDataOptionsExtractOptionsCountryKm  CrawlListResponseDataOptionsExtractOptionsCountry = "KM"
+	CrawlListResponseDataOptionsExtractOptionsCountryKn  CrawlListResponseDataOptionsExtractOptionsCountry = "KN"
+	CrawlListResponseDataOptionsExtractOptionsCountryKp  CrawlListResponseDataOptionsExtractOptionsCountry = "KP"
+	CrawlListResponseDataOptionsExtractOptionsCountryKr  CrawlListResponseDataOptionsExtractOptionsCountry = "KR"
+	CrawlListResponseDataOptionsExtractOptionsCountryKw  CrawlListResponseDataOptionsExtractOptionsCountry = "KW"
+	CrawlListResponseDataOptionsExtractOptionsCountryKy  CrawlListResponseDataOptionsExtractOptionsCountry = "KY"
+	CrawlListResponseDataOptionsExtractOptionsCountryKz  CrawlListResponseDataOptionsExtractOptionsCountry = "KZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryLa  CrawlListResponseDataOptionsExtractOptionsCountry = "LA"
+	CrawlListResponseDataOptionsExtractOptionsCountryLb  CrawlListResponseDataOptionsExtractOptionsCountry = "LB"
+	CrawlListResponseDataOptionsExtractOptionsCountryLc  CrawlListResponseDataOptionsExtractOptionsCountry = "LC"
+	CrawlListResponseDataOptionsExtractOptionsCountryLi  CrawlListResponseDataOptionsExtractOptionsCountry = "LI"
+	CrawlListResponseDataOptionsExtractOptionsCountryLk  CrawlListResponseDataOptionsExtractOptionsCountry = "LK"
+	CrawlListResponseDataOptionsExtractOptionsCountryLr  CrawlListResponseDataOptionsExtractOptionsCountry = "LR"
+	CrawlListResponseDataOptionsExtractOptionsCountryLs  CrawlListResponseDataOptionsExtractOptionsCountry = "LS"
+	CrawlListResponseDataOptionsExtractOptionsCountryLt  CrawlListResponseDataOptionsExtractOptionsCountry = "LT"
+	CrawlListResponseDataOptionsExtractOptionsCountryLu  CrawlListResponseDataOptionsExtractOptionsCountry = "LU"
+	CrawlListResponseDataOptionsExtractOptionsCountryLv  CrawlListResponseDataOptionsExtractOptionsCountry = "LV"
+	CrawlListResponseDataOptionsExtractOptionsCountryLy  CrawlListResponseDataOptionsExtractOptionsCountry = "LY"
+	CrawlListResponseDataOptionsExtractOptionsCountryMa  CrawlListResponseDataOptionsExtractOptionsCountry = "MA"
+	CrawlListResponseDataOptionsExtractOptionsCountryMc  CrawlListResponseDataOptionsExtractOptionsCountry = "MC"
+	CrawlListResponseDataOptionsExtractOptionsCountryMd  CrawlListResponseDataOptionsExtractOptionsCountry = "MD"
+	CrawlListResponseDataOptionsExtractOptionsCountryMe  CrawlListResponseDataOptionsExtractOptionsCountry = "ME"
+	CrawlListResponseDataOptionsExtractOptionsCountryMf  CrawlListResponseDataOptionsExtractOptionsCountry = "MF"
+	CrawlListResponseDataOptionsExtractOptionsCountryMg  CrawlListResponseDataOptionsExtractOptionsCountry = "MG"
+	CrawlListResponseDataOptionsExtractOptionsCountryMh  CrawlListResponseDataOptionsExtractOptionsCountry = "MH"
+	CrawlListResponseDataOptionsExtractOptionsCountryMk  CrawlListResponseDataOptionsExtractOptionsCountry = "MK"
+	CrawlListResponseDataOptionsExtractOptionsCountryMl  CrawlListResponseDataOptionsExtractOptionsCountry = "ML"
+	CrawlListResponseDataOptionsExtractOptionsCountryMm  CrawlListResponseDataOptionsExtractOptionsCountry = "MM"
+	CrawlListResponseDataOptionsExtractOptionsCountryMn  CrawlListResponseDataOptionsExtractOptionsCountry = "MN"
+	CrawlListResponseDataOptionsExtractOptionsCountryMo  CrawlListResponseDataOptionsExtractOptionsCountry = "MO"
+	CrawlListResponseDataOptionsExtractOptionsCountryMp  CrawlListResponseDataOptionsExtractOptionsCountry = "MP"
+	CrawlListResponseDataOptionsExtractOptionsCountryMq  CrawlListResponseDataOptionsExtractOptionsCountry = "MQ"
+	CrawlListResponseDataOptionsExtractOptionsCountryMr  CrawlListResponseDataOptionsExtractOptionsCountry = "MR"
+	CrawlListResponseDataOptionsExtractOptionsCountryMs  CrawlListResponseDataOptionsExtractOptionsCountry = "MS"
+	CrawlListResponseDataOptionsExtractOptionsCountryMt  CrawlListResponseDataOptionsExtractOptionsCountry = "MT"
+	CrawlListResponseDataOptionsExtractOptionsCountryMu  CrawlListResponseDataOptionsExtractOptionsCountry = "MU"
+	CrawlListResponseDataOptionsExtractOptionsCountryMv  CrawlListResponseDataOptionsExtractOptionsCountry = "MV"
+	CrawlListResponseDataOptionsExtractOptionsCountryMw  CrawlListResponseDataOptionsExtractOptionsCountry = "MW"
+	CrawlListResponseDataOptionsExtractOptionsCountryMx  CrawlListResponseDataOptionsExtractOptionsCountry = "MX"
+	CrawlListResponseDataOptionsExtractOptionsCountryMy  CrawlListResponseDataOptionsExtractOptionsCountry = "MY"
+	CrawlListResponseDataOptionsExtractOptionsCountryMz  CrawlListResponseDataOptionsExtractOptionsCountry = "MZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryNa  CrawlListResponseDataOptionsExtractOptionsCountry = "NA"
+	CrawlListResponseDataOptionsExtractOptionsCountryNc  CrawlListResponseDataOptionsExtractOptionsCountry = "NC"
+	CrawlListResponseDataOptionsExtractOptionsCountryNe  CrawlListResponseDataOptionsExtractOptionsCountry = "NE"
+	CrawlListResponseDataOptionsExtractOptionsCountryNf  CrawlListResponseDataOptionsExtractOptionsCountry = "NF"
+	CrawlListResponseDataOptionsExtractOptionsCountryNg  CrawlListResponseDataOptionsExtractOptionsCountry = "NG"
+	CrawlListResponseDataOptionsExtractOptionsCountryNi  CrawlListResponseDataOptionsExtractOptionsCountry = "NI"
+	CrawlListResponseDataOptionsExtractOptionsCountryNl  CrawlListResponseDataOptionsExtractOptionsCountry = "NL"
+	CrawlListResponseDataOptionsExtractOptionsCountryNo  CrawlListResponseDataOptionsExtractOptionsCountry = "NO"
+	CrawlListResponseDataOptionsExtractOptionsCountryNp  CrawlListResponseDataOptionsExtractOptionsCountry = "NP"
+	CrawlListResponseDataOptionsExtractOptionsCountryNr  CrawlListResponseDataOptionsExtractOptionsCountry = "NR"
+	CrawlListResponseDataOptionsExtractOptionsCountryNu  CrawlListResponseDataOptionsExtractOptionsCountry = "NU"
+	CrawlListResponseDataOptionsExtractOptionsCountryNz  CrawlListResponseDataOptionsExtractOptionsCountry = "NZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryOm  CrawlListResponseDataOptionsExtractOptionsCountry = "OM"
+	CrawlListResponseDataOptionsExtractOptionsCountryPa  CrawlListResponseDataOptionsExtractOptionsCountry = "PA"
+	CrawlListResponseDataOptionsExtractOptionsCountryPe  CrawlListResponseDataOptionsExtractOptionsCountry = "PE"
+	CrawlListResponseDataOptionsExtractOptionsCountryPf  CrawlListResponseDataOptionsExtractOptionsCountry = "PF"
+	CrawlListResponseDataOptionsExtractOptionsCountryPg  CrawlListResponseDataOptionsExtractOptionsCountry = "PG"
+	CrawlListResponseDataOptionsExtractOptionsCountryPh  CrawlListResponseDataOptionsExtractOptionsCountry = "PH"
+	CrawlListResponseDataOptionsExtractOptionsCountryPk  CrawlListResponseDataOptionsExtractOptionsCountry = "PK"
+	CrawlListResponseDataOptionsExtractOptionsCountryPl  CrawlListResponseDataOptionsExtractOptionsCountry = "PL"
+	CrawlListResponseDataOptionsExtractOptionsCountryPm  CrawlListResponseDataOptionsExtractOptionsCountry = "PM"
+	CrawlListResponseDataOptionsExtractOptionsCountryPn  CrawlListResponseDataOptionsExtractOptionsCountry = "PN"
+	CrawlListResponseDataOptionsExtractOptionsCountryPr  CrawlListResponseDataOptionsExtractOptionsCountry = "PR"
+	CrawlListResponseDataOptionsExtractOptionsCountryPs  CrawlListResponseDataOptionsExtractOptionsCountry = "PS"
+	CrawlListResponseDataOptionsExtractOptionsCountryPt  CrawlListResponseDataOptionsExtractOptionsCountry = "PT"
+	CrawlListResponseDataOptionsExtractOptionsCountryPw  CrawlListResponseDataOptionsExtractOptionsCountry = "PW"
+	CrawlListResponseDataOptionsExtractOptionsCountryPy  CrawlListResponseDataOptionsExtractOptionsCountry = "PY"
+	CrawlListResponseDataOptionsExtractOptionsCountryQa  CrawlListResponseDataOptionsExtractOptionsCountry = "QA"
+	CrawlListResponseDataOptionsExtractOptionsCountryRe  CrawlListResponseDataOptionsExtractOptionsCountry = "RE"
+	CrawlListResponseDataOptionsExtractOptionsCountryRo  CrawlListResponseDataOptionsExtractOptionsCountry = "RO"
+	CrawlListResponseDataOptionsExtractOptionsCountryRs  CrawlListResponseDataOptionsExtractOptionsCountry = "RS"
+	CrawlListResponseDataOptionsExtractOptionsCountryRu  CrawlListResponseDataOptionsExtractOptionsCountry = "RU"
+	CrawlListResponseDataOptionsExtractOptionsCountryRw  CrawlListResponseDataOptionsExtractOptionsCountry = "RW"
+	CrawlListResponseDataOptionsExtractOptionsCountrySa  CrawlListResponseDataOptionsExtractOptionsCountry = "SA"
+	CrawlListResponseDataOptionsExtractOptionsCountrySb  CrawlListResponseDataOptionsExtractOptionsCountry = "SB"
+	CrawlListResponseDataOptionsExtractOptionsCountrySc  CrawlListResponseDataOptionsExtractOptionsCountry = "SC"
+	CrawlListResponseDataOptionsExtractOptionsCountrySd  CrawlListResponseDataOptionsExtractOptionsCountry = "SD"
+	CrawlListResponseDataOptionsExtractOptionsCountrySe  CrawlListResponseDataOptionsExtractOptionsCountry = "SE"
+	CrawlListResponseDataOptionsExtractOptionsCountrySg  CrawlListResponseDataOptionsExtractOptionsCountry = "SG"
+	CrawlListResponseDataOptionsExtractOptionsCountrySh  CrawlListResponseDataOptionsExtractOptionsCountry = "SH"
+	CrawlListResponseDataOptionsExtractOptionsCountrySi  CrawlListResponseDataOptionsExtractOptionsCountry = "SI"
+	CrawlListResponseDataOptionsExtractOptionsCountrySj  CrawlListResponseDataOptionsExtractOptionsCountry = "SJ"
+	CrawlListResponseDataOptionsExtractOptionsCountrySk  CrawlListResponseDataOptionsExtractOptionsCountry = "SK"
+	CrawlListResponseDataOptionsExtractOptionsCountrySl  CrawlListResponseDataOptionsExtractOptionsCountry = "SL"
+	CrawlListResponseDataOptionsExtractOptionsCountrySm  CrawlListResponseDataOptionsExtractOptionsCountry = "SM"
+	CrawlListResponseDataOptionsExtractOptionsCountrySn  CrawlListResponseDataOptionsExtractOptionsCountry = "SN"
+	CrawlListResponseDataOptionsExtractOptionsCountrySo  CrawlListResponseDataOptionsExtractOptionsCountry = "SO"
+	CrawlListResponseDataOptionsExtractOptionsCountrySr  CrawlListResponseDataOptionsExtractOptionsCountry = "SR"
+	CrawlListResponseDataOptionsExtractOptionsCountrySS  CrawlListResponseDataOptionsExtractOptionsCountry = "SS"
+	CrawlListResponseDataOptionsExtractOptionsCountrySt  CrawlListResponseDataOptionsExtractOptionsCountry = "ST"
+	CrawlListResponseDataOptionsExtractOptionsCountrySv  CrawlListResponseDataOptionsExtractOptionsCountry = "SV"
+	CrawlListResponseDataOptionsExtractOptionsCountrySx  CrawlListResponseDataOptionsExtractOptionsCountry = "SX"
+	CrawlListResponseDataOptionsExtractOptionsCountrySy  CrawlListResponseDataOptionsExtractOptionsCountry = "SY"
+	CrawlListResponseDataOptionsExtractOptionsCountrySz  CrawlListResponseDataOptionsExtractOptionsCountry = "SZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryTc  CrawlListResponseDataOptionsExtractOptionsCountry = "TC"
+	CrawlListResponseDataOptionsExtractOptionsCountryTd  CrawlListResponseDataOptionsExtractOptionsCountry = "TD"
+	CrawlListResponseDataOptionsExtractOptionsCountryTf  CrawlListResponseDataOptionsExtractOptionsCountry = "TF"
+	CrawlListResponseDataOptionsExtractOptionsCountryTg  CrawlListResponseDataOptionsExtractOptionsCountry = "TG"
+	CrawlListResponseDataOptionsExtractOptionsCountryTh  CrawlListResponseDataOptionsExtractOptionsCountry = "TH"
+	CrawlListResponseDataOptionsExtractOptionsCountryTj  CrawlListResponseDataOptionsExtractOptionsCountry = "TJ"
+	CrawlListResponseDataOptionsExtractOptionsCountryTk  CrawlListResponseDataOptionsExtractOptionsCountry = "TK"
+	CrawlListResponseDataOptionsExtractOptionsCountryTl  CrawlListResponseDataOptionsExtractOptionsCountry = "TL"
+	CrawlListResponseDataOptionsExtractOptionsCountryTm  CrawlListResponseDataOptionsExtractOptionsCountry = "TM"
+	CrawlListResponseDataOptionsExtractOptionsCountryTn  CrawlListResponseDataOptionsExtractOptionsCountry = "TN"
+	CrawlListResponseDataOptionsExtractOptionsCountryTo  CrawlListResponseDataOptionsExtractOptionsCountry = "TO"
+	CrawlListResponseDataOptionsExtractOptionsCountryTr  CrawlListResponseDataOptionsExtractOptionsCountry = "TR"
+	CrawlListResponseDataOptionsExtractOptionsCountryTt  CrawlListResponseDataOptionsExtractOptionsCountry = "TT"
+	CrawlListResponseDataOptionsExtractOptionsCountryTv  CrawlListResponseDataOptionsExtractOptionsCountry = "TV"
+	CrawlListResponseDataOptionsExtractOptionsCountryTw  CrawlListResponseDataOptionsExtractOptionsCountry = "TW"
+	CrawlListResponseDataOptionsExtractOptionsCountryTz  CrawlListResponseDataOptionsExtractOptionsCountry = "TZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryUa  CrawlListResponseDataOptionsExtractOptionsCountry = "UA"
+	CrawlListResponseDataOptionsExtractOptionsCountryUg  CrawlListResponseDataOptionsExtractOptionsCountry = "UG"
+	CrawlListResponseDataOptionsExtractOptionsCountryUm  CrawlListResponseDataOptionsExtractOptionsCountry = "UM"
+	CrawlListResponseDataOptionsExtractOptionsCountryUs  CrawlListResponseDataOptionsExtractOptionsCountry = "US"
+	CrawlListResponseDataOptionsExtractOptionsCountryUy  CrawlListResponseDataOptionsExtractOptionsCountry = "UY"
+	CrawlListResponseDataOptionsExtractOptionsCountryUz  CrawlListResponseDataOptionsExtractOptionsCountry = "UZ"
+	CrawlListResponseDataOptionsExtractOptionsCountryVa  CrawlListResponseDataOptionsExtractOptionsCountry = "VA"
+	CrawlListResponseDataOptionsExtractOptionsCountryVc  CrawlListResponseDataOptionsExtractOptionsCountry = "VC"
+	CrawlListResponseDataOptionsExtractOptionsCountryVe  CrawlListResponseDataOptionsExtractOptionsCountry = "VE"
+	CrawlListResponseDataOptionsExtractOptionsCountryVg  CrawlListResponseDataOptionsExtractOptionsCountry = "VG"
+	CrawlListResponseDataOptionsExtractOptionsCountryVi  CrawlListResponseDataOptionsExtractOptionsCountry = "VI"
+	CrawlListResponseDataOptionsExtractOptionsCountryVn  CrawlListResponseDataOptionsExtractOptionsCountry = "VN"
+	CrawlListResponseDataOptionsExtractOptionsCountryVu  CrawlListResponseDataOptionsExtractOptionsCountry = "VU"
+	CrawlListResponseDataOptionsExtractOptionsCountryWf  CrawlListResponseDataOptionsExtractOptionsCountry = "WF"
+	CrawlListResponseDataOptionsExtractOptionsCountryWs  CrawlListResponseDataOptionsExtractOptionsCountry = "WS"
+	CrawlListResponseDataOptionsExtractOptionsCountryXk  CrawlListResponseDataOptionsExtractOptionsCountry = "XK"
+	CrawlListResponseDataOptionsExtractOptionsCountryYe  CrawlListResponseDataOptionsExtractOptionsCountry = "YE"
+	CrawlListResponseDataOptionsExtractOptionsCountryYt  CrawlListResponseDataOptionsExtractOptionsCountry = "YT"
+	CrawlListResponseDataOptionsExtractOptionsCountryZa  CrawlListResponseDataOptionsExtractOptionsCountry = "ZA"
+	CrawlListResponseDataOptionsExtractOptionsCountryZm  CrawlListResponseDataOptionsExtractOptionsCountry = "ZM"
+	CrawlListResponseDataOptionsExtractOptionsCountryZw  CrawlListResponseDataOptionsExtractOptionsCountry = "ZW"
+	CrawlListResponseDataOptionsExtractOptionsCountryAll CrawlListResponseDataOptionsExtractOptionsCountry = "ALL"
+)
+
+// CrawlListResponseDataOptionsExtractOptionsHeaderUnion contains all possible
+// properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfStringArray]
+type CrawlListResponseDataOptionsExtractOptionsHeaderUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfStringArray []string `json:",inline"`
+	JSON          struct {
+		OfString      respjson.Field
+		OfStringArray respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsHeaderUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsHeaderUnion) AsStringArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsHeaderUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsExtractOptionsHeaderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Locale for browser language and region settings
+type CrawlListResponseDataOptionsExtractOptionsLocale string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsLocaleAaDj      CrawlListResponseDataOptionsExtractOptionsLocale = "aa-DJ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAaEr      CrawlListResponseDataOptionsExtractOptionsLocale = "aa-ER"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAaEt      CrawlListResponseDataOptionsExtractOptionsLocale = "aa-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAf        CrawlListResponseDataOptionsExtractOptionsLocale = "af"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAfNa      CrawlListResponseDataOptionsExtractOptionsLocale = "af-NA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAfZa      CrawlListResponseDataOptionsExtractOptionsLocale = "af-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAk        CrawlListResponseDataOptionsExtractOptionsLocale = "ak"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAkGh      CrawlListResponseDataOptionsExtractOptionsLocale = "ak-GH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAm        CrawlListResponseDataOptionsExtractOptionsLocale = "am"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAmEt      CrawlListResponseDataOptionsExtractOptionsLocale = "am-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAnEs      CrawlListResponseDataOptionsExtractOptionsLocale = "an-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAr        CrawlListResponseDataOptionsExtractOptionsLocale = "ar"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArAe      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-AE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArBh      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-BH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArDz      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-DZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArEg      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-EG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArIq      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-IQ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArJo      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-JO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArKw      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-KW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArLb      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-LB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArLy      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-LY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArMa      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-MA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArOm      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-OM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArQa      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-QA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArSa      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-SA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArSd      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-SD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArSy      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-SY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArTn      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-TN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleArYe      CrawlListResponseDataOptionsExtractOptionsLocale = "ar-YE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAs        CrawlListResponseDataOptionsExtractOptionsLocale = "as"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAsIn      CrawlListResponseDataOptionsExtractOptionsLocale = "as-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAsa       CrawlListResponseDataOptionsExtractOptionsLocale = "asa"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAsaTz     CrawlListResponseDataOptionsExtractOptionsLocale = "asa-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAstEs     CrawlListResponseDataOptionsExtractOptionsLocale = "ast-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAz        CrawlListResponseDataOptionsExtractOptionsLocale = "az"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAzAz      CrawlListResponseDataOptionsExtractOptionsLocale = "az-AZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAzCyrl    CrawlListResponseDataOptionsExtractOptionsLocale = "az-Cyrl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAzCyrlAz  CrawlListResponseDataOptionsExtractOptionsLocale = "az-Cyrl-AZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAzLatn    CrawlListResponseDataOptionsExtractOptionsLocale = "az-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAzLatnAz  CrawlListResponseDataOptionsExtractOptionsLocale = "az-Latn-AZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBe        CrawlListResponseDataOptionsExtractOptionsLocale = "be"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBeBy      CrawlListResponseDataOptionsExtractOptionsLocale = "be-BY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBem       CrawlListResponseDataOptionsExtractOptionsLocale = "bem"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBemZm     CrawlListResponseDataOptionsExtractOptionsLocale = "bem-ZM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBerDz     CrawlListResponseDataOptionsExtractOptionsLocale = "ber-DZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBerMa     CrawlListResponseDataOptionsExtractOptionsLocale = "ber-MA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBez       CrawlListResponseDataOptionsExtractOptionsLocale = "bez"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBezTz     CrawlListResponseDataOptionsExtractOptionsLocale = "bez-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBg        CrawlListResponseDataOptionsExtractOptionsLocale = "bg"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBgBg      CrawlListResponseDataOptionsExtractOptionsLocale = "bg-BG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBhoIn     CrawlListResponseDataOptionsExtractOptionsLocale = "bho-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBm        CrawlListResponseDataOptionsExtractOptionsLocale = "bm"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBmMl      CrawlListResponseDataOptionsExtractOptionsLocale = "bm-ML"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBn        CrawlListResponseDataOptionsExtractOptionsLocale = "bn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBnBd      CrawlListResponseDataOptionsExtractOptionsLocale = "bn-BD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBnIn      CrawlListResponseDataOptionsExtractOptionsLocale = "bn-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBo        CrawlListResponseDataOptionsExtractOptionsLocale = "bo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBoCn      CrawlListResponseDataOptionsExtractOptionsLocale = "bo-CN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBoIn      CrawlListResponseDataOptionsExtractOptionsLocale = "bo-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBrFr      CrawlListResponseDataOptionsExtractOptionsLocale = "br-FR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBrxIn     CrawlListResponseDataOptionsExtractOptionsLocale = "brx-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBs        CrawlListResponseDataOptionsExtractOptionsLocale = "bs"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBsBa      CrawlListResponseDataOptionsExtractOptionsLocale = "bs-BA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleBynEr     CrawlListResponseDataOptionsExtractOptionsLocale = "byn-ER"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCa        CrawlListResponseDataOptionsExtractOptionsLocale = "ca"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCaAd      CrawlListResponseDataOptionsExtractOptionsLocale = "ca-AD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCaEs      CrawlListResponseDataOptionsExtractOptionsLocale = "ca-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCaFr      CrawlListResponseDataOptionsExtractOptionsLocale = "ca-FR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCaIt      CrawlListResponseDataOptionsExtractOptionsLocale = "ca-IT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCgg       CrawlListResponseDataOptionsExtractOptionsLocale = "cgg"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCggUg     CrawlListResponseDataOptionsExtractOptionsLocale = "cgg-UG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleChr       CrawlListResponseDataOptionsExtractOptionsLocale = "chr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleChrUs     CrawlListResponseDataOptionsExtractOptionsLocale = "chr-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCrhUa     CrawlListResponseDataOptionsExtractOptionsLocale = "crh-UA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCs        CrawlListResponseDataOptionsExtractOptionsLocale = "cs"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCsCz      CrawlListResponseDataOptionsExtractOptionsLocale = "cs-CZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCsbPl     CrawlListResponseDataOptionsExtractOptionsLocale = "csb-PL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCvRu      CrawlListResponseDataOptionsExtractOptionsLocale = "cv-RU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCy        CrawlListResponseDataOptionsExtractOptionsLocale = "cy"
+	CrawlListResponseDataOptionsExtractOptionsLocaleCyGB      CrawlListResponseDataOptionsExtractOptionsLocale = "cy-GB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDa        CrawlListResponseDataOptionsExtractOptionsLocale = "da"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDaDk      CrawlListResponseDataOptionsExtractOptionsLocale = "da-DK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDav       CrawlListResponseDataOptionsExtractOptionsLocale = "dav"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDavKe     CrawlListResponseDataOptionsExtractOptionsLocale = "dav-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDe        CrawlListResponseDataOptionsExtractOptionsLocale = "de"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeAt      CrawlListResponseDataOptionsExtractOptionsLocale = "de-AT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeBe      CrawlListResponseDataOptionsExtractOptionsLocale = "de-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeCh      CrawlListResponseDataOptionsExtractOptionsLocale = "de-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeDe      CrawlListResponseDataOptionsExtractOptionsLocale = "de-DE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeLi      CrawlListResponseDataOptionsExtractOptionsLocale = "de-LI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDeLu      CrawlListResponseDataOptionsExtractOptionsLocale = "de-LU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDvMv      CrawlListResponseDataOptionsExtractOptionsLocale = "dv-MV"
+	CrawlListResponseDataOptionsExtractOptionsLocaleDzBt      CrawlListResponseDataOptionsExtractOptionsLocale = "dz-BT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEbu       CrawlListResponseDataOptionsExtractOptionsLocale = "ebu"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEbuKe     CrawlListResponseDataOptionsExtractOptionsLocale = "ebu-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEe        CrawlListResponseDataOptionsExtractOptionsLocale = "ee"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEeGh      CrawlListResponseDataOptionsExtractOptionsLocale = "ee-GH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEeTg      CrawlListResponseDataOptionsExtractOptionsLocale = "ee-TG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEl        CrawlListResponseDataOptionsExtractOptionsLocale = "el"
+	CrawlListResponseDataOptionsExtractOptionsLocaleElCy      CrawlListResponseDataOptionsExtractOptionsLocale = "el-CY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleElGr      CrawlListResponseDataOptionsExtractOptionsLocale = "el-GR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEn        CrawlListResponseDataOptionsExtractOptionsLocale = "en"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnAg      CrawlListResponseDataOptionsExtractOptionsLocale = "en-AG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnAs      CrawlListResponseDataOptionsExtractOptionsLocale = "en-AS"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnAu      CrawlListResponseDataOptionsExtractOptionsLocale = "en-AU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnBe      CrawlListResponseDataOptionsExtractOptionsLocale = "en-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnBw      CrawlListResponseDataOptionsExtractOptionsLocale = "en-BW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnBz      CrawlListResponseDataOptionsExtractOptionsLocale = "en-BZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnCa      CrawlListResponseDataOptionsExtractOptionsLocale = "en-CA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnDk      CrawlListResponseDataOptionsExtractOptionsLocale = "en-DK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnGB      CrawlListResponseDataOptionsExtractOptionsLocale = "en-GB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnGu      CrawlListResponseDataOptionsExtractOptionsLocale = "en-GU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnHk      CrawlListResponseDataOptionsExtractOptionsLocale = "en-HK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnIe      CrawlListResponseDataOptionsExtractOptionsLocale = "en-IE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnIn      CrawlListResponseDataOptionsExtractOptionsLocale = "en-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnJm      CrawlListResponseDataOptionsExtractOptionsLocale = "en-JM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnMh      CrawlListResponseDataOptionsExtractOptionsLocale = "en-MH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnMp      CrawlListResponseDataOptionsExtractOptionsLocale = "en-MP"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnMt      CrawlListResponseDataOptionsExtractOptionsLocale = "en-MT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnMu      CrawlListResponseDataOptionsExtractOptionsLocale = "en-MU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnNa      CrawlListResponseDataOptionsExtractOptionsLocale = "en-NA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnNg      CrawlListResponseDataOptionsExtractOptionsLocale = "en-NG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnNz      CrawlListResponseDataOptionsExtractOptionsLocale = "en-NZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnPh      CrawlListResponseDataOptionsExtractOptionsLocale = "en-PH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnPk      CrawlListResponseDataOptionsExtractOptionsLocale = "en-PK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnSg      CrawlListResponseDataOptionsExtractOptionsLocale = "en-SG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnTt      CrawlListResponseDataOptionsExtractOptionsLocale = "en-TT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnUm      CrawlListResponseDataOptionsExtractOptionsLocale = "en-UM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnUs      CrawlListResponseDataOptionsExtractOptionsLocale = "en-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnVi      CrawlListResponseDataOptionsExtractOptionsLocale = "en-VI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnZa      CrawlListResponseDataOptionsExtractOptionsLocale = "en-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnZm      CrawlListResponseDataOptionsExtractOptionsLocale = "en-ZM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEnZw      CrawlListResponseDataOptionsExtractOptionsLocale = "en-ZW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEo        CrawlListResponseDataOptionsExtractOptionsLocale = "eo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEs        CrawlListResponseDataOptionsExtractOptionsLocale = "es"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEs419     CrawlListResponseDataOptionsExtractOptionsLocale = "es-419"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsAr      CrawlListResponseDataOptionsExtractOptionsLocale = "es-AR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsBo      CrawlListResponseDataOptionsExtractOptionsLocale = "es-BO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsCl      CrawlListResponseDataOptionsExtractOptionsLocale = "es-CL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsCo      CrawlListResponseDataOptionsExtractOptionsLocale = "es-CO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsCr      CrawlListResponseDataOptionsExtractOptionsLocale = "es-CR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsCu      CrawlListResponseDataOptionsExtractOptionsLocale = "es-CU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsDo      CrawlListResponseDataOptionsExtractOptionsLocale = "es-DO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsEc      CrawlListResponseDataOptionsExtractOptionsLocale = "es-EC"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsEs      CrawlListResponseDataOptionsExtractOptionsLocale = "es-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsGq      CrawlListResponseDataOptionsExtractOptionsLocale = "es-GQ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsGt      CrawlListResponseDataOptionsExtractOptionsLocale = "es-GT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsHn      CrawlListResponseDataOptionsExtractOptionsLocale = "es-HN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsMx      CrawlListResponseDataOptionsExtractOptionsLocale = "es-MX"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsNi      CrawlListResponseDataOptionsExtractOptionsLocale = "es-NI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsPa      CrawlListResponseDataOptionsExtractOptionsLocale = "es-PA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsPe      CrawlListResponseDataOptionsExtractOptionsLocale = "es-PE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsPr      CrawlListResponseDataOptionsExtractOptionsLocale = "es-PR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsPy      CrawlListResponseDataOptionsExtractOptionsLocale = "es-PY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsSv      CrawlListResponseDataOptionsExtractOptionsLocale = "es-SV"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsUs      CrawlListResponseDataOptionsExtractOptionsLocale = "es-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsUy      CrawlListResponseDataOptionsExtractOptionsLocale = "es-UY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEsVe      CrawlListResponseDataOptionsExtractOptionsLocale = "es-VE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEt        CrawlListResponseDataOptionsExtractOptionsLocale = "et"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEtEe      CrawlListResponseDataOptionsExtractOptionsLocale = "et-EE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEu        CrawlListResponseDataOptionsExtractOptionsLocale = "eu"
+	CrawlListResponseDataOptionsExtractOptionsLocaleEuEs      CrawlListResponseDataOptionsExtractOptionsLocale = "eu-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFa        CrawlListResponseDataOptionsExtractOptionsLocale = "fa"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFaAf      CrawlListResponseDataOptionsExtractOptionsLocale = "fa-AF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFaIr      CrawlListResponseDataOptionsExtractOptionsLocale = "fa-IR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFf        CrawlListResponseDataOptionsExtractOptionsLocale = "ff"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFfSn      CrawlListResponseDataOptionsExtractOptionsLocale = "ff-SN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFi        CrawlListResponseDataOptionsExtractOptionsLocale = "fi"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFiFi      CrawlListResponseDataOptionsExtractOptionsLocale = "fi-FI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFil       CrawlListResponseDataOptionsExtractOptionsLocale = "fil"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFilPh     CrawlListResponseDataOptionsExtractOptionsLocale = "fil-PH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFo        CrawlListResponseDataOptionsExtractOptionsLocale = "fo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFoFo      CrawlListResponseDataOptionsExtractOptionsLocale = "fo-FO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFr        CrawlListResponseDataOptionsExtractOptionsLocale = "fr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrBe      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrBf      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-BF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrBi      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-BI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrBj      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-BJ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrBl      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-BL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCa      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCd      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCf      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCg      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCh      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCi      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrCm      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-CM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrDj      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-DJ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrFr      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-FR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrGa      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-GA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrGn      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-GN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrGp      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-GP"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrGq      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-GQ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrKm      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-KM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrLu      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-LU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrMc      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-MC"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrMf      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-MF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrMg      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-MG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrMl      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-ML"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrMq      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-MQ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrNe      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-NE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrRe      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-RE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrRw      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-RW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrSn      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-SN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrTd      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-TD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFrTg      CrawlListResponseDataOptionsExtractOptionsLocale = "fr-TG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFurIt     CrawlListResponseDataOptionsExtractOptionsLocale = "fur-IT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFyDe      CrawlListResponseDataOptionsExtractOptionsLocale = "fy-DE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleFyNl      CrawlListResponseDataOptionsExtractOptionsLocale = "fy-NL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGa        CrawlListResponseDataOptionsExtractOptionsLocale = "ga"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGaIe      CrawlListResponseDataOptionsExtractOptionsLocale = "ga-IE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGdGB      CrawlListResponseDataOptionsExtractOptionsLocale = "gd-GB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGezEr     CrawlListResponseDataOptionsExtractOptionsLocale = "gez-ER"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGezEt     CrawlListResponseDataOptionsExtractOptionsLocale = "gez-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGl        CrawlListResponseDataOptionsExtractOptionsLocale = "gl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGlEs      CrawlListResponseDataOptionsExtractOptionsLocale = "gl-ES"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGsw       CrawlListResponseDataOptionsExtractOptionsLocale = "gsw"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGswCh     CrawlListResponseDataOptionsExtractOptionsLocale = "gsw-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGu        CrawlListResponseDataOptionsExtractOptionsLocale = "gu"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGuIn      CrawlListResponseDataOptionsExtractOptionsLocale = "gu-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGuz       CrawlListResponseDataOptionsExtractOptionsLocale = "guz"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGuzKe     CrawlListResponseDataOptionsExtractOptionsLocale = "guz-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGv        CrawlListResponseDataOptionsExtractOptionsLocale = "gv"
+	CrawlListResponseDataOptionsExtractOptionsLocaleGvGB      CrawlListResponseDataOptionsExtractOptionsLocale = "gv-GB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHa        CrawlListResponseDataOptionsExtractOptionsLocale = "ha"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaLatn    CrawlListResponseDataOptionsExtractOptionsLocale = "ha-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaLatnGh  CrawlListResponseDataOptionsExtractOptionsLocale = "ha-Latn-GH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaLatnNe  CrawlListResponseDataOptionsExtractOptionsLocale = "ha-Latn-NE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaLatnNg  CrawlListResponseDataOptionsExtractOptionsLocale = "ha-Latn-NG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaNg      CrawlListResponseDataOptionsExtractOptionsLocale = "ha-NG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHaw       CrawlListResponseDataOptionsExtractOptionsLocale = "haw"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHawUs     CrawlListResponseDataOptionsExtractOptionsLocale = "haw-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHe        CrawlListResponseDataOptionsExtractOptionsLocale = "he"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHeIl      CrawlListResponseDataOptionsExtractOptionsLocale = "he-IL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHi        CrawlListResponseDataOptionsExtractOptionsLocale = "hi"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHiIn      CrawlListResponseDataOptionsExtractOptionsLocale = "hi-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHneIn     CrawlListResponseDataOptionsExtractOptionsLocale = "hne-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHr        CrawlListResponseDataOptionsExtractOptionsLocale = "hr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHrHr      CrawlListResponseDataOptionsExtractOptionsLocale = "hr-HR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHsbDe     CrawlListResponseDataOptionsExtractOptionsLocale = "hsb-DE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHtHt      CrawlListResponseDataOptionsExtractOptionsLocale = "ht-HT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHu        CrawlListResponseDataOptionsExtractOptionsLocale = "hu"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHuHu      CrawlListResponseDataOptionsExtractOptionsLocale = "hu-HU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHy        CrawlListResponseDataOptionsExtractOptionsLocale = "hy"
+	CrawlListResponseDataOptionsExtractOptionsLocaleHyAm      CrawlListResponseDataOptionsExtractOptionsLocale = "hy-AM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleID        CrawlListResponseDataOptionsExtractOptionsLocale = "id"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIDID      CrawlListResponseDataOptionsExtractOptionsLocale = "id-ID"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIg        CrawlListResponseDataOptionsExtractOptionsLocale = "ig"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIgNg      CrawlListResponseDataOptionsExtractOptionsLocale = "ig-NG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIi        CrawlListResponseDataOptionsExtractOptionsLocale = "ii"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIiCn      CrawlListResponseDataOptionsExtractOptionsLocale = "ii-CN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIkCa      CrawlListResponseDataOptionsExtractOptionsLocale = "ik-CA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIs        CrawlListResponseDataOptionsExtractOptionsLocale = "is"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIsIs      CrawlListResponseDataOptionsExtractOptionsLocale = "is-IS"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIt        CrawlListResponseDataOptionsExtractOptionsLocale = "it"
+	CrawlListResponseDataOptionsExtractOptionsLocaleItCh      CrawlListResponseDataOptionsExtractOptionsLocale = "it-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleItIt      CrawlListResponseDataOptionsExtractOptionsLocale = "it-IT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIuCa      CrawlListResponseDataOptionsExtractOptionsLocale = "iu-CA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleIwIl      CrawlListResponseDataOptionsExtractOptionsLocale = "iw-IL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleJa        CrawlListResponseDataOptionsExtractOptionsLocale = "ja"
+	CrawlListResponseDataOptionsExtractOptionsLocaleJaJp      CrawlListResponseDataOptionsExtractOptionsLocale = "ja-JP"
+	CrawlListResponseDataOptionsExtractOptionsLocaleJmc       CrawlListResponseDataOptionsExtractOptionsLocale = "jmc"
+	CrawlListResponseDataOptionsExtractOptionsLocaleJmcTz     CrawlListResponseDataOptionsExtractOptionsLocale = "jmc-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKa        CrawlListResponseDataOptionsExtractOptionsLocale = "ka"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKaGe      CrawlListResponseDataOptionsExtractOptionsLocale = "ka-GE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKab       CrawlListResponseDataOptionsExtractOptionsLocale = "kab"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKabDz     CrawlListResponseDataOptionsExtractOptionsLocale = "kab-DZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKam       CrawlListResponseDataOptionsExtractOptionsLocale = "kam"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKamKe     CrawlListResponseDataOptionsExtractOptionsLocale = "kam-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKde       CrawlListResponseDataOptionsExtractOptionsLocale = "kde"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKdeTz     CrawlListResponseDataOptionsExtractOptionsLocale = "kde-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKea       CrawlListResponseDataOptionsExtractOptionsLocale = "kea"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKeaCv     CrawlListResponseDataOptionsExtractOptionsLocale = "kea-CV"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKhq       CrawlListResponseDataOptionsExtractOptionsLocale = "khq"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKhqMl     CrawlListResponseDataOptionsExtractOptionsLocale = "khq-ML"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKi        CrawlListResponseDataOptionsExtractOptionsLocale = "ki"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKiKe      CrawlListResponseDataOptionsExtractOptionsLocale = "ki-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKk        CrawlListResponseDataOptionsExtractOptionsLocale = "kk"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKkCyrl    CrawlListResponseDataOptionsExtractOptionsLocale = "kk-Cyrl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKkCyrlKz  CrawlListResponseDataOptionsExtractOptionsLocale = "kk-Cyrl-KZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKkKz      CrawlListResponseDataOptionsExtractOptionsLocale = "kk-KZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKl        CrawlListResponseDataOptionsExtractOptionsLocale = "kl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKlGl      CrawlListResponseDataOptionsExtractOptionsLocale = "kl-GL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKln       CrawlListResponseDataOptionsExtractOptionsLocale = "kln"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKlnKe     CrawlListResponseDataOptionsExtractOptionsLocale = "kln-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKm        CrawlListResponseDataOptionsExtractOptionsLocale = "km"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKmKh      CrawlListResponseDataOptionsExtractOptionsLocale = "km-KH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKn        CrawlListResponseDataOptionsExtractOptionsLocale = "kn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKnIn      CrawlListResponseDataOptionsExtractOptionsLocale = "kn-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKo        CrawlListResponseDataOptionsExtractOptionsLocale = "ko"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKoKr      CrawlListResponseDataOptionsExtractOptionsLocale = "ko-KR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKok       CrawlListResponseDataOptionsExtractOptionsLocale = "kok"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKokIn     CrawlListResponseDataOptionsExtractOptionsLocale = "kok-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKsIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ks-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKuTr      CrawlListResponseDataOptionsExtractOptionsLocale = "ku-TR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKw        CrawlListResponseDataOptionsExtractOptionsLocale = "kw"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKwGB      CrawlListResponseDataOptionsExtractOptionsLocale = "kw-GB"
+	CrawlListResponseDataOptionsExtractOptionsLocaleKyKg      CrawlListResponseDataOptionsExtractOptionsLocale = "ky-KG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLag       CrawlListResponseDataOptionsExtractOptionsLocale = "lag"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLagTz     CrawlListResponseDataOptionsExtractOptionsLocale = "lag-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLbLu      CrawlListResponseDataOptionsExtractOptionsLocale = "lb-LU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLg        CrawlListResponseDataOptionsExtractOptionsLocale = "lg"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLgUg      CrawlListResponseDataOptionsExtractOptionsLocale = "lg-UG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLiBe      CrawlListResponseDataOptionsExtractOptionsLocale = "li-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLiNl      CrawlListResponseDataOptionsExtractOptionsLocale = "li-NL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLijIt     CrawlListResponseDataOptionsExtractOptionsLocale = "lij-IT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLoLa      CrawlListResponseDataOptionsExtractOptionsLocale = "lo-LA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLt        CrawlListResponseDataOptionsExtractOptionsLocale = "lt"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLtLt      CrawlListResponseDataOptionsExtractOptionsLocale = "lt-LT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLuo       CrawlListResponseDataOptionsExtractOptionsLocale = "luo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLuoKe     CrawlListResponseDataOptionsExtractOptionsLocale = "luo-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLuy       CrawlListResponseDataOptionsExtractOptionsLocale = "luy"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLuyKe     CrawlListResponseDataOptionsExtractOptionsLocale = "luy-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLv        CrawlListResponseDataOptionsExtractOptionsLocale = "lv"
+	CrawlListResponseDataOptionsExtractOptionsLocaleLvLv      CrawlListResponseDataOptionsExtractOptionsLocale = "lv-LV"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMagIn     CrawlListResponseDataOptionsExtractOptionsLocale = "mag-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMaiIn     CrawlListResponseDataOptionsExtractOptionsLocale = "mai-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMas       CrawlListResponseDataOptionsExtractOptionsLocale = "mas"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMasKe     CrawlListResponseDataOptionsExtractOptionsLocale = "mas-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMasTz     CrawlListResponseDataOptionsExtractOptionsLocale = "mas-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMer       CrawlListResponseDataOptionsExtractOptionsLocale = "mer"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMerKe     CrawlListResponseDataOptionsExtractOptionsLocale = "mer-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMfe       CrawlListResponseDataOptionsExtractOptionsLocale = "mfe"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMfeMu     CrawlListResponseDataOptionsExtractOptionsLocale = "mfe-MU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMg        CrawlListResponseDataOptionsExtractOptionsLocale = "mg"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMgMg      CrawlListResponseDataOptionsExtractOptionsLocale = "mg-MG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMhrRu     CrawlListResponseDataOptionsExtractOptionsLocale = "mhr-RU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMiNz      CrawlListResponseDataOptionsExtractOptionsLocale = "mi-NZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMk        CrawlListResponseDataOptionsExtractOptionsLocale = "mk"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMkMk      CrawlListResponseDataOptionsExtractOptionsLocale = "mk-MK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMl        CrawlListResponseDataOptionsExtractOptionsLocale = "ml"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMlIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ml-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMnMn      CrawlListResponseDataOptionsExtractOptionsLocale = "mn-MN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMr        CrawlListResponseDataOptionsExtractOptionsLocale = "mr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMrIn      CrawlListResponseDataOptionsExtractOptionsLocale = "mr-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMs        CrawlListResponseDataOptionsExtractOptionsLocale = "ms"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMsBn      CrawlListResponseDataOptionsExtractOptionsLocale = "ms-BN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMsMy      CrawlListResponseDataOptionsExtractOptionsLocale = "ms-MY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMt        CrawlListResponseDataOptionsExtractOptionsLocale = "mt"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMtMt      CrawlListResponseDataOptionsExtractOptionsLocale = "mt-MT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMy        CrawlListResponseDataOptionsExtractOptionsLocale = "my"
+	CrawlListResponseDataOptionsExtractOptionsLocaleMyMm      CrawlListResponseDataOptionsExtractOptionsLocale = "my-MM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNanTw     CrawlListResponseDataOptionsExtractOptionsLocale = "nan-TW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNaq       CrawlListResponseDataOptionsExtractOptionsLocale = "naq"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNaqNa     CrawlListResponseDataOptionsExtractOptionsLocale = "naq-NA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNb        CrawlListResponseDataOptionsExtractOptionsLocale = "nb"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNbNo      CrawlListResponseDataOptionsExtractOptionsLocale = "nb-NO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNd        CrawlListResponseDataOptionsExtractOptionsLocale = "nd"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNdZw      CrawlListResponseDataOptionsExtractOptionsLocale = "nd-ZW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNdsDe     CrawlListResponseDataOptionsExtractOptionsLocale = "nds-DE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNdsNl     CrawlListResponseDataOptionsExtractOptionsLocale = "nds-NL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNe        CrawlListResponseDataOptionsExtractOptionsLocale = "ne"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNeIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ne-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNeNp      CrawlListResponseDataOptionsExtractOptionsLocale = "ne-NP"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNl        CrawlListResponseDataOptionsExtractOptionsLocale = "nl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNlAw      CrawlListResponseDataOptionsExtractOptionsLocale = "nl-AW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNlBe      CrawlListResponseDataOptionsExtractOptionsLocale = "nl-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNlNl      CrawlListResponseDataOptionsExtractOptionsLocale = "nl-NL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNn        CrawlListResponseDataOptionsExtractOptionsLocale = "nn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNnNo      CrawlListResponseDataOptionsExtractOptionsLocale = "nn-NO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNrZa      CrawlListResponseDataOptionsExtractOptionsLocale = "nr-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNsoZa     CrawlListResponseDataOptionsExtractOptionsLocale = "nso-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNyn       CrawlListResponseDataOptionsExtractOptionsLocale = "nyn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleNynUg     CrawlListResponseDataOptionsExtractOptionsLocale = "nyn-UG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOcFr      CrawlListResponseDataOptionsExtractOptionsLocale = "oc-FR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOm        CrawlListResponseDataOptionsExtractOptionsLocale = "om"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOmEt      CrawlListResponseDataOptionsExtractOptionsLocale = "om-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOmKe      CrawlListResponseDataOptionsExtractOptionsLocale = "om-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOr        CrawlListResponseDataOptionsExtractOptionsLocale = "or"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOrIn      CrawlListResponseDataOptionsExtractOptionsLocale = "or-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleOsRu      CrawlListResponseDataOptionsExtractOptionsLocale = "os-RU"
+	CrawlListResponseDataOptionsExtractOptionsLocalePa        CrawlListResponseDataOptionsExtractOptionsLocale = "pa"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaArab    CrawlListResponseDataOptionsExtractOptionsLocale = "pa-Arab"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaArabPk  CrawlListResponseDataOptionsExtractOptionsLocale = "pa-Arab-PK"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaGuru    CrawlListResponseDataOptionsExtractOptionsLocale = "pa-Guru"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaGuruIn  CrawlListResponseDataOptionsExtractOptionsLocale = "pa-Guru-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaIn      CrawlListResponseDataOptionsExtractOptionsLocale = "pa-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocalePaPk      CrawlListResponseDataOptionsExtractOptionsLocale = "pa-PK"
+	CrawlListResponseDataOptionsExtractOptionsLocalePapAn     CrawlListResponseDataOptionsExtractOptionsLocale = "pap-AN"
+	CrawlListResponseDataOptionsExtractOptionsLocalePl        CrawlListResponseDataOptionsExtractOptionsLocale = "pl"
+	CrawlListResponseDataOptionsExtractOptionsLocalePlPl      CrawlListResponseDataOptionsExtractOptionsLocale = "pl-PL"
+	CrawlListResponseDataOptionsExtractOptionsLocalePs        CrawlListResponseDataOptionsExtractOptionsLocale = "ps"
+	CrawlListResponseDataOptionsExtractOptionsLocalePsAf      CrawlListResponseDataOptionsExtractOptionsLocale = "ps-AF"
+	CrawlListResponseDataOptionsExtractOptionsLocalePt        CrawlListResponseDataOptionsExtractOptionsLocale = "pt"
+	CrawlListResponseDataOptionsExtractOptionsLocalePtBr      CrawlListResponseDataOptionsExtractOptionsLocale = "pt-BR"
+	CrawlListResponseDataOptionsExtractOptionsLocalePtGw      CrawlListResponseDataOptionsExtractOptionsLocale = "pt-GW"
+	CrawlListResponseDataOptionsExtractOptionsLocalePtMz      CrawlListResponseDataOptionsExtractOptionsLocale = "pt-MZ"
+	CrawlListResponseDataOptionsExtractOptionsLocalePtPt      CrawlListResponseDataOptionsExtractOptionsLocale = "pt-PT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRm        CrawlListResponseDataOptionsExtractOptionsLocale = "rm"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRmCh      CrawlListResponseDataOptionsExtractOptionsLocale = "rm-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRo        CrawlListResponseDataOptionsExtractOptionsLocale = "ro"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRoMd      CrawlListResponseDataOptionsExtractOptionsLocale = "ro-MD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRoRo      CrawlListResponseDataOptionsExtractOptionsLocale = "ro-RO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRof       CrawlListResponseDataOptionsExtractOptionsLocale = "rof"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRofTz     CrawlListResponseDataOptionsExtractOptionsLocale = "rof-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRu        CrawlListResponseDataOptionsExtractOptionsLocale = "ru"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRuMd      CrawlListResponseDataOptionsExtractOptionsLocale = "ru-MD"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRuRu      CrawlListResponseDataOptionsExtractOptionsLocale = "ru-RU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRuUa      CrawlListResponseDataOptionsExtractOptionsLocale = "ru-UA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRw        CrawlListResponseDataOptionsExtractOptionsLocale = "rw"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRwRw      CrawlListResponseDataOptionsExtractOptionsLocale = "rw-RW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRwk       CrawlListResponseDataOptionsExtractOptionsLocale = "rwk"
+	CrawlListResponseDataOptionsExtractOptionsLocaleRwkTz     CrawlListResponseDataOptionsExtractOptionsLocale = "rwk-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSaIn      CrawlListResponseDataOptionsExtractOptionsLocale = "sa-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSaq       CrawlListResponseDataOptionsExtractOptionsLocale = "saq"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSaqKe     CrawlListResponseDataOptionsExtractOptionsLocale = "saq-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleScIt      CrawlListResponseDataOptionsExtractOptionsLocale = "sc-IT"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSdIn      CrawlListResponseDataOptionsExtractOptionsLocale = "sd-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSeNo      CrawlListResponseDataOptionsExtractOptionsLocale = "se-NO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSeh       CrawlListResponseDataOptionsExtractOptionsLocale = "seh"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSehMz     CrawlListResponseDataOptionsExtractOptionsLocale = "seh-MZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSes       CrawlListResponseDataOptionsExtractOptionsLocale = "ses"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSesMl     CrawlListResponseDataOptionsExtractOptionsLocale = "ses-ML"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSg        CrawlListResponseDataOptionsExtractOptionsLocale = "sg"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSgCf      CrawlListResponseDataOptionsExtractOptionsLocale = "sg-CF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShi       CrawlListResponseDataOptionsExtractOptionsLocale = "shi"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShiLatn   CrawlListResponseDataOptionsExtractOptionsLocale = "shi-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShiLatnMa CrawlListResponseDataOptionsExtractOptionsLocale = "shi-Latn-MA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShiTfng   CrawlListResponseDataOptionsExtractOptionsLocale = "shi-Tfng"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShiTfngMa CrawlListResponseDataOptionsExtractOptionsLocale = "shi-Tfng-MA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleShsCa     CrawlListResponseDataOptionsExtractOptionsLocale = "shs-CA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSi        CrawlListResponseDataOptionsExtractOptionsLocale = "si"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSiLk      CrawlListResponseDataOptionsExtractOptionsLocale = "si-LK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSidEt     CrawlListResponseDataOptionsExtractOptionsLocale = "sid-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSk        CrawlListResponseDataOptionsExtractOptionsLocale = "sk"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSkSk      CrawlListResponseDataOptionsExtractOptionsLocale = "sk-SK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSl        CrawlListResponseDataOptionsExtractOptionsLocale = "sl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSlSi      CrawlListResponseDataOptionsExtractOptionsLocale = "sl-SI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSn        CrawlListResponseDataOptionsExtractOptionsLocale = "sn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSnZw      CrawlListResponseDataOptionsExtractOptionsLocale = "sn-ZW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSo        CrawlListResponseDataOptionsExtractOptionsLocale = "so"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSoDj      CrawlListResponseDataOptionsExtractOptionsLocale = "so-DJ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSoEt      CrawlListResponseDataOptionsExtractOptionsLocale = "so-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSoKe      CrawlListResponseDataOptionsExtractOptionsLocale = "so-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSoSo      CrawlListResponseDataOptionsExtractOptionsLocale = "so-SO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSq        CrawlListResponseDataOptionsExtractOptionsLocale = "sq"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSqAl      CrawlListResponseDataOptionsExtractOptionsLocale = "sq-AL"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSqMk      CrawlListResponseDataOptionsExtractOptionsLocale = "sq-MK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSr        CrawlListResponseDataOptionsExtractOptionsLocale = "sr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrCyrl    CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Cyrl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrCyrlBa  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Cyrl-BA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrCyrlMe  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Cyrl-ME"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrCyrlRs  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Cyrl-RS"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrLatn    CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrLatnBa  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Latn-BA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrLatnMe  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Latn-ME"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrLatnRs  CrawlListResponseDataOptionsExtractOptionsLocale = "sr-Latn-RS"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrMe      CrawlListResponseDataOptionsExtractOptionsLocale = "sr-ME"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSrRs      CrawlListResponseDataOptionsExtractOptionsLocale = "sr-RS"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSSZa      CrawlListResponseDataOptionsExtractOptionsLocale = "ss-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleStZa      CrawlListResponseDataOptionsExtractOptionsLocale = "st-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSv        CrawlListResponseDataOptionsExtractOptionsLocale = "sv"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSvFi      CrawlListResponseDataOptionsExtractOptionsLocale = "sv-FI"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSvSe      CrawlListResponseDataOptionsExtractOptionsLocale = "sv-SE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSw        CrawlListResponseDataOptionsExtractOptionsLocale = "sw"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSwKe      CrawlListResponseDataOptionsExtractOptionsLocale = "sw-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleSwTz      CrawlListResponseDataOptionsExtractOptionsLocale = "sw-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTa        CrawlListResponseDataOptionsExtractOptionsLocale = "ta"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTaIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ta-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTaLk      CrawlListResponseDataOptionsExtractOptionsLocale = "ta-LK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTe        CrawlListResponseDataOptionsExtractOptionsLocale = "te"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTeIn      CrawlListResponseDataOptionsExtractOptionsLocale = "te-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTeo       CrawlListResponseDataOptionsExtractOptionsLocale = "teo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTeoKe     CrawlListResponseDataOptionsExtractOptionsLocale = "teo-KE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTeoUg     CrawlListResponseDataOptionsExtractOptionsLocale = "teo-UG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTgTj      CrawlListResponseDataOptionsExtractOptionsLocale = "tg-TJ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTh        CrawlListResponseDataOptionsExtractOptionsLocale = "th"
+	CrawlListResponseDataOptionsExtractOptionsLocaleThTh      CrawlListResponseDataOptionsExtractOptionsLocale = "th-TH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTi        CrawlListResponseDataOptionsExtractOptionsLocale = "ti"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTiEr      CrawlListResponseDataOptionsExtractOptionsLocale = "ti-ER"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTiEt      CrawlListResponseDataOptionsExtractOptionsLocale = "ti-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTigEr     CrawlListResponseDataOptionsExtractOptionsLocale = "tig-ER"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTkTm      CrawlListResponseDataOptionsExtractOptionsLocale = "tk-TM"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTlPh      CrawlListResponseDataOptionsExtractOptionsLocale = "tl-PH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTnZa      CrawlListResponseDataOptionsExtractOptionsLocale = "tn-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTo        CrawlListResponseDataOptionsExtractOptionsLocale = "to"
+	CrawlListResponseDataOptionsExtractOptionsLocaleToTo      CrawlListResponseDataOptionsExtractOptionsLocale = "to-TO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTr        CrawlListResponseDataOptionsExtractOptionsLocale = "tr"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTrCy      CrawlListResponseDataOptionsExtractOptionsLocale = "tr-CY"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTrTr      CrawlListResponseDataOptionsExtractOptionsLocale = "tr-TR"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTsZa      CrawlListResponseDataOptionsExtractOptionsLocale = "ts-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTtRu      CrawlListResponseDataOptionsExtractOptionsLocale = "tt-RU"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTzm       CrawlListResponseDataOptionsExtractOptionsLocale = "tzm"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTzmLatn   CrawlListResponseDataOptionsExtractOptionsLocale = "tzm-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleTzmLatnMa CrawlListResponseDataOptionsExtractOptionsLocale = "tzm-Latn-MA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUgCn      CrawlListResponseDataOptionsExtractOptionsLocale = "ug-CN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUk        CrawlListResponseDataOptionsExtractOptionsLocale = "uk"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUkUa      CrawlListResponseDataOptionsExtractOptionsLocale = "uk-UA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUnmUs     CrawlListResponseDataOptionsExtractOptionsLocale = "unm-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUr        CrawlListResponseDataOptionsExtractOptionsLocale = "ur"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUrIn      CrawlListResponseDataOptionsExtractOptionsLocale = "ur-IN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUrPk      CrawlListResponseDataOptionsExtractOptionsLocale = "ur-PK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUz        CrawlListResponseDataOptionsExtractOptionsLocale = "uz"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzArab    CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Arab"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzArabAf  CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Arab-AF"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzCyrl    CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Cyrl"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzCyrlUz  CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Cyrl-UZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzLatn    CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Latn"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzLatnUz  CrawlListResponseDataOptionsExtractOptionsLocale = "uz-Latn-UZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleUzUz      CrawlListResponseDataOptionsExtractOptionsLocale = "uz-UZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleVeZa      CrawlListResponseDataOptionsExtractOptionsLocale = "ve-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleVi        CrawlListResponseDataOptionsExtractOptionsLocale = "vi"
+	CrawlListResponseDataOptionsExtractOptionsLocaleViVn      CrawlListResponseDataOptionsExtractOptionsLocale = "vi-VN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleVun       CrawlListResponseDataOptionsExtractOptionsLocale = "vun"
+	CrawlListResponseDataOptionsExtractOptionsLocaleVunTz     CrawlListResponseDataOptionsExtractOptionsLocale = "vun-TZ"
+	CrawlListResponseDataOptionsExtractOptionsLocaleWaBe      CrawlListResponseDataOptionsExtractOptionsLocale = "wa-BE"
+	CrawlListResponseDataOptionsExtractOptionsLocaleWaeCh     CrawlListResponseDataOptionsExtractOptionsLocale = "wae-CH"
+	CrawlListResponseDataOptionsExtractOptionsLocaleWalEt     CrawlListResponseDataOptionsExtractOptionsLocale = "wal-ET"
+	CrawlListResponseDataOptionsExtractOptionsLocaleWoSn      CrawlListResponseDataOptionsExtractOptionsLocale = "wo-SN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleXhZa      CrawlListResponseDataOptionsExtractOptionsLocale = "xh-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleXog       CrawlListResponseDataOptionsExtractOptionsLocale = "xog"
+	CrawlListResponseDataOptionsExtractOptionsLocaleXogUg     CrawlListResponseDataOptionsExtractOptionsLocale = "xog-UG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleYiUs      CrawlListResponseDataOptionsExtractOptionsLocale = "yi-US"
+	CrawlListResponseDataOptionsExtractOptionsLocaleYo        CrawlListResponseDataOptionsExtractOptionsLocale = "yo"
+	CrawlListResponseDataOptionsExtractOptionsLocaleYoNg      CrawlListResponseDataOptionsExtractOptionsLocale = "yo-NG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleYueHk     CrawlListResponseDataOptionsExtractOptionsLocale = "yue-HK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZh        CrawlListResponseDataOptionsExtractOptionsLocale = "zh"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhCn      CrawlListResponseDataOptionsExtractOptionsLocale = "zh-CN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHk      CrawlListResponseDataOptionsExtractOptionsLocale = "zh-HK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHans    CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hans"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHansCn  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hans-CN"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHansHk  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hans-HK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHansMo  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hans-MO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHansSg  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hans-SG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHant    CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hant"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHantHk  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hant-HK"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHantMo  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hant-MO"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhHantTw  CrawlListResponseDataOptionsExtractOptionsLocale = "zh-Hant-TW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhSg      CrawlListResponseDataOptionsExtractOptionsLocale = "zh-SG"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZhTw      CrawlListResponseDataOptionsExtractOptionsLocale = "zh-TW"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZu        CrawlListResponseDataOptionsExtractOptionsLocale = "zu"
+	CrawlListResponseDataOptionsExtractOptionsLocaleZuZa      CrawlListResponseDataOptionsExtractOptionsLocale = "zu-ZA"
+	CrawlListResponseDataOptionsExtractOptionsLocaleAuto      CrawlListResponseDataOptionsExtractOptionsLocale = "auto"
+)
+
+// Configuration options for parsing behavior
+type CrawlListResponseDataOptionsExtractOptionsParseOptions struct {
+	// Whether to merge dynamic parsing results with static results
+	MergeDynamic bool           `json:"merge_dynamic"`
+	ExtraFields  map[string]any `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MergeDynamic respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsParseOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsParseOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Proxy provider to use for the request
+type CrawlListResponseDataOptionsExtractOptionsProxyProvider string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderBrightdata      CrawlListResponseDataOptionsExtractOptionsProxyProvider = "brightdata"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderOxylabs         CrawlListResponseDataOptionsExtractOptionsProxyProvider = "oxylabs"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderSmartproxy      CrawlListResponseDataOptionsExtractOptionsProxyProvider = "smartproxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxit          CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxitPreprod   CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit_preprod"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderLocal           CrawlListResponseDataOptionsExtractOptionsProxyProvider = "local"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderRayobyte        CrawlListResponseDataOptionsExtractOptionsProxyProvider = "rayobyte"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderAlways          CrawlListResponseDataOptionsExtractOptionsProxyProvider = "always"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderOculusproxies   CrawlListResponseDataOptionsExtractOptionsProxyProvider = "oculusproxies"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderFroxy           CrawlListResponseDataOptionsExtractOptionsProxyProvider = "froxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderPacketstream    CrawlListResponseDataOptionsExtractOptionsProxyProvider = "packetstream"
+	CrawlListResponseDataOptionsExtractOptionsProxyProvider911proxy        CrawlListResponseDataOptionsExtractOptionsProxyProvider = "911proxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderDirect911proxy  CrawlListResponseDataOptionsExtractOptionsProxyProvider = "direct911proxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderThesocialproxy  CrawlListResponseDataOptionsExtractOptionsProxyProvider = "thesocialproxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderThesocialproxy2 CrawlListResponseDataOptionsExtractOptionsProxyProvider = "thesocialproxy2"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderNimbleIsp       CrawlListResponseDataOptionsExtractOptionsProxyProvider = "nimble-isp"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderNimbleIspMobile CrawlListResponseDataOptionsExtractOptionsProxyProvider = "nimble-isp-mobile"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxitLinux     CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit-linux"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxitMacos     CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit-macos"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxitWindows   CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit-windows"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderProxitRental    CrawlListResponseDataOptionsExtractOptionsProxyProvider = "proxit-rental"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderIpfoxy          CrawlListResponseDataOptionsExtractOptionsProxyProvider = "ipfoxy"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderBrightup        CrawlListResponseDataOptionsExtractOptionsProxyProvider = "brightup"
+	CrawlListResponseDataOptionsExtractOptionsProxyProviderResearch        CrawlListResponseDataOptionsExtractOptionsProxyProvider = "research"
+)
+
+type CrawlListResponseDataOptionsExtractOptionsSession struct {
+	PrefetchUserbrowser bool    `json:"prefetch_userbrowser,required"`
+	Retry               bool    `json:"retry,required"`
+	ID                  string  `json:"id"`
+	Timeout             float64 `json:"timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PrefetchUserbrowser respjson.Field
+		Retry               respjson.Field
+		ID                  respjson.Field
+		Timeout             respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsSession) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsSession) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsBrowserUnion contains all possible
+// properties and values from [string],
+// [CrawlListResponseDataOptionsExtractOptionsBrowserObject].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfCrawlListResponseDataOptionsExtractOptionsBrowserString]
+type CrawlListResponseDataOptionsExtractOptionsBrowserUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsBrowserString string `json:",inline"`
+	// This field is from variant
+	// [CrawlListResponseDataOptionsExtractOptionsBrowserObject].
+	Name string `json:"name"`
+	// This field is from variant
+	// [CrawlListResponseDataOptionsExtractOptionsBrowserObject].
+	Version string `json:"version"`
+	JSON    struct {
+		OfCrawlListResponseDataOptionsExtractOptionsBrowserString respjson.Field
+		Name                                                      respjson.Field
+		Version                                                   respjson.Field
+		raw                                                       string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsBrowserUnion) AsCrawlListResponseDataOptionsExtractOptionsBrowserString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsBrowserUnion) AsCrawlListResponseDataOptionsExtractOptionsBrowserObject() (v CrawlListResponseDataOptionsExtractOptionsBrowserObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsBrowserUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsExtractOptionsBrowserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Browser type to emulate
+type CrawlListResponseDataOptionsExtractOptionsBrowserString string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsBrowserStringChrome  CrawlListResponseDataOptionsExtractOptionsBrowserString = "chrome"
+	CrawlListResponseDataOptionsExtractOptionsBrowserStringFirefox CrawlListResponseDataOptionsExtractOptionsBrowserString = "firefox"
+)
+
+type CrawlListResponseDataOptionsExtractOptionsBrowserObject struct {
+	// Any of "chrome", "firefox".
+	Name string `json:"name,required"`
+	// Specific browser version to emulate
+	Version string `json:"version"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Name        respjson.Field
+		Version     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsBrowserObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsBrowserObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsCookiesUnion contains all possible
+// properties and values from
+// [[]CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfCrawlListResponseDataOptionsExtractOptionsCookiesArray
+// OfString]
+type CrawlListResponseDataOptionsExtractOptionsCookiesUnion struct {
+	// This field will be present if the value is a
+	// [[]CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem] instead of an
+	// object.
+	OfCrawlListResponseDataOptionsExtractOptionsCookiesArray []CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem `json:",inline"`
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	JSON     struct {
+		OfCrawlListResponseDataOptionsExtractOptionsCookiesArray respjson.Field
+		OfString                                                 respjson.Field
+		raw                                                      string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesUnion) AsCrawlListResponseDataOptionsExtractOptionsCookiesArray() (v []CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsExtractOptionsCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem struct {
+	Creation      string                                                                `json:"creation,nullable"`
+	Domain        string                                                                `json:"domain,nullable"`
+	Expires       string                                                                `json:"expires"`
+	Extensions    []string                                                              `json:"extensions,nullable"`
+	HostOnly      bool                                                                  `json:"hostOnly,nullable"`
+	HTTPOnly      bool                                                                  `json:"httpOnly,nullable"`
+	LastAccessed  string                                                                `json:"lastAccessed,nullable"`
+	MaxAge        CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion `json:"maxAge,nullable"`
+	Name          string                                                                `json:"name"`
+	Path          string                                                                `json:"path,nullable"`
+	PathIsDefault bool                                                                  `json:"pathIsDefault,nullable"`
+	// Any of "strict", "lax", "none".
+	SameSite    string         `json:"sameSite"`
+	Secure      bool           `json:"secure"`
+	Value       string         `json:"value"`
+	ExtraFields map[string]any `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Creation      respjson.Field
+		Domain        respjson.Field
+		Expires       respjson.Field
+		Extensions    respjson.Field
+		HostOnly      respjson.Field
+		HTTPOnly      respjson.Field
+		LastAccessed  respjson.Field
+		MaxAge        respjson.Field
+		Name          respjson.Field
+		Path          respjson.Field
+		PathIsDefault respjson.Field
+		SameSite      respjson.Field
+		Secure        respjson.Field
+		Value         respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *CrawlListResponseDataOptionsExtractOptionsCookiesArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion contains
+// all possible properties and values from
+// [CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString],
+// [float64].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfCrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString
+// OfFloat]
+type CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion struct {
+	// This field will be present if the value is a
+	// [CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString] instead
+	// of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString `json:",inline"`
+	// This field will be present if the value is a [float64] instead of an object.
+	OfFloat float64 `json:",inline"`
+	JSON    struct {
+		OfCrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString respjson.Field
+		OfFloat                                                                  respjson.Field
+		raw                                                                      string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion) AsCrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString() (v CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion) AsFloat() (v float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeStringInfinity      CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString = "Infinity"
+	CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeStringMinusInfinity CrawlListResponseDataOptionsExtractOptionsCookiesArrayItemMaxAgeString = "-Infinity"
+)
+
+// Structured metadata about the request execution context
+type CrawlListResponseDataOptionsExtractOptionsMetadata struct {
+	// Account name associated with the request
+	AccountName string `json:"account_name"`
+	// Definition identifier
+	DefinitionID int64 `json:"definition_id"`
+	// Name of the definition
+	DefinitionName string `json:"definition_name"`
+	// API endpoint being called
+	Endpoint string `json:"endpoint"`
+	// Unique identifier for this execution
+	ExecutionID string `json:"execution_id"`
+	// FlowIt task identifier
+	FlowitTaskID string `json:"flowit_task_id"`
+	// Input data identifier
+	InputID string `json:"input_id"`
+	// Identifier for the pipeline execution
+	PipelineExecutionID int64 `json:"pipeline_execution_id"`
+	// Query template identifier
+	QueryTemplateID string `json:"query_template_id"`
+	// Source system or application making the request
+	Source string `json:"source"`
+	// Template identifier
+	TemplateID int64 `json:"template_id"`
+	// Name of the template
+	TemplateName string `json:"template_name"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AccountName         respjson.Field
+		DefinitionID        respjson.Field
+		DefinitionName      respjson.Field
+		Endpoint            respjson.Field
+		ExecutionID         respjson.Field
+		FlowitTaskID        respjson.Field
+		InputID             respjson.Field
+		PipelineExecutionID respjson.Field
+		QueryTemplateID     respjson.Field
+		Source              respjson.Field
+		TemplateID          respjson.Field
+		TemplateName        respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsMetadata) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsNetworkCapture struct {
+	Validation           bool    `json:"validation,required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method"`
+	// Resource type for network capture filtering
+	ResourceType                CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion `json:"resource_type"`
+	StatusCode                  CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion   `json:"status_code"`
+	URL                         CrawlListResponseDataOptionsExtractOptionsNetworkCaptureURL               `json:"url"`
+	WaitForRequestsCountTimeout float64                                                                   `json:"wait_for_requests_count_timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Validation                  respjson.Field
+		WaitForRequestsCount        respjson.Field
+		Method                      respjson.Field
+		ResourceType                respjson.Field
+		StatusCode                  respjson.Field
+		URL                         respjson.Field
+		WaitForRequestsCountTimeout respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsNetworkCapture) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion
+// contains all possible properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString
+// OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeArrayItemArray]
+type CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeArrayItemArray []string `json:",inline"`
+	JSON                                                                                 struct {
+		OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString         respjson.Field
+		OfCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeArrayItemArray respjson.Field
+		raw                                                                                  string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion) AsCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion) AsCrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeArrayItemArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resource type for network capture filtering
+type CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringDocument           CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "document"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringStylesheet         CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "stylesheet"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringImage              CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "image"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringMedia              CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "media"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringFont               CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "font"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringScript             CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "script"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringTexttrack          CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "texttrack"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringXhr                CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "xhr"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringFetch              CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "fetch"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringPrefetch           CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "prefetch"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringEventsource        CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "eventsource"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringWebsocket          CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "websocket"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringManifest           CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "manifest"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringSignedexchange     CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "signedexchange"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringPing               CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "ping"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringCspviolationreport CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "cspviolationreport"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringPreflight          CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "preflight"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringOther              CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "other"
+	CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeStringFedcm              CrawlListResponseDataOptionsExtractOptionsNetworkCaptureResourceTypeString = "fedcm"
+)
+
+// CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion contains
+// all possible properties and values from [float64], [[]float64].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfFloat OfFloatArray]
+type CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion struct {
+	// This field will be present if the value is a [float64] instead of an object.
+	OfFloat float64 `json:",inline"`
+	// This field will be present if the value is a [[]float64] instead of an object.
+	OfFloatArray []float64 `json:",inline"`
+	JSON         struct {
+		OfFloat      respjson.Field
+		OfFloatArray respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion) AsFloat() (v float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion) AsFloatArray() (v []float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *CrawlListResponseDataOptionsExtractOptionsNetworkCaptureStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsNetworkCaptureURL struct {
+	// Any of "exact", "contains".
+	Type  string `json:"type,required"`
+	Value string `json:"value,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsNetworkCaptureURL) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *CrawlListResponseDataOptionsExtractOptionsNetworkCaptureURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsParserUnion contains all possible
+// properties and values from [map[string]any], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfCrawlListResponseDataOptionsExtractOptionsParserMapItem
+// OfString]
+type CrawlListResponseDataOptionsExtractOptionsParserUnion struct {
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsParserMapItem any `json:",inline"`
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	JSON     struct {
+		OfCrawlListResponseDataOptionsExtractOptionsParserMapItem respjson.Field
+		OfString                                                  respjson.Field
+		raw                                                       string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsParserUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsParserUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsParserUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsExtractOptionsParserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Query template configuration for structured data extraction
+type CrawlListResponseDataOptionsExtractOptionsQueryTemplate struct {
+	ID string `json:"id,required" format:"uuid"`
+	// Any of "WEB", "SERP", "SOCIAL".
+	APIType     string                                                                 `json:"api_type,required"`
+	Pagination  CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion `json:"pagination"`
+	Params      map[string]any                                                         `json:"params"`
+	ExtraFields map[string]any                                                         `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		APIType     respjson.Field
+		Pagination  respjson.Field
+		Params      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsQueryTemplate) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsQueryTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion contains
+// all possible properties and values from
+// [CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams],
+// [[]CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid:
+// OfCrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArray]
+type CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion struct {
+	// This field will be present if the value is a
+	// [[]CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem]
+	// instead of an object.
+	OfCrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArray []CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem `json:",inline"`
+	// This field is from variant
+	// [CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams].
+	NextPageParams map[string]any `json:"next_page_params"`
+	JSON           struct {
+		OfCrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArray respjson.Field
+		NextPageParams                                                           respjson.Field
+		raw                                                                      string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion) AsCrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams() (v CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion) AsCrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArray() (v []CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *CrawlListResponseDataOptionsExtractOptionsQueryTemplatePaginationArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Referrer policy for the request
+type CrawlListResponseDataOptionsExtractOptionsReferrerType string
+
+const (
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeRandom     CrawlListResponseDataOptionsExtractOptionsReferrerType = "random"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeNoReferer  CrawlListResponseDataOptionsExtractOptionsReferrerType = "no-referer"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeSameOrigin CrawlListResponseDataOptionsExtractOptionsReferrerType = "same-origin"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeGoogle     CrawlListResponseDataOptionsExtractOptionsReferrerType = "google"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeBing       CrawlListResponseDataOptionsExtractOptionsReferrerType = "bing"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeFacebook   CrawlListResponseDataOptionsExtractOptionsReferrerType = "facebook"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeTwitter    CrawlListResponseDataOptionsExtractOptionsReferrerType = "twitter"
+	CrawlListResponseDataOptionsExtractOptionsReferrerTypeInstagram  CrawlListResponseDataOptionsExtractOptionsReferrerType = "instagram"
+)
+
+// CrawlListResponseDataOptionsExtractOptionsSkillUnion contains all possible
+// properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfStringArray]
+type CrawlListResponseDataOptionsExtractOptionsSkillUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfStringArray []string `json:",inline"`
+	JSON          struct {
+		OfString      respjson.Field
+		OfStringArray respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsSkillUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseDataOptionsExtractOptionsSkillUnion) AsStringArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseDataOptionsExtractOptionsSkillUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseDataOptionsExtractOptionsSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Userbrowser creation template configuration
+type CrawlListResponseDataOptionsExtractOptionsTemplate struct {
+	Name   string         `json:"name,required"`
+	Params map[string]any `json:"params"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Name        respjson.Field
+		Params      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsTemplate) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseDataOptionsExtractOptionsTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Pre-rendered userbrowser creation template configuration
+type CrawlListResponseDataOptionsExtractOptionsUserbrowserCreationTemplateRendered struct {
+	ID                    string           `json:"id,required"`
+	AllowedParameterNames []string         `json:"allowed_parameter_names,required"`
+	RenderFlowRendered    []map[string]any `json:"render_flow_rendered,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                    respjson.Field
+		AllowedParameterNames respjson.Field
+		RenderFlowRendered    respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponseDataOptionsExtractOptionsUserbrowserCreationTemplateRendered) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *CrawlListResponseDataOptionsExtractOptionsUserbrowserCreationTemplateRendered) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponsePagination struct {
+	HasNext    bool    `json:"hasNext,required"`
+	NextCursor string  `json:"nextCursor,required"`
+	Total      float64 `json:"total,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		HasNext     respjson.Field
+		NextCursor  respjson.Field
+		Total       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlListResponsePagination) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponsePagination) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CrawlRootResponse struct {
@@ -156,6 +2178,37 @@ type CrawlTerminateResponseStatus string
 
 const (
 	CrawlTerminateResponseStatusCanceled CrawlTerminateResponseStatus = "canceled"
+)
+
+type CrawlListParams struct {
+	// Filter crawls by their status.
+	//
+	// Any of "pending", "in_progress", "completed", "failed", "canceled".
+	Status CrawlListParamsStatus `query:"status,omitzero,required" json:"-"`
+	// Cursor for pagination.
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	// Number of crawls to return per page.
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [CrawlListParams]'s query parameters as `url.Values`.
+func (r CrawlListParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}
+
+// Filter crawls by their status.
+type CrawlListParamsStatus string
+
+const (
+	CrawlListParamsStatusPending    CrawlListParamsStatus = "pending"
+	CrawlListParamsStatusInProgress CrawlListParamsStatus = "in_progress"
+	CrawlListParamsStatusCompleted  CrawlListParamsStatus = "completed"
+	CrawlListParamsStatusFailed     CrawlListParamsStatus = "failed"
+	CrawlListParamsStatusCanceled   CrawlListParamsStatus = "canceled"
 )
 
 type CrawlRootParams struct {

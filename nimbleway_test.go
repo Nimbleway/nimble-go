@@ -331,6 +331,7 @@ func TestSearchWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Search(context.TODO(), nimbleway.SearchParams{
 		Query:          "x",
+		ContentType:    []string{"string"},
 		Country:        nimbleway.String("country"),
 		DeepSearch:     nimbleway.Bool(true),
 		EndDate:        nimbleway.String("end_date"),

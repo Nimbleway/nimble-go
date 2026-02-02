@@ -3417,6 +3417,10 @@ type SearchParams struct {
 	MaxSubagents param.Opt[int64] `json:"max_subagents,omitzero"`
 	// Maximum number of results to return (actual count may be less)
 	NumResults param.Opt[int64] `json:"num_results,omitzero"`
+	// Filter by content type (only supported with focus=general). Supports semantic
+	// groups ('documents', 'spreadsheets', 'presentations') and specific formats
+	// ('pdf', 'docx', 'xlsx', etc.)
+	ContentType []string `json:"content_type,omitzero"`
 	// List of domains to exclude from search results. Maximum 50 domains.
 	ExcludeDomains []string `json:"exclude_domains,omitzero"`
 	// List of domains to include in search results. Maximum 50 domains.
@@ -3436,7 +3440,8 @@ type SearchParams struct {
 	ParsingType SearchParamsParsingType `json:"parsing_type,omitzero"`
 	// Search focus/specialization (general, news, or location)
 	//
-	// Any of "general", "news", "location", "coding", "geo", "shopping", "social".
+	// Any of "general", "news", "location", "coding", "academic", "geo", "shopping",
+	// "social".
 	Topic SearchParamsTopic `json:"topic,omitzero"`
 	paramObj
 }
@@ -3488,6 +3493,7 @@ const (
 	SearchParamsTopicNews     SearchParamsTopic = "news"
 	SearchParamsTopicLocation SearchParamsTopic = "location"
 	SearchParamsTopicCoding   SearchParamsTopic = "coding"
+	SearchParamsTopicAcademic SearchParamsTopic = "academic"
 	SearchParamsTopicGeo      SearchParamsTopic = "geo"
 	SearchParamsTopicShopping SearchParamsTopic = "shopping"
 	SearchParamsTopicSocial   SearchParamsTopic = "social"
