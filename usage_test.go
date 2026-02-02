@@ -1,15 +1,15 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimbleway_test
+package nimblego_test
 
 import (
 	"context"
 	"os"
 	"testing"
 
-	"github.com/Nimbleway/nimbleway-go"
-	"github.com/Nimbleway/nimbleway-go/internal/testutil"
-	"github.com/Nimbleway/nimbleway-go/option"
+	"github.com/Nimbleway/nimble-go"
+	"github.com/Nimbleway/nimble-go/internal/testutil"
+	"github.com/Nimbleway/nimble-go/option"
 )
 
 func TestUsage(t *testing.T) {
@@ -20,13 +20,13 @@ func TestUsage(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := nimbleway.NewClient(
+	client := nimblego.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	t.Skip("Prism tests are disabled")
-	response, err := client.Extract(context.TODO(), nimbleway.ExtractParams{
-		DebugOptions: nimbleway.ExtractParamsDebugOptions{},
+	response, err := client.Extract(context.TODO(), nimblego.ExtractParams{
+		DebugOptions: nimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	})
 	if err != nil {

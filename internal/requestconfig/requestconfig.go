@@ -18,15 +18,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Nimbleway/nimbleway-go/internal"
-	"github.com/Nimbleway/nimbleway-go/internal/apierror"
-	"github.com/Nimbleway/nimbleway-go/internal/apiform"
-	"github.com/Nimbleway/nimbleway-go/internal/apiquery"
+	"github.com/Nimbleway/nimble-go/internal"
+	"github.com/Nimbleway/nimble-go/internal/apierror"
+	"github.com/Nimbleway/nimble-go/internal/apiform"
+	"github.com/Nimbleway/nimble-go/internal/apiquery"
 )
 
 func getDefaultHeaders() map[string]string {
 	return map[string]string{
-		"User-Agent": fmt.Sprintf("Nimbleway/Go %s", internal.PackageVersion),
+		"User-Agent": fmt.Sprintf("Nimble/Go %s", internal.PackageVersion),
 	}
 }
 

@@ -1,7 +1,7 @@
-package nimbleway
+package nimblego
 
 import (
-	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimble-go/packages/param"
 	"io"
 	"time"
 )
