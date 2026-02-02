@@ -1,7 +1,7 @@
 package apijson
 
 import (
-	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimbleway-go/packages/respjson"
 	"reflect"
 )
 

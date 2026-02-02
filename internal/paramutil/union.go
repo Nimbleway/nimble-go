@@ -2,7 +2,7 @@ package paramutil
 
 import (
 	"fmt"
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"reflect"
 )
 

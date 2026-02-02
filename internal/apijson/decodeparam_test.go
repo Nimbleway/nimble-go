@@ -3,8 +3,8 @@ package apijson_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Nimbleway/nimble-go/internal/apijson"
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/internal/apijson"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"reflect"
 	"testing"
 )
