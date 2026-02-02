@@ -11,12 +11,12 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
-	"github.com/stainless-sdks/nimbleway-go/internal/apiquery"
-	"github.com/stainless-sdks/nimbleway-go/internal/requestconfig"
-	"github.com/stainless-sdks/nimbleway-go/option"
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
-	"github.com/stainless-sdks/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimbleway-go/internal/apijson"
+	"github.com/Nimbleway/nimbleway-go/internal/apiquery"
+	"github.com/Nimbleway/nimbleway-go/internal/requestconfig"
+	"github.com/Nimbleway/nimbleway-go/option"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/respjson"
 )
 
 // CrawlService contains methods and other services that help with interacting with

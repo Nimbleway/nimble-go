@@ -18,10 +18,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stainless-sdks/nimbleway-go/internal"
-	"github.com/stainless-sdks/nimbleway-go/internal/apierror"
-	"github.com/stainless-sdks/nimbleway-go/internal/apiform"
-	"github.com/stainless-sdks/nimbleway-go/internal/apiquery"
+	"github.com/Nimbleway/nimbleway-go/internal"
+	"github.com/Nimbleway/nimbleway-go/internal/apierror"
+	"github.com/Nimbleway/nimbleway-go/internal/apiform"
+	"github.com/Nimbleway/nimbleway-go/internal/apiquery"
 )
 
 func getDefaultHeaders() map[string]string {

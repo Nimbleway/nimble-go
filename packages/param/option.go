@@ -3,7 +3,7 @@ package param
 import (
 	"encoding/json"
 	"fmt"
-	shimjson "github.com/stainless-sdks/nimbleway-go/internal/encoding/json"
+	shimjson "github.com/Nimbleway/nimbleway-go/internal/encoding/json"
 	"time"
 )
 

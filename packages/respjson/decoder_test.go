@@ -3,8 +3,8 @@ package respjson_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
-	rj "github.com/stainless-sdks/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimbleway-go/internal/apijson"
+	rj "github.com/Nimbleway/nimbleway-go/packages/respjson"
 	"reflect"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package nimbleway
 
 import (
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"io"
 	"time"
 )
