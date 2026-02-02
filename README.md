@@ -55,7 +55,8 @@ import (
 
 func main() {
 	client := nimbleway.NewClient(
-		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLEWAY_API_KEY")
+		option.WithAPIKey("My API Key"),    // defaults to os.LookupEnv("NIMBLEWAY_API_KEY")
+		option.WithEnvironmentProduction(), // defaults to option.WithEnvironmentStaging()
 	)
 	response, err := client.Extract(context.TODO(), nimbleway.ExtractParams{
 		DebugOptions: nimbleway.ExtractParamsDebugOptions{},
