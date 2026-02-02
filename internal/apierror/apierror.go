@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/Nimbleway/nimbleway-go/internal/apijson"
-	"github.com/Nimbleway/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/internal/apijson"
+	"github.com/Nimbleway/nimble-go/packages/respjson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is

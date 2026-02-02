@@ -1,7 +1,7 @@
 package apiquery
 
 import (
-	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimble-go/packages/param"
 	"net/url"
 	"testing"
 	"time"

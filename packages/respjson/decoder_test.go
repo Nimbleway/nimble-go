@@ -3,8 +3,8 @@ package respjson_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Nimbleway/nimbleway-go/internal/apijson"
-	rj "github.com/Nimbleway/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/internal/apijson"
+	rj "github.com/Nimbleway/nimble-go/packages/respjson"
 	"reflect"
 	"testing"
 )

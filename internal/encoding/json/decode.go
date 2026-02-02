@@ -14,7 +14,7 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
-	"github.com/Nimbleway/nimbleway-go/internal/encoding/json/shims"
+	"github.com/Nimbleway/nimble-go/internal/encoding/json/shims"
 	"reflect"
 	"strconv"
 	"strings"

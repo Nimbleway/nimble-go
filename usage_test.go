@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Nimbleway/nimbleway-go"
-	"github.com/Nimbleway/nimbleway-go/internal/testutil"
-	"github.com/Nimbleway/nimbleway-go/option"
+	"github.com/Nimbleway/nimble-go"
+	"github.com/Nimbleway/nimble-go/internal/testutil"
+	"github.com/Nimbleway/nimble-go/option"
 )
 
 func TestUsage(t *testing.T) {
