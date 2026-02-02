@@ -1,8 +1,8 @@
 package paramutil
 
 import (
-	"github.com/Nimbleway/nimbleway-go/packages/param"
-	"github.com/Nimbleway/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/Nimbleway/nimble-go/packages/respjson"
 )
 
 func AddrIfPresent[T comparable](v param.Opt[T]) *T {

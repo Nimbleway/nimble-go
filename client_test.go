@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Nimbleway/nimbleway-go"
-	"github.com/Nimbleway/nimbleway-go/internal"
-	"github.com/Nimbleway/nimbleway-go/option"
+	"github.com/Nimbleway/nimble-go"
+	"github.com/Nimbleway/nimble-go/internal"
+	"github.com/Nimbleway/nimble-go/option"
 )
 
 type closureTransport struct {

@@ -1,8 +1,8 @@
 package sentinel_test
 
 import (
-	"github.com/Nimbleway/nimbleway-go/internal/encoding/json/sentinel"
-	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimble-go/internal/encoding/json/sentinel"
+	"github.com/Nimbleway/nimble-go/packages/param"
 	"reflect"
 	"slices"
 	"testing"

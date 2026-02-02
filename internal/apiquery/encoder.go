@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimble-go/packages/param"
 )
 
 var encoders sync.Map // map[reflect.Type]encoderFunc

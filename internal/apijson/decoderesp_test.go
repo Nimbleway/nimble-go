@@ -2,8 +2,8 @@ package apijson_test
 
 import (
 	"encoding/json"
-	"github.com/Nimbleway/nimbleway-go/internal/apijson"
-	"github.com/Nimbleway/nimbleway-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/internal/apijson"
+	"github.com/Nimbleway/nimble-go/packages/respjson"
 	"testing"
 )
 
