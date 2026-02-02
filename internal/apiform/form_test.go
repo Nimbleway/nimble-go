@@ -2,7 +2,7 @@ package apiform
 
 import (
 	"bytes"
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
 	"io"
 	"mime/multipart"
 	"strings"

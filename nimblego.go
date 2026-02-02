@@ -5,9 +5,9 @@ package nimblego
 import (
 	"encoding/json"
 
-	"github.com/Nimbleway/nimble-go/internal/apijson"
-	"github.com/Nimbleway/nimble-go/packages/param"
-	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimbleway-go/internal/apijson"
+	"github.com/Nimbleway/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimbleway-go/packages/respjson"
 )
 
 type ExtractResponse struct {
