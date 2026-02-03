@@ -1,10 +1,10 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimblego
+package nimbleway
 
 import (
-	"github.com/Nimbleway/nimble-go/internal/apierror"
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/stainless-sdks/nimbleway-go/internal/apierror"
+	"github.com/stainless-sdks/nimbleway-go/packages/param"
 )
 
 // aliased to make [param.APIUnion] private when embedding

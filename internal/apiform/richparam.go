@@ -1,7 +1,7 @@
 package apiform
 
 import (
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/stainless-sdks/nimbleway-go/packages/param"
 	"mime/multipart"
 	"reflect"
 )

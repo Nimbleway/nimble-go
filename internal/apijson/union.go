@@ -2,7 +2,7 @@ package apijson
 
 import (
 	"errors"
-	"github.com/Nimbleway/nimble-go/packages/param"
+	"github.com/stainless-sdks/nimbleway-go/packages/param"
 	"reflect"
 
 	"github.com/tidwall/gjson"
