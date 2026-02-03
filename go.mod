@@ -1,4 +1,4 @@
-module github.com/stainless-sdks/nimbleway-go
+module github.com/Nimbleway/nimble-go
 
 go 1.22
 

@@ -3,8 +3,8 @@ package apijson_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
-	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/Nimbleway/nimble-go/internal/apijson"
+	"github.com/Nimbleway/nimble-go/packages/param"
 	"reflect"
 	"testing"
 )
