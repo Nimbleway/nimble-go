@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimblego
+package nimbleway
 
 import (
 	"context"
@@ -11,16 +11,16 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/Nimbleway/nimble-go/internal/apijson"
-	"github.com/Nimbleway/nimble-go/internal/apiquery"
-	"github.com/Nimbleway/nimble-go/internal/requestconfig"
-	"github.com/Nimbleway/nimble-go/option"
-	"github.com/Nimbleway/nimble-go/packages/param"
-	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
+	"github.com/stainless-sdks/nimbleway-go/internal/apiquery"
+	"github.com/stainless-sdks/nimbleway-go/internal/requestconfig"
+	"github.com/stainless-sdks/nimbleway-go/option"
+	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/stainless-sdks/nimbleway-go/packages/respjson"
 )
 
 // CrawlService contains methods and other services that help with interacting with
-// the nimble API.
+// the nimbleway API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use

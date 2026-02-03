@@ -1,13 +1,13 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimblego
+package nimbleway
 
 import (
 	"encoding/json"
 
-	"github.com/Nimbleway/nimble-go/internal/apijson"
-	"github.com/Nimbleway/nimble-go/packages/param"
-	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/stainless-sdks/nimbleway-go/internal/apijson"
+	"github.com/stainless-sdks/nimbleway-go/packages/param"
+	"github.com/stainless-sdks/nimbleway-go/packages/respjson"
 )
 
 type ExtractResponse struct {

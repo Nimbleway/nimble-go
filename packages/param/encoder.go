@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	shimjson "github.com/Nimbleway/nimble-go/internal/encoding/json"
+	shimjson "github.com/stainless-sdks/nimbleway-go/internal/encoding/json"
 
 	"github.com/tidwall/sjson"
 )

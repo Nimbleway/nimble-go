@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Nimbleway/nimble-go/internal/requestconfig"
+	"github.com/stainless-sdks/nimbleway-go/internal/requestconfig"
 	"github.com/tidwall/sjson"
 )
 
-// RequestOption is an option for the requests made by the nimble API Client
+// RequestOption is an option for the requests made by the nimbleway API Client
 // which can be supplied to clients, services, and methods. You can read more about this functional
 // options pattern in our [README].
 //
-// [README]: https://pkg.go.dev/github.com/Nimbleway/nimble-go#readme-requestoptions
+// [README]: https://pkg.go.dev/github.com/stainless-sdks/nimbleway-go#readme-requestoptions
 type RequestOption = requestconfig.RequestOption
 
 // WithBaseURL returns a RequestOption that sets the BaseURL for the client.
@@ -270,7 +270,7 @@ func WithEnvironmentStaging() RequestOption {
 // environment to be the "production" environment. An environment specifies which base URL
 // to use by default.
 func WithEnvironmentProduction() RequestOption {
-	return requestconfig.WithDefaultBaseURL("https://sdk.nimbleway.com/")
+	return requestconfig.WithDefaultBaseURL("https://gateway.webit.live/")
 }
 
 // WithAPIKey returns a RequestOption that sets the client setting "api_key".

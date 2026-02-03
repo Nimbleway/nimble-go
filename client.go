@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimblego
+package nimbleway
 
 import (
 	"context"
@@ -8,12 +8,12 @@ import (
 	"os"
 	"slices"
 
-	"github.com/Nimbleway/nimble-go/internal/requestconfig"
-	"github.com/Nimbleway/nimble-go/option"
+	"github.com/stainless-sdks/nimbleway-go/internal/requestconfig"
+	"github.com/stainless-sdks/nimbleway-go/option"
 )
 
 // Client creates a struct with services and top level methods that help with
-// interacting with the nimble API. You should not instantiate this client
+// interacting with the nimbleway API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
@@ -21,10 +21,10 @@ type Client struct {
 }
 
 // DefaultClientOptions read from the environment (NIMBLEWAY_API_KEY,
-// NIMBLE_BASE_URL). This should be used to initialize new clients.
+// NIMBLEWAY_BASE_URL). This should be used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{option.WithEnvironmentStaging()}
-	if o, ok := os.LookupEnv("NIMBLE_BASE_URL"); ok {
+	if o, ok := os.LookupEnv("NIMBLEWAY_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
 	if o, ok := os.LookupEnv("NIMBLEWAY_API_KEY"); ok {
@@ -34,7 +34,7 @@ func DefaultClientOptions() []option.RequestOption {
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (NIMBLEWAY_API_KEY, NIMBLE_BASE_URL). The option passed in as
+// environment (NIMBLEWAY_API_KEY, NIMBLEWAY_BASE_URL). The option passed in as
 // arguments are applied after these default arguments, and all option will be
 // passed down to the services and requests that this client makes.
 func NewClient(opts ...option.RequestOption) (r Client) {
