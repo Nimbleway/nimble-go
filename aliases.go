@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimbleway
+package nimblego
 
 import (
 	"github.com/stainless-sdks/nimbleway-go/internal/apierror"

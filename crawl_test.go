@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package nimbleway_test
+package nimblego_test
 
 import (
 	"context"
@@ -22,17 +22,17 @@ func TestCrawlListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := nimbleway.NewClient(
+	client := nimblego.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Crawl.List(context.TODO(), nimbleway.CrawlListParams{
-		Status: nimbleway.CrawlListParamsStatusPending,
-		Cursor: nimbleway.String("cursor"),
-		Limit:  nimbleway.Int(10),
+	_, err := client.Crawl.List(context.TODO(), nimblego.CrawlListParams{
+		Status: nimblego.CrawlListParamsStatusPending,
+		Cursor: nimblego.String("cursor"),
+		Limit:  nimblego.Int(10),
 	})
 	if err != nil {
-		var apierr *nimbleway.Error
+		var apierr *nimblego.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -49,16 +49,16 @@ func TestCrawlRootWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := nimbleway.NewClient(
+	client := nimblego.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Crawl.Root(context.TODO(), nimbleway.CrawlRootParams{
+	_, err := client.Crawl.Root(context.TODO(), nimblego.CrawlRootParams{
 		URL:                "https://example.com",
-		AllowExternalLinks: nimbleway.Bool(false),
-		AllowSubdomains:    nimbleway.Bool(false),
-		Callback: nimbleway.CrawlRootParamsCallbackUnion{
-			OfCrawlRootsCallbackObject: &nimbleway.CrawlRootParamsCallbackObject{
+		AllowExternalLinks: nimblego.Bool(false),
+		AllowSubdomains:    nimblego.Bool(false),
+		Callback: nimblego.CrawlRootParamsCallbackUnion{
+			OfCrawlRootsCallbackObject: &nimblego.CrawlRootParamsCallbackObject{
 				URL:    "https://example.com/webhook",
 				Events: []string{"page"},
 				Headers: map[string]any{
@@ -69,145 +69,145 @@ func TestCrawlRootWithOptionalParams(t *testing.T) {
 				},
 			},
 		},
-		CrawlEntireDomain: nimbleway.Bool(false),
+		CrawlEntireDomain: nimblego.Bool(false),
 		ExcludePaths:      []string{"/exclude-this-path", "/and-this-path"},
-		ExtractOptions: nimbleway.CrawlRootParamsExtractOptions{
-			DebugOptions: nimbleway.CrawlRootParamsExtractOptionsDebugOptions{
-				CollectHar: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsCollectHarUnion{
-					OfBool: nimbleway.Bool(true),
+		ExtractOptions: nimblego.CrawlRootParamsExtractOptions{
+			DebugOptions: nimblego.CrawlRootParamsExtractOptionsDebugOptions{
+				CollectHar: nimblego.CrawlRootParamsExtractOptionsDebugOptionsCollectHarUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				NoRetryMode: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsNoRetryModeUnion{
-					OfBool: nimbleway.Bool(true),
+				NoRetryMode: nimblego.CrawlRootParamsExtractOptionsDebugOptionsNoRetryModeUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				RecordScreen: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsRecordScreenUnion{
-					OfBool: nimbleway.Bool(true),
+				RecordScreen: nimblego.CrawlRootParamsExtractOptionsDebugOptionsRecordScreenUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				Redact: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsRedactUnion{
-					OfBool: nimbleway.Bool(true),
+				Redact: nimblego.CrawlRootParamsExtractOptionsDebugOptionsRedactUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				ShowCursor: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsShowCursorUnion{
-					OfBool: nimbleway.Bool(true),
+				ShowCursor: nimblego.CrawlRootParamsExtractOptionsDebugOptionsShowCursorUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				SolveCaptcha: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsSolveCaptchaUnion{
-					OfBool: nimbleway.Bool(true),
+				SolveCaptcha: nimblego.CrawlRootParamsExtractOptionsDebugOptionsSolveCaptchaUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				Trace: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsTraceUnion{
-					OfBool: nimbleway.Bool(true),
+				Trace: nimblego.CrawlRootParamsExtractOptionsDebugOptionsTraceUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				UploadEngineLogs: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsUploadEngineLogsUnion{
-					OfBool: nimbleway.Bool(true),
+				UploadEngineLogs: nimblego.CrawlRootParamsExtractOptionsDebugOptionsUploadEngineLogsUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				Verbose: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsVerboseUnion{
-					OfBool: nimbleway.Bool(true),
+				Verbose: nimblego.CrawlRootParamsExtractOptionsDebugOptionsVerboseUnion{
+					OfBool: nimblego.Bool(true),
 				},
-				WithProxyUsage: nimbleway.CrawlRootParamsExtractOptionsDebugOptionsWithProxyUsageUnion{
-					OfBool: nimbleway.Bool(true),
+				WithProxyUsage: nimblego.CrawlRootParamsExtractOptionsDebugOptionsWithProxyUsageUnion{
+					OfBool: nimblego.Bool(true),
 				},
 			},
 			URL: "https://example.com/page",
-			Browser: nimbleway.CrawlRootParamsExtractOptionsBrowserUnion{
-				OfCrawlRootsExtractOptionsBrowserString: nimbleway.String("chrome"),
+			Browser: nimblego.CrawlRootParamsExtractOptionsBrowserUnion{
+				OfCrawlRootsExtractOptionsBrowserString: nimblego.String("chrome"),
 			},
-			City:          nimbleway.String("Los Angeles"),
-			ClientTimeout: nimbleway.Float(25000),
-			ConsentHeader: nimbleway.Bool(true),
-			Cookies: nimbleway.CrawlRootParamsExtractOptionsCookiesUnion{
-				OfCrawlRootsExtractOptionsCookiesArray: []nimbleway.CrawlRootParamsExtractOptionsCookiesArrayItem{{
-					Creation:     nimbleway.String("creation"),
-					Domain:       nimbleway.String("domain"),
-					Expires:      nimbleway.String("expires"),
+			City:          nimblego.String("Los Angeles"),
+			ClientTimeout: nimblego.Float(25000),
+			ConsentHeader: nimblego.Bool(true),
+			Cookies: nimblego.CrawlRootParamsExtractOptionsCookiesUnion{
+				OfCrawlRootsExtractOptionsCookiesArray: []nimblego.CrawlRootParamsExtractOptionsCookiesArrayItem{{
+					Creation:     nimblego.String("creation"),
+					Domain:       nimblego.String("domain"),
+					Expires:      nimblego.String("expires"),
 					Extensions:   []string{"string"},
-					HostOnly:     nimbleway.Bool(true),
-					HTTPOnly:     nimbleway.Bool(true),
-					LastAccessed: nimbleway.String("lastAccessed"),
-					MaxAge: nimbleway.CrawlRootParamsExtractOptionsCookiesArrayItemMaxAgeUnion{
-						OfCrawlRootsExtractOptionsCookiesArrayItemMaxAgeString: nimbleway.Opt(nimbleway.CrawlRootParamsExtractOptionsCookiesArrayItemMaxAgeStringInfinity),
+					HostOnly:     nimblego.Bool(true),
+					HTTPOnly:     nimblego.Bool(true),
+					LastAccessed: nimblego.String("lastAccessed"),
+					MaxAge: nimblego.CrawlRootParamsExtractOptionsCookiesArrayItemMaxAgeUnion{
+						OfCrawlRootsExtractOptionsCookiesArrayItemMaxAgeString: nimblego.Opt(nimblego.CrawlRootParamsExtractOptionsCookiesArrayItemMaxAgeStringInfinity),
 					},
-					Name:          nimbleway.String("name"),
-					Path:          nimbleway.String("path"),
-					PathIsDefault: nimbleway.Bool(true),
+					Name:          nimblego.String("name"),
+					Path:          nimblego.String("path"),
+					PathIsDefault: nimblego.Bool(true),
 					SameSite:      "strict",
-					Secure:        nimbleway.Bool(true),
-					Value:         nimbleway.String("value"),
+					Secure:        nimblego.Bool(true),
+					Value:         nimblego.String("value"),
 				}},
 			},
-			Country:        nimbleway.CrawlRootParamsExtractOptionsCountryUs,
+			Country:        nimblego.CrawlRootParamsExtractOptionsCountryUs,
 			Device:         "desktop",
-			DisableIPCheck: nimbleway.Bool(false),
+			DisableIPCheck: nimblego.Bool(false),
 			Driver:         "vx8",
 			DynamicParser: map[string]any{
 				"myParser": "bar",
 			},
 			ExpectedStatusCodes: []int64{200, 201},
-			ExportUserbrowser:   nimbleway.Bool(false),
+			ExportUserbrowser:   nimblego.Bool(false),
 			Format:              "json",
-			Headers: map[string]nimbleway.CrawlRootParamsExtractOptionsHeaderUnion{
+			Headers: map[string]nimblego.CrawlRootParamsExtractOptionsHeaderUnion{
 				"User-Agent": {
-					OfString: nimbleway.String("CustomBot/1.0"),
+					OfString: nimblego.String("CustomBot/1.0"),
 				},
 				"Accept-Language": {
-					OfString: nimbleway.String("en-US"),
+					OfString: nimblego.String("en-US"),
 				},
 			},
-			Http2:    nimbleway.Bool(true),
-			Ip6:      nimbleway.Bool(false),
-			IsXhr:    nimbleway.Bool(true),
-			Locale:   nimbleway.CrawlRootParamsExtractOptionsLocaleEnUs,
-			Markdown: nimbleway.Bool(false),
-			Metadata: nimbleway.CrawlRootParamsExtractOptionsMetadata{
-				AccountName:         nimbleway.String("acme-corp"),
-				DefinitionID:        nimbleway.Int(456),
-				DefinitionName:      nimbleway.String("product-scraper"),
-				Endpoint:            nimbleway.String("/api/v2/scrape"),
-				ExecutionID:         nimbleway.String("exec-abc123"),
-				FlowitTaskID:        nimbleway.String("task-xyz789"),
-				InputID:             nimbleway.String("input-123"),
-				PipelineExecutionID: nimbleway.Int(12345),
-				QueryTemplateID:     nimbleway.String("template-qry-001"),
-				Source:              nimbleway.String("web-app"),
-				TemplateID:          nimbleway.Int(789),
-				TemplateName:        nimbleway.String("e-commerce-template"),
+			Http2:    nimblego.Bool(true),
+			Ip6:      nimblego.Bool(false),
+			IsXhr:    nimblego.Bool(true),
+			Locale:   nimblego.CrawlRootParamsExtractOptionsLocaleEnUs,
+			Markdown: nimblego.Bool(false),
+			Metadata: nimblego.CrawlRootParamsExtractOptionsMetadata{
+				AccountName:         nimblego.String("acme-corp"),
+				DefinitionID:        nimblego.Int(456),
+				DefinitionName:      nimblego.String("product-scraper"),
+				Endpoint:            nimblego.String("/api/v2/scrape"),
+				ExecutionID:         nimblego.String("exec-abc123"),
+				FlowitTaskID:        nimblego.String("task-xyz789"),
+				InputID:             nimblego.String("input-123"),
+				PipelineExecutionID: nimblego.Int(12345),
+				QueryTemplateID:     nimblego.String("template-qry-001"),
+				Source:              nimblego.String("web-app"),
+				TemplateID:          nimblego.Int(789),
+				TemplateName:        nimblego.String("e-commerce-template"),
 			},
 			Method:     "GET",
 			NativeMode: "requester",
-			NetworkCapture: []nimbleway.CrawlRootParamsExtractOptionsNetworkCapture{{
+			NetworkCapture: []nimblego.CrawlRootParamsExtractOptionsNetworkCapture{{
 				Method: "GET",
-				ResourceType: nimbleway.CrawlRootParamsExtractOptionsNetworkCaptureResourceTypeUnion{
-					OfString: nimbleway.String("document"),
+				ResourceType: nimblego.CrawlRootParamsExtractOptionsNetworkCaptureResourceTypeUnion{
+					OfString: nimblego.String("document"),
 				},
-				StatusCode: nimbleway.CrawlRootParamsExtractOptionsNetworkCaptureStatusCodeUnion{
-					OfFloat: nimbleway.Float(100),
+				StatusCode: nimblego.CrawlRootParamsExtractOptionsNetworkCaptureStatusCodeUnion{
+					OfFloat: nimblego.Float(100),
 				},
-				URL: nimbleway.CrawlRootParamsExtractOptionsNetworkCaptureURL{
+				URL: nimblego.CrawlRootParamsExtractOptionsNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",
 				},
-				Validation:                  nimbleway.Bool(true),
-				WaitForRequestsCount:        nimbleway.Float(0),
-				WaitForRequestsCountTimeout: nimbleway.Float(1),
+				Validation:                  nimblego.Bool(true),
+				WaitForRequestsCount:        nimblego.Float(0),
+				WaitForRequestsCountTimeout: nimblego.Float(1),
 			}},
-			NoHTML:        nimbleway.Bool(false),
-			NoUserbrowser: nimbleway.Bool(false),
+			NoHTML:        nimblego.Bool(false),
+			NoUserbrowser: nimblego.Bool(false),
 			Os:            "windows",
-			Parse:         nimbleway.Bool(true),
-			ParseOptions: nimbleway.CrawlRootParamsExtractOptionsParseOptions{
-				MergeDynamic: nimbleway.Bool(true),
+			Parse:         nimblego.Bool(true),
+			ParseOptions: nimblego.CrawlRootParamsExtractOptionsParseOptions{
+				MergeDynamic: nimblego.Bool(true),
 			},
-			Parser: nimbleway.CrawlRootParamsExtractOptionsParserUnion{
+			Parser: nimblego.CrawlRootParamsExtractOptionsParserUnion{
 				OfAnyMap: map[string]any{
 					"myParser": "bar",
 				},
 			},
-			ProxyProvider: nimbleway.CrawlRootParamsExtractOptionsProxyProviderBrightdata,
+			ProxyProvider: nimblego.CrawlRootParamsExtractOptionsProxyProviderBrightdata,
 			ProxyProviders: map[string]float64{
 				"brightdata": 70,
 				"oxylabs":    30,
 			},
-			QueryTemplate: nimbleway.CrawlRootParamsExtractOptionsQueryTemplate{
+			QueryTemplate: nimblego.CrawlRootParamsExtractOptionsQueryTemplate{
 				ID:      "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 				APIType: "WEB",
-				Pagination: nimbleway.CrawlRootParamsExtractOptionsQueryTemplatePaginationUnion{
-					OfCrawlRootsExtractOptionsQueryTemplatePaginationNextPageParams: &nimbleway.CrawlRootParamsExtractOptionsQueryTemplatePaginationNextPageParams{
+				Pagination: nimblego.CrawlRootParamsExtractOptionsQueryTemplatePaginationUnion{
+					OfCrawlRootsExtractOptionsQueryTemplatePaginationNextPageParams: &nimblego.CrawlRootParamsExtractOptionsQueryTemplatePaginationNextPageParams{
 						NextPageParams: map[string]any{
 							"foo": "bar",
 						},
@@ -217,76 +217,76 @@ func TestCrawlRootWithOptionalParams(t *testing.T) {
 					"foo": "bar",
 				},
 			},
-			RawHeaders:   nimbleway.Bool(true),
-			ReferrerType: nimbleway.CrawlRootParamsExtractOptionsReferrerTypeRandom,
-			Render:       nimbleway.Bool(true),
+			RawHeaders:   nimblego.Bool(true),
+			ReferrerType: nimblego.CrawlRootParamsExtractOptionsReferrerTypeRandom,
+			Render:       nimblego.Bool(true),
 			RenderFlow: []map[string]any{{
 				"wait": "bar",
 			}, {
 				"click": "bar",
 			}},
-			RenderOptions: nimbleway.CrawlRootParamsExtractOptionsRenderOptions{
-				Adblock:        nimbleway.Bool(true),
+			RenderOptions: nimblego.CrawlRootParamsExtractOptionsRenderOptions{
+				Adblock:        nimblego.Bool(true),
 				BlockedDomains: []string{"ads.example.com", "tracker.com"},
-				BrowserEngine: nimbleway.CrawlRootParamsExtractOptionsRenderOptionsBrowserEngineUnion{
-					OfCrawlRootsExtractOptionsRenderOptionsBrowserEngineString: nimbleway.String("chrome"),
+				BrowserEngine: nimblego.CrawlRootParamsExtractOptionsRenderOptionsBrowserEngineUnion{
+					OfCrawlRootsExtractOptionsRenderOptionsBrowserEngineString: nimblego.String("chrome"),
 				},
-				Cache:             nimbleway.Bool(false),
+				Cache:             nimblego.Bool(false),
 				ConnectorType:     "webit-cdp",
 				DisabledResources: []string{"image", "stylesheet"},
-				Enable2captcha:    nimbleway.Bool(true),
+				Enable2captcha:    nimblego.Bool(true),
 				Extensions:        []string{"extension-id-1", "extension-id-2"},
-				FingerprintID:     nimbleway.String("fp-abc123"),
-				HackiumConfiguration: nimbleway.CrawlRootParamsExtractOptionsRenderOptionsHackiumConfiguration{
-					CollectLogs:                 nimbleway.Bool(true),
-					DoNotFixMathSalt:            nimbleway.Bool(true),
-					EnableDocumentElementSpoof:  nimbleway.Bool(true),
-					EnableDocumentHasFocus:      nimbleway.Bool(true),
-					EnableFakeNavigationHistory: nimbleway.Bool(true),
-					EnableKeyOrdering:           nimbleway.Bool(true),
-					EnableSniffer:               nimbleway.Bool(true),
-					EnableVerboseLogs:           nimbleway.Bool(true),
+				FingerprintID:     nimblego.String("fp-abc123"),
+				HackiumConfiguration: nimblego.CrawlRootParamsExtractOptionsRenderOptionsHackiumConfiguration{
+					CollectLogs:                 nimblego.Bool(true),
+					DoNotFixMathSalt:            nimblego.Bool(true),
+					EnableDocumentElementSpoof:  nimblego.Bool(true),
+					EnableDocumentHasFocus:      nimblego.Bool(true),
+					EnableFakeNavigationHistory: nimblego.Bool(true),
+					EnableKeyOrdering:           nimblego.Bool(true),
+					EnableSniffer:               nimblego.Bool(true),
+					EnableVerboseLogs:           nimblego.Bool(true),
 				},
-				Headless:               nimbleway.Bool(true),
-				IncludeIframes:         nimbleway.Bool(true),
-				LoadLocalStorage:       nimbleway.Bool(true),
+				Headless:               nimblego.Bool(true),
+				IncludeIframes:         nimblego.Bool(true),
+				LoadLocalStorage:       nimblego.Bool(true),
 				LocalStorageKeysToLoad: []string{"authToken", "userId"},
 				MouseStrategy:          "linear",
-				NoAcceptEncoding:       nimbleway.Bool(true),
-				OverridePermissions:    nimbleway.Bool(true),
-				RandomHeaderOrder:      nimbleway.Bool(true),
+				NoAcceptEncoding:       nimblego.Bool(true),
+				OverridePermissions:    nimblego.Bool(true),
+				RandomHeaderOrder:      nimblego.Bool(true),
 				RenderType:             "load",
-				StoreLocalStorage:      nimbleway.Bool(true),
-				Timeout:                nimbleway.Float(30000),
-				TypingInterval:         nimbleway.Float(100),
+				StoreLocalStorage:      nimblego.Bool(true),
+				Timeout:                nimblego.Float(30000),
+				TypingInterval:         nimblego.Float(100),
 				TypingStrategy:         "simple",
-				Userbrowser:            nimbleway.Bool(true),
+				Userbrowser:            nimblego.Bool(true),
 				WaitUntil:              "networkidle2",
-				WithPerformanceMetrics: nimbleway.Bool(true),
+				WithPerformanceMetrics: nimblego.Bool(true),
 			},
-			RequestTimeout:                nimbleway.Float(30000),
-			ReturnResponseHeadersAsHeader: nimbleway.Bool(true),
-			SaveUserbrowser:               nimbleway.Bool(false),
-			Session: nimbleway.CrawlRootParamsExtractOptionsSession{
-				ID:                  nimbleway.String("id"),
-				PrefetchUserbrowser: nimbleway.Bool(true),
-				Retry:               nimbleway.Bool(true),
-				Timeout:             nimbleway.Float(1),
+			RequestTimeout:                nimblego.Float(30000),
+			ReturnResponseHeadersAsHeader: nimblego.Bool(true),
+			SaveUserbrowser:               nimblego.Bool(false),
+			Session: nimblego.CrawlRootParamsExtractOptionsSession{
+				ID:                  nimblego.String("id"),
+				PrefetchUserbrowser: nimblego.Bool(true),
+				Retry:               nimblego.Bool(true),
+				Timeout:             nimblego.Float(1),
 			},
-			Skill: nimbleway.CrawlRootParamsExtractOptionsSkillUnion{
-				OfString: nimbleway.String("dynamic-content"),
+			Skill: nimblego.CrawlRootParamsExtractOptionsSkillUnion{
+				OfString: nimblego.String("dynamic-content"),
 			},
-			SkipUbct: nimbleway.Bool(false),
+			SkipUbct: nimblego.Bool(false),
 			State:    "CA",
-			Tag:      nimbleway.String("campaign-2024-q1"),
-			Template: nimbleway.CrawlRootParamsExtractOptionsTemplate{
+			Tag:      nimblego.String("campaign-2024-q1"),
+			Template: nimblego.CrawlRootParamsExtractOptionsTemplate{
 				Name: "x",
 				Params: map[string]any{
 					"foo": "bar",
 				},
 			},
-			Type: nimbleway.String("generic"),
-			UserbrowserCreationTemplateRendered: nimbleway.CrawlRootParamsExtractOptionsUserbrowserCreationTemplateRendered{
+			Type: nimblego.String("generic"),
+			UserbrowserCreationTemplateRendered: nimblego.CrawlRootParamsExtractOptionsUserbrowserCreationTemplateRendered{
 				ID:                    "id",
 				AllowedParameterNames: []string{"x"},
 				RenderFlowRendered: []map[string]any{{
@@ -294,15 +294,15 @@ func TestCrawlRootWithOptionalParams(t *testing.T) {
 				}},
 			},
 		},
-		IgnoreQueryParameters: nimbleway.Bool(false),
+		IgnoreQueryParameters: nimblego.Bool(false),
 		IncludePaths:          []string{"/include-this-path", "/and-this-path"},
-		Limit:                 nimbleway.Int(100),
-		MaxDiscoveryDepth:     nimbleway.Int(3),
-		Name:                  nimbleway.String("The best crawl ever"),
-		Sitemap:               nimbleway.CrawlRootParamsSitemapInclude,
+		Limit:                 nimblego.Int(100),
+		MaxDiscoveryDepth:     nimblego.Int(3),
+		Name:                  nimblego.String("The best crawl ever"),
+		Sitemap:               nimblego.CrawlRootParamsSitemapInclude,
 	})
 	if err != nil {
-		var apierr *nimbleway.Error
+		var apierr *nimblego.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -319,13 +319,13 @@ func TestCrawlStatus(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := nimbleway.NewClient(
+	client := nimblego.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Crawl.Status(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
 	if err != nil {
-		var apierr *nimbleway.Error
+		var apierr *nimblego.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -342,13 +342,13 @@ func TestCrawlTerminate(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := nimbleway.NewClient(
+	client := nimblego.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Crawl.Terminate(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
 	if err != nil {
-		var apierr *nimbleway.Error
+		var apierr *nimblego.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
