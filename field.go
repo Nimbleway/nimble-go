@@ -1,4 +1,4 @@
-package nimblego
+package githubcomnimblewaynimblego
 
 import (
 	"github.com/Nimbleway/nimble-go/packages/param"
