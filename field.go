@@ -1,4 +1,4 @@
-package nimbleway
+package nimblego
 
 import (
 	"github.com/stainless-sdks/nimbleway-go/packages/param"
