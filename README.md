@@ -15,8 +15,8 @@ It is generated with [Stainless](https://www.stainless.com/).
 
 Use the Nimble MCP Server to enable AI assistants to interact with this API, allowing them to explore endpoints, make test requests, and use documentation to help integrate this SDK into your application.
 
-[![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=nimble-mcp&config=eyJuYW1lIjoibmltYmxlLW1jcCIsInRyYW5zcG9ydCI6Imh0dHAiLCJ1cmwiOiJodHRwczovL25pbWJsZXdheS5zdGxtY3AuY29tIiwiaGVhZGVycyI6eyJ4LW5pbWJsZXdheS1hcGkta2V5IjoiTXkgQVBJIEtleSJ9fQ)
-[![Install in VS Code](https://img.shields.io/badge/_-Add_to_VS_Code-blue?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZmlsbD0iI0VFRSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM1IDM5Ljg4NGEyLjQ5MSAyLjQ5MSAwIDAgMS0xLjc4MS0uNzNMMTIuNyAyNC43OGwtMy40NiAyLjYyNC0zLjQwNiAyLjU4MmExLjY2NSAxLjY2NSAwIDAgMS0xLjA4Mi4zMzggMS42NjQgMS42NjQgMCAwIDEtMS4wNDYtLjQzMWwtMi4yLTJhMS42NjYgMS42NjYgMCAwIDEgMC0yLjQ2M0w3LjQ1OCAyMCA0LjY3IDE3LjQ1MyAxLjUwNyAxNC41N2ExLjY2NSAxLjY2NSAwIDAgMSAwLTIuNDYzbDIuMi0yYTEuNjY1IDEuNjY1IDAgMCAxIDIuMTMtLjA5N2w2Ljg2MyA1LjIwOUwyOC40NTIuODQ0YTIuNDg4IDIuNDg4IDAgMCAxIDEuODQxLS43MjljLjM1MS4wMDkuNjk5LjA5MSAxLjAxOS4yNDVsOC4yMzYgMy45NjFhMi41IDIuNSAwIDAgMSAxLjQxNSAyLjI1M3YuMDk5LS4wNDVWMzMuMzd2LS4wNDUuMDk1YTIuNTAxIDIuNTAxIDAgMCAxLTEuNDE2IDIuMjU3bC04LjIzNSAzLjk2MWEyLjQ5MiAyLjQ5MiAwIDAgMS0xLjA3Ny4yNDZabS43MTYtMjguOTQ3LTExLjk0OCA5LjA2MiAxMS45NTIgOS4wNjUtLjAwNC0xOC4xMjdaIi8+PC9zdmc+)](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22nimble-mcp%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fnimbleway.stlmcp.com%22%2C%22headers%22%3A%7B%22x-nimbleway-api-key%22%3A%22My%20API%20Key%22%7D%7D)
+[![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=nimble-mcp&config=eyJuYW1lIjoibmltYmxlLW1jcCIsInRyYW5zcG9ydCI6Imh0dHAiLCJ1cmwiOiJodHRwczovL25pbWJsZXdheS5zdGxtY3AuY29tIiwiaGVhZGVycyI6eyJ4LW5pbWJsZS1hcGkta2V5IjoiTXkgQVBJIEtleSJ9fQ)
+[![Install in VS Code](https://img.shields.io/badge/_-Add_to_VS_Code-blue?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZmlsbD0iI0VFRSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM1IDM5Ljg4NGEyLjQ5MSAyLjQ5MSAwIDAgMS0xLjc4MS0uNzNMMTIuNyAyNC43OGwtMy40NiAyLjYyNC0zLjQwNiAyLjU4MmExLjY2NSAxLjY2NSAwIDAgMS0xLjA4Mi4zMzggMS42NjQgMS42NjQgMCAwIDEtMS4wNDYtLjQzMWwtMi4yLTJhMS42NjYgMS42NjYgMCAwIDEgMC0yLjQ2M0w3LjQ1OCAyMCA0LjY3IDE3LjQ1MyAxLjUwNyAxNC41N2ExLjY2NSAxLjY2NSAwIDAgMSAwLTIuNDYzbDIuMi0yYTEuNjY1IDEuNjY1IDAgMCAxIDIuMTMtLjA5N2w2Ljg2MyA1LjIwOUwyOC40NTIuODQ0YTIuNDg4IDIuNDg4IDAgMCAxIDEuODQxLS43MjljLjM1MS4wMDkuNjk5LjA5MSAxLjAxOS4yNDVsOC4yMzYgMy45NjFhMi41IDIuNSAwIDAgMSAxLjQxNSAyLjI1M3YuMDk5LS4wNDVWMzMuMzd2LS4wNDUuMDk1YTIuNTAxIDIuNTAxIDAgMCAxLTEuNDE2IDIuMjU3bC04LjIzNSAzLjk2MWEyLjQ5MiAyLjQ5MiAwIDAgMS0xLjA3Ny4yNDZabS43MTYtMjguOTQ3LTExLjk0OCA5LjA2MiAxMS45NTIgOS4wNjUtLjAwNC0xOC4xMjdaIi8+PC9zdmc+)](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22nimble-mcp%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fnimbleway.stlmcp.com%22%2C%22headers%22%3A%7B%22x-nimble-api-key%22%3A%22My%20API%20Key%22%7D%7D)
 
 > Note: You may need to set environment variables in your MCP client.
 
@@ -26,7 +26,7 @@ Use the Nimble MCP Server to enable AI assistants to interact with this API, all
 
 ```go
 import (
-	"github.com/Nimbleway/nimble-go" // imported as nimblego
+	"github.com/Nimbleway/nimble-go" // imported as githubcomnimblewaynimblego
 )
 ```
 
@@ -37,7 +37,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/Nimbleway/nimble-go@v0.0.1'
+go get -u 'github.com/Nimbleway/nimble-go@v0.1.0'
 ```
 
 <!-- x-release-please-end -->
@@ -62,12 +62,11 @@ import (
 )
 
 func main() {
-	client := nimblego.NewClient(
-		option.WithAPIKey("My API Key"),    // defaults to os.LookupEnv("NIMBLEWAY_API_KEY")
-		option.WithEnvironmentProduction(), // defaults to option.WithEnvironmentStaging()
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLE_API_KEY")
 	)
-	response, err := client.Extract(context.TODO(), nimblego.ExtractParams{
-		DebugOptions: nimblego.ExtractParamsDebugOptions{},
+	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
+		DebugOptions: githubcomnimblewaynimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	})
 	if err != nil {
@@ -80,13 +79,13 @@ func main() {
 
 ### Request fields
 
-The nimblego library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
+The githubcomnimblewaynimblego library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
 semantics from the Go 1.24+ `encoding/json` release for request fields.
 
 Required primitive fields (`int64`, `string`, etc.) feature the tag <code>\`json:"...,required"\`</code>. These
 fields are always serialized, even their zero values.
 
-Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `nimblego.String(string)`, `nimblego.Int(int64)`, etc.
+Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `githubcomnimblewaynimblego.String(string)`, `githubcomnimblewaynimblego.Int(int64)`, etc.
 
 Any `param.Opt[T]`, map, slice, struct or string enum uses the
 tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
@@ -94,17 +93,17 @@ tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
 The `param.IsOmitted(any)` function can confirm the presence of any `omitzero` field.
 
 ```go
-p := nimblego.ExampleParams{
-	ID:   "id_xxx",               // required property
-	Name: nimblego.String("..."), // optional property
+p := githubcomnimblewaynimblego.ExampleParams{
+	ID:   "id_xxx",                                 // required property
+	Name: githubcomnimblewaynimblego.String("..."), // optional property
 
-	Point: nimblego.Point{
-		X: 0,               // required field will serialize as 0
-		Y: nimblego.Int(1), // optional field will serialize as 1
+	Point: githubcomnimblewaynimblego.Point{
+		X: 0,                                 // required field will serialize as 0
+		Y: githubcomnimblewaynimblego.Int(1), // optional field will serialize as 1
 		// ... omitted non-required fields will not be serialized
 	},
 
-	Origin: nimblego.Origin{}, // the zero value of [Origin] is considered omitted
+	Origin: githubcomnimblewaynimblego.Origin{}, // the zero value of [Origin] is considered omitted
 }
 ```
 
@@ -133,7 +132,7 @@ p.SetExtraFields(map[string]any{
 })
 
 // Send a number instead of an object
-custom := param.Override[nimblego.FooParams](12)
+custom := param.Override[githubcomnimblewaynimblego.FooParams](12)
 ```
 
 ### Request unions
@@ -274,7 +273,7 @@ This library uses the functional options pattern. Functions defined in the
 requests. For example:
 
 ```go
-client := nimblego.NewClient(
+client := githubcomnimblewaynimblego.NewClient(
 	// Adds a header to every request made by the client
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
@@ -303,19 +302,19 @@ with additional helper methods like `.GetNextPage()`, e.g.:
 ### Errors
 
 When the API returns a non-success status code, we return an error with type
-`*nimblego.Error`. This contains the `StatusCode`, `*http.Request`, and
+`*githubcomnimblewaynimblego.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
 (much like other response objects in the SDK).
 
 To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
-_, err := client.Extract(context.TODO(), nimblego.ExtractParams{
-	DebugOptions: nimblego.ExtractParamsDebugOptions{},
+_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
+	DebugOptions: githubcomnimblewaynimblego.ExtractParamsDebugOptions{},
 	URL:          "https://example.com",
 })
 if err != nil {
-	var apierr *nimblego.Error
+	var apierr *githubcomnimblewaynimblego.Error
 	if errors.As(err, &apierr) {
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
@@ -340,8 +339,8 @@ ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 defer cancel()
 client.Extract(
 	ctx,
-	nimblego.ExtractParams{
-		DebugOptions: nimblego.ExtractParamsDebugOptions{},
+	githubcomnimblewaynimblego.ExtractParams{
+		DebugOptions: githubcomnimblewaynimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	},
 	// This sets the per-retry timeout
@@ -359,7 +358,7 @@ The file name and content-type can be customized by implementing `Name() string`
 string` on the run-time type of `io.Reader`. Note that `os.File` implements `Name() string`, so a
 file returned by `os.Open` will be sent with the file name on disk.
 
-We also provide a helper `nimblego.File(reader io.Reader, filename string, contentType string)`
+We also provide a helper `githubcomnimblewaynimblego.File(reader io.Reader, filename string, contentType string)`
 which can be used to wrap any `io.Reader` with the appropriate file name and content type.
 
 ### Retries
@@ -372,15 +371,15 @@ You can use the `WithMaxRetries` option to configure or disable this:
 
 ```go
 // Configure the default for all requests:
-client := nimblego.NewClient(
+client := githubcomnimblewaynimblego.NewClient(
 	option.WithMaxRetries(0), // default is 2
 )
 
 // Override per-request:
 client.Extract(
 	context.TODO(),
-	nimblego.ExtractParams{
-		DebugOptions: nimblego.ExtractParamsDebugOptions{},
+	githubcomnimblewaynimblego.ExtractParams{
+		DebugOptions: githubcomnimblewaynimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	},
 	option.WithMaxRetries(5),
@@ -397,8 +396,8 @@ you need to examine response headers, status codes, or other details.
 var response *http.Response
 response, err := client.Extract(
 	context.TODO(),
-	nimblego.ExtractParams{
-		DebugOptions: nimblego.ExtractParamsDebugOptions{},
+	githubcomnimblewaynimblego.ExtractParams{
+		DebugOptions: githubcomnimblewaynimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	},
 	option.WithResponseInto(&response),
@@ -447,7 +446,7 @@ or the `option.WithJSONSet()` methods.
 params := FooNewParams{
     ID:   "id_xxxx",
     Data: FooNewParamsData{
-        FirstName: nimblego.String("John"),
+        FirstName: githubcomnimblewaynimblego.String("John"),
     },
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
@@ -482,7 +481,7 @@ func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, 
     return res, err
 }
 
-client := nimblego.NewClient(
+client := githubcomnimblewaynimblego.NewClient(
 	option.WithMiddleware(Logger),
 )
 ```
