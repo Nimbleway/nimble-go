@@ -23,7 +23,7 @@ type Client struct {
 // DefaultClientOptions read from the environment (NIMBLE_API_KEY,
 // NIMBLE_BASE_URL). This should be used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
-	defaults := []option.RequestOption{option.WithEnvironmentStaging()}
+	defaults := []option.RequestOption{option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("NIMBLE_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
