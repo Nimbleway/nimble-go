@@ -42,7 +42,7 @@ func TestUserAgentHeader(t *testing.T) {
 		DebugOptions: nimblego.ExtractParamsDebugOptions{},
 		URL:          "https://example.com",
 	})
-	if userAgent != fmt.Sprintf("Nimbleway/Go %s", internal.PackageVersion) {
+	if userAgent != fmt.Sprintf("Nimble/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
 	}
 }
