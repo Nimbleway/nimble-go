@@ -63,8 +63,7 @@ import (
 
 func main() {
 	client := nimblego.NewClient(
-		option.WithAPIKey("My API Key"),    // defaults to os.LookupEnv("NIMBLE_API_KEY")
-		option.WithEnvironmentProduction(), // defaults to option.WithEnvironmentStaging()
+		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLE_API_KEY")
 	)
 	response, err := client.Extract(context.TODO(), nimblego.ExtractParams{
 		DebugOptions: nimblego.ExtractParamsDebugOptions{},
