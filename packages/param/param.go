@@ -2,7 +2,7 @@ package param
 
 import (
 	"encoding/json"
-	"github.com/stainless-sdks/nimbleway-go/internal/encoding/json/sentinel"
+	"github.com/Nimbleway/nimble-go/internal/encoding/json/sentinel"
 	"reflect"
 )
 

@@ -2,7 +2,7 @@
 package json
 
 import (
-	"github.com/stainless-sdks/nimbleway-go/internal/encoding/json/shims"
+	"github.com/Nimbleway/nimble-go/internal/encoding/json/shims"
 	"reflect"
 	"time"
 )
