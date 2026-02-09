@@ -8,15 +8,1045 @@ import (
 	"github.com/Nimbleway/nimble-go/internal/apijson"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/shared/constant"
 )
 
-type ExtractResponse struct {
-	ID     string  `json:"id,required" format:"uuid"`
-	Status float64 `json:"status,required"`
+type AgentResponse struct {
+	Data     AgentResponseData     `json:"data,required"`
+	Metadata AgentResponseMetadata `json:"metadata,required"`
+	// The status of the task.
+	//
+	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
+	// "rejected", "blocked".
+	Status AgentResponseStatus `json:"status,required"`
+	// Unique identifier for the task.
+	TaskID string `json:"task_id,required"`
+	// The final URL.
+	URL   string             `json:"url,required"`
+	Debug AgentResponseDebug `json:"debug"`
+	// Pagination information if applicable.
+	Pagination AgentResponsePaginationUnion `json:"pagination"`
+	// The HTTP status code of the task.
+	StatusCode float64 `json:"status_code"`
+	// List of warnings generated during the task.
+	Warnings []string `json:"warnings"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
+		Data        respjson.Field
+		Metadata    respjson.Field
 		Status      respjson.Field
+		TaskID      respjson.Field
+		URL         respjson.Field
+		Debug       respjson.Field
+		Pagination  respjson.Field
+		StatusCode  respjson.Field
+		Warnings    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseData struct {
+	// The render flow browser actions status results.
+	BrowserActions AgentResponseDataBrowserActions `json:"browser_actions"`
+	// The cookies collected from browser actions during the task.
+	Cookies []any `json:"cookies"`
+	// The evaluation results from browser actions during the task.
+	Eval []any `json:"eval"`
+	// The http requests from browser actions made during the task.
+	Fetch []any `json:"fetch"`
+	// The headers received during the task.
+	Headers map[string]string `json:"headers"`
+	// The HTML content of the page.
+	HTML string `json:"html"`
+	// The Markdown version of the HTML content.
+	Markdown string `json:"markdown"`
+	// The network capture data collected during the task.
+	NetworkCapture []AgentResponseDataNetworkCapture `json:"network_capture"`
+	// The parsing results extracted from the HTML & network content.
+	Parsing AgentResponseDataParsingUnion `json:"parsing"`
+	// The list of redirects that occurred during the task.
+	Redirects []AgentResponseDataRedirect `json:"redirects"`
+	// The screenshots from browser actions taken during the task.
+	Screenshots []any `json:"screenshots"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BrowserActions respjson.Field
+		Cookies        respjson.Field
+		Eval           respjson.Field
+		Fetch          respjson.Field
+		Headers        respjson.Field
+		HTML           respjson.Field
+		Markdown       respjson.Field
+		NetworkCapture respjson.Field
+		Parsing        respjson.Field
+		Redirects      respjson.Field
+		Screenshots    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseData) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The render flow browser actions status results.
+type AgentResponseDataBrowserActions struct {
+	Results []AgentResponseDataBrowserActionsResultUnion `json:"results,required"`
+	Success bool                                         `json:"success,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Results     respjson.Field
+		Success     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataBrowserActions) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// AgentResponseDataBrowserActionsResultUnion contains all possible properties and
+// values from [AgentResponseDataBrowserActionsResultObject],
+// [AgentResponseDataBrowserActionsResultObject].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type AgentResponseDataBrowserActionsResultUnion struct {
+	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
+	Duration float64 `json:"duration"`
+	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
+	Name string `json:"name"`
+	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
+	Status string `json:"status"`
+	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
+	Result any `json:"result"`
+	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
+	Error string `json:"error"`
+	JSON  struct {
+		Duration respjson.Field
+		Name     respjson.Field
+		Status   respjson.Field
+		Result   respjson.Field
+		Error    respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u AgentResponseDataBrowserActionsResultUnion) AsAgentResponseDataBrowserActionsResultObject() (v AgentResponseDataBrowserActionsResultObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponseDataBrowserActionsResultUnion) AsVariant2() (v AgentResponseDataBrowserActionsResultObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u AgentResponseDataBrowserActionsResultUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *AgentResponseDataBrowserActionsResultUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataBrowserActionsResultObject struct {
+	Duration float64 `json:"duration,required"`
+	Name     string  `json:"name,required"`
+	// Any of "no-run", "in-progress", "done", "error", "skipped".
+	Status string `json:"status,required"`
+	Result any    `json:"result"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Duration    respjson.Field
+		Name        respjson.Field
+		Status      respjson.Field
+		Result      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataBrowserActionsResultObject) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataBrowserActionsResultObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCapture struct {
+	Filter       AgentResponseDataNetworkCaptureFilter   `json:"filter,required"`
+	Results      []AgentResponseDataNetworkCaptureResult `json:"results,required"`
+	ErrorMessage string                                  `json:"errorMessage"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Filter       respjson.Field
+		Results      respjson.Field
+		ErrorMessage respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCapture) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCaptureFilter struct {
+	Validation           bool    `json:"validation,required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method"`
+	// Resource type for network capture filtering
+	ResourceType                AgentResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
+	StatusCode                  AgentResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
+	URL                         AgentResponseDataNetworkCaptureFilterURL               `json:"url"`
+	WaitForRequestsCountTimeout float64                                                `json:"wait_for_requests_count_timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Validation                  respjson.Field
+		WaitForRequestsCount        respjson.Field
+		Method                      respjson.Field
+		ResourceType                respjson.Field
+		StatusCode                  respjson.Field
+		URL                         respjson.Field
+		WaitForRequestsCountTimeout respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCaptureFilter) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCaptureFilter) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// AgentResponseDataNetworkCaptureFilterResourceTypeUnion contains all possible
+// properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfAgentResponseDataNetworkCaptureFilterResourceTypeString
+// OfAgentResponseDataNetworkCaptureFilterResourceTypeArrayItemArray]
+type AgentResponseDataNetworkCaptureFilterResourceTypeUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfAgentResponseDataNetworkCaptureFilterResourceTypeString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfAgentResponseDataNetworkCaptureFilterResourceTypeArrayItemArray []string `json:",inline"`
+	JSON                                                              struct {
+		OfAgentResponseDataNetworkCaptureFilterResourceTypeString         respjson.Field
+		OfAgentResponseDataNetworkCaptureFilterResourceTypeArrayItemArray respjson.Field
+		raw                                                               string
+	} `json:"-"`
+}
+
+func (u AgentResponseDataNetworkCaptureFilterResourceTypeUnion) AsAgentResponseDataNetworkCaptureFilterResourceTypeString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponseDataNetworkCaptureFilterResourceTypeUnion) AsAgentResponseDataNetworkCaptureFilterResourceTypeArrayItemArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u AgentResponseDataNetworkCaptureFilterResourceTypeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *AgentResponseDataNetworkCaptureFilterResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resource type for network capture filtering
+type AgentResponseDataNetworkCaptureFilterResourceTypeString string
+
+const (
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringDocument           AgentResponseDataNetworkCaptureFilterResourceTypeString = "document"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringStylesheet         AgentResponseDataNetworkCaptureFilterResourceTypeString = "stylesheet"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringImage              AgentResponseDataNetworkCaptureFilterResourceTypeString = "image"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringMedia              AgentResponseDataNetworkCaptureFilterResourceTypeString = "media"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringFont               AgentResponseDataNetworkCaptureFilterResourceTypeString = "font"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringScript             AgentResponseDataNetworkCaptureFilterResourceTypeString = "script"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringTexttrack          AgentResponseDataNetworkCaptureFilterResourceTypeString = "texttrack"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringXhr                AgentResponseDataNetworkCaptureFilterResourceTypeString = "xhr"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringFetch              AgentResponseDataNetworkCaptureFilterResourceTypeString = "fetch"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringPrefetch           AgentResponseDataNetworkCaptureFilterResourceTypeString = "prefetch"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringEventsource        AgentResponseDataNetworkCaptureFilterResourceTypeString = "eventsource"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringWebsocket          AgentResponseDataNetworkCaptureFilterResourceTypeString = "websocket"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringManifest           AgentResponseDataNetworkCaptureFilterResourceTypeString = "manifest"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringSignedexchange     AgentResponseDataNetworkCaptureFilterResourceTypeString = "signedexchange"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringPing               AgentResponseDataNetworkCaptureFilterResourceTypeString = "ping"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringCspviolationreport AgentResponseDataNetworkCaptureFilterResourceTypeString = "cspviolationreport"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringPreflight          AgentResponseDataNetworkCaptureFilterResourceTypeString = "preflight"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringOther              AgentResponseDataNetworkCaptureFilterResourceTypeString = "other"
+	AgentResponseDataNetworkCaptureFilterResourceTypeStringFedcm              AgentResponseDataNetworkCaptureFilterResourceTypeString = "fedcm"
+)
+
+// AgentResponseDataNetworkCaptureFilterStatusCodeUnion contains all possible
+// properties and values from [float64], [[]float64].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfFloat OfFloatArray]
+type AgentResponseDataNetworkCaptureFilterStatusCodeUnion struct {
+	// This field will be present if the value is a [float64] instead of an object.
+	OfFloat float64 `json:",inline"`
+	// This field will be present if the value is a [[]float64] instead of an object.
+	OfFloatArray []float64 `json:",inline"`
+	JSON         struct {
+		OfFloat      respjson.Field
+		OfFloatArray respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u AgentResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloat() (v float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloatArray() (v []float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u AgentResponseDataNetworkCaptureFilterStatusCodeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *AgentResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCaptureFilterURL struct {
+	// Any of "exact", "contains".
+	Type  string `json:"type,required"`
+	Value string `json:"value,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCaptureFilterURL) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCaptureResult struct {
+	Request  AgentResponseDataNetworkCaptureResultRequest  `json:"request,required"`
+	Response AgentResponseDataNetworkCaptureResultResponse `json:"response,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Request     respjson.Field
+		Response    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCaptureResult) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCaptureResultRequest struct {
+	Headers map[string]string `json:"headers,required"`
+	Method  string            `json:"method,required"`
+	// Resource type for network capture filtering
+	//
+	// Any of "document", "stylesheet", "image", "media", "font", "script",
+	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
+	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
+	ResourceType string `json:"resource_type,required"`
+	URL          string `json:"url,required"`
+	Body         string `json:"body"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Headers      respjson.Field
+		Method       respjson.Field
+		ResourceType respjson.Field
+		URL          respjson.Field
+		Body         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCaptureResultRequest) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataNetworkCaptureResultResponse struct {
+	Body    string            `json:"body,required"`
+	Headers map[string]string `json:"headers,required"`
+	// Any of "none", "base64".
+	Serialization string  `json:"serialization,required"`
+	Status        float64 `json:"status,required"`
+	StatusText    string  `json:"status_text,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Body          respjson.Field
+		Headers       respjson.Field
+		Serialization respjson.Field
+		Status        respjson.Field
+		StatusText    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataNetworkCaptureResultResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataNetworkCaptureResultResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// AgentResponseDataParsingUnion contains all possible properties and values from
+// [AgentResponseDataParsingObject], [AgentResponseDataParsingObject],
+// [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfAgentResponseDataParsingMapItem]
+type AgentResponseDataParsingUnion struct {
+	// This field will be present if the value is a [any] instead of an object.
+	OfAgentResponseDataParsingMapItem any `json:",inline"`
+	// This field is from variant [AgentResponseDataParsingObject].
+	Entities map[string]any `json:"entities"`
+	Status   string         `json:"status"`
+	// This field is from variant [AgentResponseDataParsingObject].
+	Error string `json:"error"`
+	JSON  struct {
+		OfAgentResponseDataParsingMapItem respjson.Field
+		Entities                          respjson.Field
+		Status                            respjson.Field
+		Error                             respjson.Field
+		raw                               string
+	} `json:"-"`
+}
+
+func (u AgentResponseDataParsingUnion) AsAgentResponseDataParsingObject() (v AgentResponseDataParsingObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponseDataParsingUnion) AsVariant2() (v AgentResponseDataParsingObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponseDataParsingUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u AgentResponseDataParsingUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *AgentResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataParsingObject struct {
+	Entities map[string]any   `json:"entities,required"`
+	Status   constant.Success `json:"status,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataParsingObject) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataParsingObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseDataRedirect struct {
+	StatusCode float64 `json:"status_code,required"`
+	URL        string  `json:"url,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		StatusCode  respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDataRedirect) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataRedirect) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponseMetadata struct {
+	// The driver used for the task.
+	Driver string `json:"driver"`
+	// The localization identifier for the query.
+	LocalizationID string `json:"localization_id"`
+	// The duration in milliseconds of the query processing.
+	QueryDuration float64 `json:"query_duration"`
+	// The time when the query was received.
+	QueryTime string `json:"query_time"`
+	// Additional response parameters.
+	ResponseParameters any `json:"response_parameters"`
+	// A tag associated with the query.
+	Tag string `json:"tag"`
+	// The identifier of the template used for the query.
+	TemplateID string `json:"template_id"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Driver             respjson.Field
+		LocalizationID     respjson.Field
+		QueryDuration      respjson.Field
+		QueryTime          respjson.Field
+		ResponseParameters respjson.Field
+		Tag                respjson.Field
+		TemplateID         respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseMetadata) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The status of the task.
+type AgentResponseStatus string
+
+const (
+	AgentResponseStatusSuccess   AgentResponseStatus = "success"
+	AgentResponseStatusSkipped   AgentResponseStatus = "skipped"
+	AgentResponseStatusFatal     AgentResponseStatus = "fatal"
+	AgentResponseStatusError     AgentResponseStatus = "error"
+	AgentResponseStatusPostponed AgentResponseStatus = "postponed"
+	AgentResponseStatusIgnored   AgentResponseStatus = "ignored"
+	AgentResponseStatusRejected  AgentResponseStatus = "rejected"
+	AgentResponseStatusBlocked   AgentResponseStatus = "blocked"
+)
+
+type AgentResponseDebug struct {
+	// Performance metrics collected during the task.
+	PerformanceMetrics map[string]float64 `json:"performance_metrics"`
+	// Total bytes used by the proxy during the task.
+	ProxyTotalBytesUsage float64 `json:"proxy_total_bytes_usage"`
+	// The transformed output after applying any transformations.
+	TransformedOutput any `json:"transformed_output"`
+	// The userbrowser instance using during the task.
+	Userbrowser any `json:"userbrowser"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PerformanceMetrics   respjson.Field
+		ProxyTotalBytesUsage respjson.Field
+		TransformedOutput    respjson.Field
+		Userbrowser          respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponseDebug) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDebug) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// AgentResponsePaginationUnion contains all possible properties and values from
+// [AgentResponsePaginationNextPageParams], [[]AgentResponsePaginationArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfAgentResponsePaginationArray]
+type AgentResponsePaginationUnion struct {
+	// This field will be present if the value is a
+	// [[]AgentResponsePaginationArrayItem] instead of an object.
+	OfAgentResponsePaginationArray []AgentResponsePaginationArrayItem `json:",inline"`
+	// This field is from variant [AgentResponsePaginationNextPageParams].
+	NextPageParams map[string]any `json:"next_page_params"`
+	JSON           struct {
+		OfAgentResponsePaginationArray respjson.Field
+		NextPageParams                 respjson.Field
+		raw                            string
+	} `json:"-"`
+}
+
+func (u AgentResponsePaginationUnion) AsAgentResponsePaginationNextPageParams() (v AgentResponsePaginationNextPageParams) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u AgentResponsePaginationUnion) AsAgentResponsePaginationArray() (v []AgentResponsePaginationArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u AgentResponsePaginationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *AgentResponsePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponsePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponsePaginationNextPageParams) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponsePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentResponsePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentResponsePaginationArrayItem) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlResponse struct {
+	ID           string                      `json:"id,required" format:"uuid"`
+	AccountName  string                      `json:"account_name,required"`
+	CrawlOptions CrawlResponseCrawlOptions   `json:"crawl_options,required"`
+	CreatedAt    CrawlResponseCreatedAtUnion `json:"created_at,required"`
+	// Any of "queued", "running", "succeeded", "failed", "canceled".
+	Status         CrawlResponseStatus           `json:"status,required"`
+	UpdatedAt      CrawlResponseUpdatedAtUnion   `json:"updated_at,required"`
+	URL            string                        `json:"url,required" format:"uri"`
+	Completed      float64                       `json:"completed"`
+	CompletedAt    CrawlResponseCompletedAtUnion `json:"completed_at,nullable"`
+	EncryptedToken string                        `json:"encrypted_token,nullable"`
+	ExtractOptions map[string]any                `json:"extract_options,nullable"`
+	Failed         float64                       `json:"failed"`
+	Name           string                        `json:"name,nullable"`
+	Pending        float64                       `json:"pending"`
+	Tasks          []CrawlResponseTask           `json:"tasks"`
+	Total          float64                       `json:"total"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		AccountName    respjson.Field
+		CrawlOptions   respjson.Field
+		CreatedAt      respjson.Field
+		Status         respjson.Field
+		UpdatedAt      respjson.Field
+		URL            respjson.Field
+		Completed      respjson.Field
+		CompletedAt    respjson.Field
+		EncryptedToken respjson.Field
+		ExtractOptions respjson.Field
+		Failed         respjson.Field
+		Name           respjson.Field
+		Pending        respjson.Field
+		Tasks          respjson.Field
+		Total          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlResponse) RawJSON() string { return r.JSON.raw }
+func (r *CrawlResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlResponseCrawlOptions struct {
+	AllowExternalLinks    bool  `json:"allow_external_links,required"`
+	AllowSubdomains       bool  `json:"allow_subdomains,required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
+	Limit                 int64 `json:"limit,required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	// Any of "skip", "include", "only".
+	Sitemap      string                                 `json:"sitemap,required"`
+	Callback     CrawlResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
+	ExcludePaths []string                               `json:"exclude_paths"`
+	IncludePaths []string                               `json:"include_paths"`
+	ExtraFields  map[string]any                         `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AllowExternalLinks    respjson.Field
+		AllowSubdomains       respjson.Field
+		CrawlEntireDomain     respjson.Field
+		IgnoreQueryParameters respjson.Field
+		Limit                 respjson.Field
+		MaxDiscoveryDepth     respjson.Field
+		Sitemap               respjson.Field
+		Callback              respjson.Field
+		ExcludePaths          respjson.Field
+		IncludePaths          respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlResponseCrawlOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlResponseCrawlOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlResponseCrawlOptionsCallbackUnion contains all possible properties and
+// values from [CrawlResponseCrawlOptionsCallbackObject], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
+type CrawlResponseCrawlOptionsCallbackUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field is from variant [CrawlResponseCrawlOptionsCallbackObject].
+	URL string `json:"url"`
+	// This field is from variant [CrawlResponseCrawlOptionsCallbackObject].
+	Events []string `json:"events"`
+	// This field is from variant [CrawlResponseCrawlOptionsCallbackObject].
+	Headers map[string]string `json:"headers"`
+	// This field is from variant [CrawlResponseCrawlOptionsCallbackObject].
+	Metadata map[string]any `json:"metadata"`
+	JSON     struct {
+		OfString respjson.Field
+		URL      respjson.Field
+		Events   respjson.Field
+		Headers  respjson.Field
+		Metadata respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u CrawlResponseCrawlOptionsCallbackUnion) AsCrawlResponseCrawlOptionsCallbackObject() (v CrawlResponseCrawlOptionsCallbackObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseCrawlOptionsCallbackUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseCrawlOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlResponseCrawlOptionsCallbackObject struct {
+	URL string `json:"url,required" format:"uri"`
+	// Any of "started", "page", "completed", "failed".
+	Events   []string          `json:"events"`
+	Headers  map[string]string `json:"headers"`
+	Metadata map[string]any    `json:"metadata"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL         respjson.Field
+		Events      respjson.Field
+		Headers     respjson.Field
+		Metadata    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlResponseCrawlOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlResponseCrawlOptionsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlResponseCreatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlResponseCreatedAtMapItem]
+type CrawlResponseCreatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlResponseCreatedAtMapItem any `json:",inline"`
+	JSON                            struct {
+		OfString                        respjson.Field
+		OfCrawlResponseCreatedAtMapItem respjson.Field
+		raw                             string
+	} `json:"-"`
+}
+
+func (u CrawlResponseCreatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseCreatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseCreatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlResponseStatus string
+
+const (
+	CrawlResponseStatusQueued    CrawlResponseStatus = "queued"
+	CrawlResponseStatusRunning   CrawlResponseStatus = "running"
+	CrawlResponseStatusSucceeded CrawlResponseStatus = "succeeded"
+	CrawlResponseStatusFailed    CrawlResponseStatus = "failed"
+	CrawlResponseStatusCanceled  CrawlResponseStatus = "canceled"
+)
+
+// CrawlResponseUpdatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlResponseUpdatedAtMapItem]
+type CrawlResponseUpdatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlResponseUpdatedAtMapItem any `json:",inline"`
+	JSON                            struct {
+		OfString                        respjson.Field
+		OfCrawlResponseUpdatedAtMapItem respjson.Field
+		raw                             string
+	} `json:"-"`
+}
+
+func (u CrawlResponseUpdatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseUpdatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseUpdatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlResponseCompletedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlResponseCompletedAtMapItem]
+type CrawlResponseCompletedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlResponseCompletedAtMapItem any `json:",inline"`
+	JSON                              struct {
+		OfString                          respjson.Field
+		OfCrawlResponseCompletedAtMapItem respjson.Field
+		raw                               string
+	} `json:"-"`
+}
+
+func (u CrawlResponseCompletedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseCompletedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseCompletedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlResponseTask struct {
+	CrawlID string `json:"crawl_id,required" format:"uuid"`
+	// Any of "pending", "completed", "failed".
+	Status      string                          `json:"status,required"`
+	WebitTaskID string                          `json:"webit_task_id,required"`
+	CreatedAt   CrawlResponseTaskCreatedAtUnion `json:"created_at"`
+	UpdatedAt   CrawlResponseTaskUpdatedAtUnion `json:"updated_at"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CrawlID     respjson.Field
+		Status      respjson.Field
+		WebitTaskID respjson.Field
+		CreatedAt   respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *CrawlResponseTask) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlResponseTaskCreatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlResponseTaskCreatedAtMapItem]
+type CrawlResponseTaskCreatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlResponseTaskCreatedAtMapItem any `json:",inline"`
+	JSON                                struct {
+		OfString                            respjson.Field
+		OfCrawlResponseTaskCreatedAtMapItem respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u CrawlResponseTaskCreatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseTaskCreatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseTaskCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseTaskCreatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlResponseTaskUpdatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlResponseTaskUpdatedAtMapItem]
+type CrawlResponseTaskUpdatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlResponseTaskUpdatedAtMapItem any `json:",inline"`
+	JSON                                struct {
+		OfString                            respjson.Field
+		OfCrawlResponseTaskUpdatedAtMapItem respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u CrawlResponseTaskUpdatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlResponseTaskUpdatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlResponseTaskUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlResponseTaskUpdatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponse struct {
+	Data     ExtractResponseData     `json:"data,required"`
+	Metadata ExtractResponseMetadata `json:"metadata,required"`
+	// The status of the task.
+	//
+	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
+	// "rejected", "blocked".
+	Status ExtractResponseStatus `json:"status,required"`
+	// Unique identifier for the task.
+	TaskID string `json:"task_id,required"`
+	// The final URL.
+	URL   string               `json:"url,required"`
+	Debug ExtractResponseDebug `json:"debug"`
+	// Pagination information if applicable.
+	Pagination ExtractResponsePaginationUnion `json:"pagination"`
+	// The HTTP status code of the task.
+	StatusCode float64 `json:"status_code"`
+	// List of warnings generated during the task.
+	Warnings []string `json:"warnings"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Metadata    respjson.Field
+		Status      respjson.Field
+		TaskID      respjson.Field
+		URL         respjson.Field
+		Debug       respjson.Field
+		Pagination  respjson.Field
+		StatusCode  respjson.Field
+		Warnings    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -28,12 +1058,431 @@ func (r *ExtractResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type ExtractTemplateResponse struct {
-	ID     string  `json:"id,required" format:"uuid"`
-	Status float64 `json:"status,required"`
+type ExtractResponseData struct {
+	// The render flow browser actions status results.
+	BrowserActions ExtractResponseDataBrowserActions `json:"browser_actions"`
+	// The cookies collected from browser actions during the task.
+	Cookies []any `json:"cookies"`
+	// The evaluation results from browser actions during the task.
+	Eval []any `json:"eval"`
+	// The http requests from browser actions made during the task.
+	Fetch []any `json:"fetch"`
+	// The headers received during the task.
+	Headers map[string]string `json:"headers"`
+	// The HTML content of the page.
+	HTML string `json:"html"`
+	// The Markdown version of the HTML content.
+	Markdown string `json:"markdown"`
+	// The network capture data collected during the task.
+	NetworkCapture []ExtractResponseDataNetworkCapture `json:"network_capture"`
+	// The parsing results extracted from the HTML & network content.
+	Parsing ExtractResponseDataParsingUnion `json:"parsing"`
+	// The list of redirects that occurred during the task.
+	Redirects []ExtractResponseDataRedirect `json:"redirects"`
+	// The screenshots from browser actions taken during the task.
+	Screenshots []any `json:"screenshots"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
+		BrowserActions respjson.Field
+		Cookies        respjson.Field
+		Eval           respjson.Field
+		Fetch          respjson.Field
+		Headers        respjson.Field
+		HTML           respjson.Field
+		Markdown       respjson.Field
+		NetworkCapture respjson.Field
+		Parsing        respjson.Field
+		Redirects      respjson.Field
+		Screenshots    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseData) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The render flow browser actions status results.
+type ExtractResponseDataBrowserActions struct {
+	Results []ExtractResponseDataBrowserActionsResultUnion `json:"results,required"`
+	Success bool                                           `json:"success,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Results     respjson.Field
+		Success     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataBrowserActions) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponseDataBrowserActionsResultUnion contains all possible properties
+// and values from [ExtractResponseDataBrowserActionsResultObject],
+// [ExtractResponseDataBrowserActionsResultObject].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ExtractResponseDataBrowserActionsResultUnion struct {
+	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
+	Duration float64 `json:"duration"`
+	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
+	Name string `json:"name"`
+	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
+	Status string `json:"status"`
+	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
+	Result any `json:"result"`
+	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
+	Error string `json:"error"`
+	JSON  struct {
+		Duration respjson.Field
+		Name     respjson.Field
+		Status   respjson.Field
+		Result   respjson.Field
+		Error    respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataBrowserActionsResultUnion) AsExtractResponseDataBrowserActionsResultObject() (v ExtractResponseDataBrowserActionsResultObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataBrowserActionsResultUnion) AsVariant2() (v ExtractResponseDataBrowserActionsResultObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataBrowserActionsResultUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataBrowserActionsResultUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataBrowserActionsResultObject struct {
+	Duration float64 `json:"duration,required"`
+	Name     string  `json:"name,required"`
+	// Any of "no-run", "in-progress", "done", "error", "skipped".
+	Status string `json:"status,required"`
+	Result any    `json:"result"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Duration    respjson.Field
+		Name        respjson.Field
+		Status      respjson.Field
+		Result      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataBrowserActionsResultObject) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataBrowserActionsResultObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCapture struct {
+	Filter       ExtractResponseDataNetworkCaptureFilter   `json:"filter,required"`
+	Results      []ExtractResponseDataNetworkCaptureResult `json:"results,required"`
+	ErrorMessage string                                    `json:"errorMessage"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Filter       respjson.Field
+		Results      respjson.Field
+		ErrorMessage respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCapture) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureFilter struct {
+	Validation           bool    `json:"validation,required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method"`
+	// Resource type for network capture filtering
+	ResourceType                ExtractResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
+	StatusCode                  ExtractResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
+	URL                         ExtractResponseDataNetworkCaptureFilterURL               `json:"url"`
+	WaitForRequestsCountTimeout float64                                                  `json:"wait_for_requests_count_timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Validation                  respjson.Field
+		WaitForRequestsCount        respjson.Field
+		Method                      respjson.Field
+		ResourceType                respjson.Field
+		StatusCode                  respjson.Field
+		URL                         respjson.Field
+		WaitForRequestsCountTimeout respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureFilter) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureFilter) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponseDataNetworkCaptureFilterResourceTypeUnion contains all possible
+// properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponseDataNetworkCaptureFilterResourceTypeString
+// OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray]
+type ExtractResponseDataNetworkCaptureFilterResourceTypeUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfExtractResponseDataNetworkCaptureFilterResourceTypeString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray []string `json:",inline"`
+	JSON                                                                struct {
+		OfExtractResponseDataNetworkCaptureFilterResourceTypeString         respjson.Field
+		OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray respjson.Field
+		raw                                                                 string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) AsExtractResponseDataNetworkCaptureFilterResourceTypeString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) AsExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resource type for network capture filtering
+type ExtractResponseDataNetworkCaptureFilterResourceTypeString string
+
+const (
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringDocument           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "document"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringStylesheet         ExtractResponseDataNetworkCaptureFilterResourceTypeString = "stylesheet"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringImage              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "image"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringMedia              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "media"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFont               ExtractResponseDataNetworkCaptureFilterResourceTypeString = "font"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringScript             ExtractResponseDataNetworkCaptureFilterResourceTypeString = "script"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringTexttrack          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "texttrack"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringXhr                ExtractResponseDataNetworkCaptureFilterResourceTypeString = "xhr"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFetch              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "fetch"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPrefetch           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "prefetch"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringEventsource        ExtractResponseDataNetworkCaptureFilterResourceTypeString = "eventsource"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringWebsocket          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "websocket"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringManifest           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "manifest"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringSignedexchange     ExtractResponseDataNetworkCaptureFilterResourceTypeString = "signedexchange"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPing               ExtractResponseDataNetworkCaptureFilterResourceTypeString = "ping"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringCspviolationreport ExtractResponseDataNetworkCaptureFilterResourceTypeString = "cspviolationreport"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPreflight          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "preflight"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringOther              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "other"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFedcm              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "fedcm"
+)
+
+// ExtractResponseDataNetworkCaptureFilterStatusCodeUnion contains all possible
+// properties and values from [float64], [[]float64].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfFloat OfFloatArray]
+type ExtractResponseDataNetworkCaptureFilterStatusCodeUnion struct {
+	// This field will be present if the value is a [float64] instead of an object.
+	OfFloat float64 `json:",inline"`
+	// This field will be present if the value is a [[]float64] instead of an object.
+	OfFloatArray []float64 `json:",inline"`
+	JSON         struct {
+		OfFloat      respjson.Field
+		OfFloatArray respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloat() (v float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloatArray() (v []float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureFilterURL struct {
+	// Any of "exact", "contains".
+	Type  string `json:"type,required"`
+	Value string `json:"value,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureFilterURL) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResult struct {
+	Request  ExtractResponseDataNetworkCaptureResultRequest  `json:"request,required"`
+	Response ExtractResponseDataNetworkCaptureResultResponse `json:"response,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Request     respjson.Field
+		Response    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResultRequest struct {
+	Headers map[string]string `json:"headers,required"`
+	Method  string            `json:"method,required"`
+	// Resource type for network capture filtering
+	//
+	// Any of "document", "stylesheet", "image", "media", "font", "script",
+	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
+	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
+	ResourceType string `json:"resource_type,required"`
+	URL          string `json:"url,required"`
+	Body         string `json:"body"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Headers      respjson.Field
+		Method       respjson.Field
+		ResourceType respjson.Field
+		URL          respjson.Field
+		Body         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResultRequest) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResultResponse struct {
+	Body    string            `json:"body,required"`
+	Headers map[string]string `json:"headers,required"`
+	// Any of "none", "base64".
+	Serialization string  `json:"serialization,required"`
+	Status        float64 `json:"status,required"`
+	StatusText    string  `json:"status_text,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Body          respjson.Field
+		Headers       respjson.Field
+		Serialization respjson.Field
+		Status        respjson.Field
+		StatusText    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResultResponse) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResultResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponseDataParsingUnion contains all possible properties and values from
+// [ExtractResponseDataParsingObject], [ExtractResponseDataParsingObject],
+// [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponseDataParsingMapItem]
+type ExtractResponseDataParsingUnion struct {
+	// This field will be present if the value is a [any] instead of an object.
+	OfExtractResponseDataParsingMapItem any `json:",inline"`
+	// This field is from variant [ExtractResponseDataParsingObject].
+	Entities map[string]any `json:"entities"`
+	Status   string         `json:"status"`
+	// This field is from variant [ExtractResponseDataParsingObject].
+	Error string `json:"error"`
+	JSON  struct {
+		OfExtractResponseDataParsingMapItem respjson.Field
+		Entities                            respjson.Field
+		Status                              respjson.Field
+		Error                               respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataParsingUnion) AsExtractResponseDataParsingObject() (v ExtractResponseDataParsingObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataParsingUnion) AsVariant2() (v ExtractResponseDataParsingObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataParsingUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataParsingUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataParsingObject struct {
+	Entities map[string]any   `json:"entities,required"`
+	Status   constant.Success `json:"status,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
 		Status      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -41,8 +1490,171 @@ type ExtractTemplateResponse struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ExtractTemplateResponse) RawJSON() string { return r.JSON.raw }
-func (r *ExtractTemplateResponse) UnmarshalJSON(data []byte) error {
+func (r ExtractResponseDataParsingObject) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataParsingObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataRedirect struct {
+	StatusCode float64 `json:"status_code,required"`
+	URL        string  `json:"url,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		StatusCode  respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataRedirect) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataRedirect) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseMetadata struct {
+	// The driver used for the task.
+	Driver string `json:"driver"`
+	// The localization identifier for the query.
+	LocalizationID string `json:"localization_id"`
+	// The duration in milliseconds of the query processing.
+	QueryDuration float64 `json:"query_duration"`
+	// The time when the query was received.
+	QueryTime string `json:"query_time"`
+	// Additional response parameters.
+	ResponseParameters any `json:"response_parameters"`
+	// A tag associated with the query.
+	Tag string `json:"tag"`
+	// The identifier of the template used for the query.
+	TemplateID string `json:"template_id"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Driver             respjson.Field
+		LocalizationID     respjson.Field
+		QueryDuration      respjson.Field
+		QueryTime          respjson.Field
+		ResponseParameters respjson.Field
+		Tag                respjson.Field
+		TemplateID         respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseMetadata) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The status of the task.
+type ExtractResponseStatus string
+
+const (
+	ExtractResponseStatusSuccess   ExtractResponseStatus = "success"
+	ExtractResponseStatusSkipped   ExtractResponseStatus = "skipped"
+	ExtractResponseStatusFatal     ExtractResponseStatus = "fatal"
+	ExtractResponseStatusError     ExtractResponseStatus = "error"
+	ExtractResponseStatusPostponed ExtractResponseStatus = "postponed"
+	ExtractResponseStatusIgnored   ExtractResponseStatus = "ignored"
+	ExtractResponseStatusRejected  ExtractResponseStatus = "rejected"
+	ExtractResponseStatusBlocked   ExtractResponseStatus = "blocked"
+)
+
+type ExtractResponseDebug struct {
+	// Performance metrics collected during the task.
+	PerformanceMetrics map[string]float64 `json:"performance_metrics"`
+	// Total bytes used by the proxy during the task.
+	ProxyTotalBytesUsage float64 `json:"proxy_total_bytes_usage"`
+	// The transformed output after applying any transformations.
+	TransformedOutput any `json:"transformed_output"`
+	// The userbrowser instance using during the task.
+	Userbrowser any `json:"userbrowser"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PerformanceMetrics   respjson.Field
+		ProxyTotalBytesUsage respjson.Field
+		TransformedOutput    respjson.Field
+		Userbrowser          respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDebug) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDebug) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponsePaginationUnion contains all possible properties and values from
+// [ExtractResponsePaginationNextPageParams],
+// [[]ExtractResponsePaginationArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponsePaginationArray]
+type ExtractResponsePaginationUnion struct {
+	// This field will be present if the value is a
+	// [[]ExtractResponsePaginationArrayItem] instead of an object.
+	OfExtractResponsePaginationArray []ExtractResponsePaginationArrayItem `json:",inline"`
+	// This field is from variant [ExtractResponsePaginationNextPageParams].
+	NextPageParams map[string]any `json:"next_page_params"`
+	JSON           struct {
+		OfExtractResponsePaginationArray respjson.Field
+		NextPageParams                   respjson.Field
+		raw                              string
+	} `json:"-"`
+}
+
+func (u ExtractResponsePaginationUnion) AsExtractResponsePaginationNextPageParams() (v ExtractResponsePaginationNextPageParams) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponsePaginationUnion) AsExtractResponsePaginationArray() (v []ExtractResponsePaginationArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponsePaginationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponsePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponsePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponsePaginationNextPageParams) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponsePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponsePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponsePaginationArrayItem) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -101,14 +1713,17 @@ type SearchResponse struct {
 	// Number of results returned
 	TotalResults int64  `json:"total_results,required"`
 	Answer       string `json:"answer,nullable"`
+	// Citations mapping citation markers to result indices
+	AnswerCitations []SearchResponseAnswerCitation `json:"answer_citations,nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		RequestID    respjson.Field
-		Results      respjson.Field
-		TotalResults respjson.Field
-		Answer       respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		RequestID       respjson.Field
+		Results         respjson.Field
+		TotalResults    respjson.Field
+		Answer          respjson.Field
+		AnswerCitations respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -237,11 +1852,170 @@ func (r *SearchResponseResultMetadataWsaMetadata) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type ExtractParams struct {
-	// Debug and troubleshooting options for the request
-	DebugOptions ExtractParamsDebugOptions `json:"debug_options,omitzero,required"`
-	// Target URL to scrape
+// Citation model that maps citation markers to result indices.
+type SearchResponseAnswerCitation struct {
+	// Citation marker number (e.g., 1 for [1])
+	Marker int64 `json:"marker,required"`
+	// Zero-based index into the results array
+	ResultIndex int64 `json:"result_index,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Marker      respjson.Field
+		ResultIndex respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponseAnswerCitation) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponseAnswerCitation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentParams struct {
+
+	//
+	// Request body variants
+	//
+
+	// This field is a request body variant, only one variant field can be set. Request
+	// body for executing a WSA
+	OfExtractTemplateBody *AgentParamsBodyExtractTemplateBody `json:",inline"`
+	// This field is a request body variant, only one variant field can be set. Request
+	// body for executing a WSA
+	OfAgentBody *AgentParamsBodyAgentBody `json:",inline"`
+
+	paramObj
+}
+
+func (u AgentParams) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractTemplateBody, u.OfAgentBody)
+}
+func (r *AgentParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request body for executing a WSA
+//
+// The properties Params, Template are required.
+type AgentParamsBodyExtractTemplateBody struct {
+	Params       map[string]any  `json:"params,omitzero,required"`
+	Template     string          `json:"template,required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	paramObj
+}
+
+func (r AgentParamsBodyExtractTemplateBody) MarshalJSON() (data []byte, err error) {
+	type shadow AgentParamsBodyExtractTemplateBody
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentParamsBodyExtractTemplateBody) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request body for executing a WSA
+//
+// The properties Agent, Params are required.
+type AgentParamsBodyAgentBody struct {
+	Agent        string          `json:"agent,required"`
+	Params       map[string]any  `json:"params,omitzero,required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	paramObj
+}
+
+func (r AgentParamsBodyAgentBody) MarshalJSON() (data []byte, err error) {
+	type shadow AgentParamsBodyAgentBody
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentParamsBodyAgentBody) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlParams struct {
+	// Url to crawl.
+	URL string `json:"url,required"`
+	// Allows the crawler to follow links to external websites.
+	AllowExternalLinks param.Opt[bool] `json:"allow_external_links,omitzero"`
+	// Allows the crawler to follow links to subdomains of the main domain.
+	AllowSubdomains param.Opt[bool] `json:"allow_subdomains,omitzero"`
+	// Allows the crawler to follow internal links to sibling or parent URLs, not just
+	// child paths.
+	CrawlEntireDomain param.Opt[bool] `json:"crawl_entire_domain,omitzero"`
+	// Do not re-scrape the same path with different (or none) query parameters.
+	IgnoreQueryParameters param.Opt[bool] `json:"ignore_query_parameters,omitzero"`
+	// Maximum number of pages to crawl.
+	Limit param.Opt[int64] `json:"limit,omitzero"`
+	// Maximum depth to crawl based on discovery order.
+	MaxDiscoveryDepth param.Opt[int64] `json:"max_discovery_depth,omitzero"`
+	// Name of the crawl.
+	Name param.Opt[string] `json:"name,omitzero"`
+	// Webhook configuration for receiving crawl results.
+	Callback CrawlParamsCallbackUnion `json:"callback,omitzero" format:"uri"`
+	// URL pathname regex patterns that exclude matching URLs from the crawl.
+	ExcludePaths   []string                  `json:"exclude_paths,omitzero"`
+	ExtractOptions CrawlParamsExtractOptions `json:"extract_options,omitzero"`
+	// URL pathname regex patterns that include matching URLs in the crawl.
+	IncludePaths []string `json:"include_paths,omitzero"`
+	// Sitemap and other methods will be used together to find URLs.
+	//
+	// Any of "skip", "include", "only".
+	Sitemap CrawlParamsSitemap `json:"sitemap,omitzero"`
+	paramObj
+}
+
+func (r CrawlParams) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsCallbackUnion struct {
+	OfCrawlsCallbackObject *CrawlParamsCallbackObject `json:",omitzero,inline"`
+	OfString               param.Opt[string]          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsCallbackUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsCallbackObject, u.OfString)
+}
+func (u *CrawlParamsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsCallbackUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsCallbackObject) {
+		return u.OfCrawlsCallbackObject
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlParamsCallbackObject struct {
 	URL string `json:"url,required" format:"uri"`
+	// Any of "started", "page", "completed", "failed".
+	Events   []string          `json:"events,omitzero"`
+	Headers  map[string]string `json:"headers,omitzero"`
+	Metadata map[string]any    `json:"metadata,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsCallbackObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsCallbackObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlParamsExtractOptions struct {
 	// City for geolocation
 	City param.Opt[string] `json:"city,omitzero"`
 	// Client-side timeout in milliseconds
@@ -250,8 +2024,6 @@ type ExtractParams struct {
 	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
 	// Whether to disable IP address validation
 	DisableIPCheck param.Opt[bool] `json:"disable_ip_check,omitzero"`
-	// Whether to export the userbrowser session
-	ExportUserbrowser param.Opt[bool] `json:"export_userbrowser,omitzero"`
 	// Whether to use HTTP/2 protocol
 	Http2 param.Opt[bool] `json:"http2,omitzero"`
 	// Whether to use IPv6 for the request
@@ -272,8 +2044,1762 @@ type ExtractParams struct {
 	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
-	// Whether to return response headers in HTTP headers
-	ReturnResponseHeadersAsHeader param.Opt[bool] `json:"return_response_headers_as_header,omitzero"`
+	// Whether to save the userbrowser session for reuse
+	SaveUserbrowser param.Opt[bool] `json:"save_userbrowser,omitzero"`
+	// Whether to skip userbrowser creation template processing
+	SkipUbct param.Opt[bool] `json:"skip_ubct,omitzero"`
+	// User-defined tag for request identification
+	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Type of query or scraping template
+	Type param.Opt[string] `json:"type,omitzero"`
+	// Target URL to scrape
+	URL param.Opt[string] `json:"url,omitzero" format:"uri"`
+	// Browser type to emulate
+	Browser CrawlParamsExtractOptionsBrowserUnion `json:"browser,omitzero"`
+	// Browser cookies as array of cookie objects
+	Cookies CrawlParamsExtractOptionsCookiesUnion `json:"cookies,omitzero"`
+	// Country code for geolocation and proxy selection
+	//
+	// Any of "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT",
+	// "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ",
+	// "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA",
+	// "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU",
+	// "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE",
+	// "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB",
+	// "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+	// "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL",
+	// "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG",
+	// "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+	// "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG",
+	// "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV",
+	// "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP",
+	// "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN",
+	// "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB",
+	// "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR",
+	// "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+	// "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US",
+	// "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE",
+	// "YT", "ZA", "ZM", "ZW", "ALL".
+	Country CrawlParamsExtractOptionsCountry `json:"country,omitzero"`
+	// Device type for browser emulation
+	//
+	// Any of "desktop", "mobile", "tablet".
+	Device string `json:"device,omitzero"`
+	// Browser driver to use
+	//
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	Driver string `json:"driver,omitzero"`
+	// Custom parser configuration as a key-value map
+	DynamicParser map[string]any `json:"dynamic_parser,omitzero"`
+	// Expected HTTP status codes for successful requests
+	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
+	// Response format
+	//
+	// Any of "json", "html", "csv", "raw", "json-lines", "markdown".
+	Format string `json:"format,omitzero"`
+	// Custom HTTP headers to include in the request
+	Headers map[string]CrawlParamsExtractOptionsHeaderUnion `json:"headers,omitzero"`
+	// Locale for browser language and region settings
+	//
+	// Any of "aa-DJ", "aa-ER", "aa-ET", "af", "af-NA", "af-ZA", "ak", "ak-GH", "am",
+	// "am-ET", "an-ES", "ar", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IN", "ar-IQ",
+	// "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA", "ar-SA", "ar-SD",
+	// "ar-SY", "ar-TN", "ar-YE", "as", "as-IN", "asa", "asa-TZ", "ast-ES", "az",
+	// "az-AZ", "az-Cyrl", "az-Cyrl-AZ", "az-Latn", "az-Latn-AZ", "be", "be-BY", "bem",
+	// "bem-ZM", "ber-DZ", "ber-MA", "bez", "bez-TZ", "bg", "bg-BG", "bho-IN", "bm",
+	// "bm-ML", "bn", "bn-BD", "bn-IN", "bo", "bo-CN", "bo-IN", "br-FR", "brx-IN",
+	// "bs", "bs-BA", "byn-ER", "ca", "ca-AD", "ca-ES", "ca-FR", "ca-IT", "cgg",
+	// "cgg-UG", "chr", "chr-US", "crh-UA", "cs", "cs-CZ", "csb-PL", "cv-RU", "cy",
+	// "cy-GB", "da", "da-DK", "dav", "dav-KE", "de", "de-AT", "de-BE", "de-CH",
+	// "de-DE", "de-LI", "de-LU", "dv-MV", "dz-BT", "ebu", "ebu-KE", "ee", "ee-GH",
+	// "ee-TG", "el", "el-CY", "el-GR", "en", "en-AG", "en-AS", "en-AU", "en-BE",
+	// "en-BW", "en-BZ", "en-CA", "en-DK", "en-GB", "en-GU", "en-HK", "en-IE", "en-IN",
+	// "en-JM", "en-MH", "en-MP", "en-MT", "en-MU", "en-NA", "en-NG", "en-NZ", "en-PH",
+	// "en-PK", "en-SG", "en-TT", "en-UM", "en-US", "en-VI", "en-ZA", "en-ZM", "en-ZW",
+	// "eo", "es", "es-419", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU",
+	// "es-DO", "es-EC", "es-ES", "es-GQ", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA",
+	// "es-PE", "es-PR", "es-PY", "es-SV", "es-US", "es-UY", "es-VE", "et", "et-EE",
+	// "eu", "eu-ES", "fa", "fa-AF", "fa-IR", "ff", "ff-SN", "fi", "fi-FI", "fil",
+	// "fil-PH", "fo", "fo-FO", "fr", "fr-BE", "fr-BF", "fr-BI", "fr-BJ", "fr-BL",
+	// "fr-CA", "fr-CD", "fr-CF", "fr-CG", "fr-CH", "fr-CI", "fr-CM", "fr-DJ", "fr-FR",
+	// "fr-GA", "fr-GN", "fr-GP", "fr-GQ", "fr-KM", "fr-LU", "fr-MC", "fr-MF", "fr-MG",
+	// "fr-ML", "fr-MQ", "fr-NE", "fr-RE", "fr-RW", "fr-SN", "fr-TD", "fr-TG",
+	// "fur-IT", "fy-DE", "fy-NL", "ga", "ga-IE", "gd-GB", "gez-ER", "gez-ET", "gl",
+	// "gl-ES", "gsw", "gsw-CH", "gu", "gu-IN", "guz", "guz-KE", "gv", "gv-GB", "ha",
+	// "ha-Latn", "ha-Latn-GH", "ha-Latn-NE", "ha-Latn-NG", "ha-NG", "haw", "haw-US",
+	// "he", "he-IL", "hi", "hi-IN", "hne-IN", "hr", "hr-HR", "hsb-DE", "ht-HT", "hu",
+	// "hu-HU", "hy", "hy-AM", "id", "id-ID", "ig", "ig-NG", "ii", "ii-CN", "ik-CA",
+	// "is", "is-IS", "it", "it-CH", "it-IT", "iu-CA", "iw-IL", "ja", "ja-JP", "jmc",
+	// "jmc-TZ", "ka", "ka-GE", "kab", "kab-DZ", "kam", "kam-KE", "kde", "kde-TZ",
+	// "kea", "kea-CV", "khq", "khq-ML", "ki", "ki-KE", "kk", "kk-Cyrl", "kk-Cyrl-KZ",
+	// "kk-KZ", "kl", "kl-GL", "kln", "kln-KE", "km", "km-KH", "kn", "kn-IN", "ko",
+	// "ko-KR", "kok", "kok-IN", "ks-IN", "ku-TR", "kw", "kw-GB", "ky-KG", "lag",
+	// "lag-TZ", "lb-LU", "lg", "lg-UG", "li-BE", "li-NL", "lij-IT", "lo-LA", "lt",
+	// "lt-LT", "luo", "luo-KE", "luy", "luy-KE", "lv", "lv-LV", "mag-IN", "mai-IN",
+	// "mas", "mas-KE", "mas-TZ", "mer", "mer-KE", "mfe", "mfe-MU", "mg", "mg-MG",
+	// "mhr-RU", "mi-NZ", "mk", "mk-MK", "ml", "ml-IN", "mn-MN", "mr", "mr-IN", "ms",
+	// "ms-BN", "ms-MY", "mt", "mt-MT", "my", "my-MM", "nan-TW", "naq", "naq-NA", "nb",
+	// "nb-NO", "nd", "nd-ZW", "nds-DE", "nds-NL", "ne", "ne-IN", "ne-NP", "nl",
+	// "nl-AW", "nl-BE", "nl-NL", "nn", "nn-NO", "nr-ZA", "nso-ZA", "nyn", "nyn-UG",
+	// "oc-FR", "om", "om-ET", "om-KE", "or", "or-IN", "os-RU", "pa", "pa-Arab",
+	// "pa-Arab-PK", "pa-Guru", "pa-Guru-IN", "pa-IN", "pa-PK", "pap-AN", "pl",
+	// "pl-PL", "ps", "ps-AF", "pt", "pt-BR", "pt-GW", "pt-MZ", "pt-PT", "rm", "rm-CH",
+	// "ro", "ro-MD", "ro-RO", "rof", "rof-TZ", "ru", "ru-MD", "ru-RU", "ru-UA", "rw",
+	// "rw-RW", "rwk", "rwk-TZ", "sa-IN", "saq", "saq-KE", "sc-IT", "sd-IN", "se-NO",
+	// "seh", "seh-MZ", "ses", "ses-ML", "sg", "sg-CF", "shi", "shi-Latn",
+	// "shi-Latn-MA", "shi-Tfng", "shi-Tfng-MA", "shs-CA", "si", "si-LK", "sid-ET",
+	// "sk", "sk-SK", "sl", "sl-SI", "sn", "sn-ZW", "so", "so-DJ", "so-ET", "so-KE",
+	// "so-SO", "sq", "sq-AL", "sq-MK", "sr", "sr-Cyrl", "sr-Cyrl-BA", "sr-Cyrl-ME",
+	// "sr-Cyrl-RS", "sr-Latn", "sr-Latn-BA", "sr-Latn-ME", "sr-Latn-RS", "sr-ME",
+	// "sr-RS", "ss-ZA", "st-ZA", "sv", "sv-FI", "sv-SE", "sw", "sw-KE", "sw-TZ", "ta",
+	// "ta-IN", "ta-LK", "te", "te-IN", "teo", "teo-KE", "teo-UG", "tg-TJ", "th",
+	// "th-TH", "ti", "ti-ER", "ti-ET", "tig-ER", "tk-TM", "tl-PH", "tn-ZA", "to",
+	// "to-TO", "tr", "tr-CY", "tr-TR", "ts-ZA", "tt-RU", "tzm", "tzm-Latn",
+	// "tzm-Latn-MA", "ug-CN", "uk", "uk-UA", "unm-US", "ur", "ur-IN", "ur-PK", "uz",
+	// "uz-Arab", "uz-Arab-AF", "uz-Cyrl", "uz-Cyrl-UZ", "uz-Latn", "uz-Latn-UZ",
+	// "uz-UZ", "ve-ZA", "vi", "vi-VN", "vun", "vun-TZ", "wa-BE", "wae-CH", "wal-ET",
+	// "wo-SN", "xh-ZA", "xog", "xog-UG", "yi-US", "yo", "yo-NG", "yue-HK", "zh",
+	// "zh-CN", "zh-HK", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK", "zh-Hans-MO",
+	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
+	// "zh-TW", "zu", "zu-ZA", "auto".
+	Locale CrawlParamsExtractOptionsLocale `json:"locale,omitzero"`
+	// Structured metadata about the request execution context
+	Metadata CrawlParamsExtractOptionsMetadata `json:"metadata,omitzero"`
+	// HTTP method for the request
+	//
+	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
+	Method string `json:"method,omitzero"`
+	// Native execution mode
+	//
+	// Any of "requester", "apm", "direct".
+	NativeMode string `json:"native_mode,omitzero"`
+	// Filters for capturing network traffic
+	NetworkCapture []CrawlParamsExtractOptionsNetworkCapture `json:"network_capture,omitzero"`
+	// Operating system to emulate
+	//
+	// Any of "windows", "mac os", "linux", "android", "ios".
+	Os string `json:"os,omitzero"`
+	// Configuration options for parsing behavior
+	ParseOptions CrawlParamsExtractOptionsParseOptions `json:"parse_options,omitzero"`
+	// Custom parser configuration as a key-value map
+	Parser CrawlParamsExtractOptionsParserUnion `json:"parser,omitzero"`
+	// Proxy provider to use for the request
+	//
+	// Any of "brightdata", "oxylabs", "smartproxy", "proxit", "proxit_preprod",
+	// "local", "rayobyte", "always", "oculusproxies", "froxy", "packetstream",
+	// "911proxy", "direct911proxy", "thesocialproxy", "thesocialproxy2", "nimble-isp",
+	// "nimble-isp-mobile", "proxit-linux", "proxit-macos", "proxit-windows",
+	// "proxit-rental", "ipfoxy", "brightup", "research".
+	ProxyProvider CrawlParamsExtractOptionsProxyProvider `json:"proxy_provider,omitzero"`
+	// Weighted distribution of proxy providers
+	ProxyProviders map[string]float64 `json:"proxy_providers,omitzero"`
+	// Query template configuration for structured data extraction
+	QueryTemplate CrawlParamsExtractOptionsQueryTemplate `json:"query_template,omitzero"`
+	// Referrer policy for the request
+	//
+	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
+	// "twitter", "instagram".
+	ReferrerType CrawlParamsExtractOptionsReferrerType `json:"referrer_type,omitzero"`
+	// Array of actions to perform during browser rendering
+	RenderFlow    []map[string]any                       `json:"render_flow,omitzero"`
+	RenderOptions CrawlParamsExtractOptionsRenderOptions `json:"render_options,omitzero"`
+	Session       CrawlParamsExtractOptionsSession       `json:"session,omitzero"`
+	// Skills or capabilities required for the request
+	Skill CrawlParamsExtractOptionsSkillUnion `json:"skill,omitzero"`
+	// US state for geolocation (only valid when country is US)
+	//
+	// Any of "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA",
+	// "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+	// "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP",
+	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+	// "VI", "WA", "WV", "WI", "WY".
+	State string `json:"state,omitzero"`
+	// Userbrowser creation template configuration
+	Template CrawlParamsExtractOptionsTemplate `json:"template,omitzero"`
+	// Pre-rendered userbrowser creation template configuration
+	UserbrowserCreationTemplateRendered CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered `json:"userbrowser_creation_template_rendered,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptions) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptions
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"device", "desktop", "mobile", "tablet",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"format", "json", "html", "csv", "raw", "json-lines", "markdown",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"native_mode", "requester", "apm", "direct",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"os", "windows", "mac os", "linux", "android", "ios",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
+		"state", "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "VI", "WA", "WV", "WI", "WY",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserString)
+	OfCrawlsExtractOptionsBrowserString param.Opt[string]                       `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserObject *CrawlParamsExtractOptionsBrowserObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserString, u.OfCrawlsExtractOptionsBrowserObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserString) {
+		return &u.OfCrawlsExtractOptionsBrowserString
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserObject) {
+		return u.OfCrawlsExtractOptionsBrowserObject
+	}
+	return nil
+}
+
+// Browser type to emulate
+type CrawlParamsExtractOptionsBrowserString string
+
+const (
+	CrawlParamsExtractOptionsBrowserStringChrome  CrawlParamsExtractOptionsBrowserString = "chrome"
+	CrawlParamsExtractOptionsBrowserStringFirefox CrawlParamsExtractOptionsBrowserString = "firefox"
+)
+
+// The property Name is required.
+type CrawlParamsExtractOptionsBrowserObject struct {
+	// Any of "chrome", "firefox".
+	Name string `json:"name,omitzero,required"`
+	// Specific browser version to emulate
+	Version param.Opt[string] `json:"version,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserObject](
+		"name", "chrome", "firefox",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsCookiesUnion struct {
+	OfCrawlsExtractOptionsCookiesArray []CrawlParamsExtractOptionsCookiesArrayItem `json:",omitzero,inline"`
+	OfString                           param.Opt[string]                           `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsCookiesArray, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsCookiesArray) {
+		return &u.OfCrawlsExtractOptionsCookiesArray
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsCookiesArrayItem struct {
+	Creation      param.Opt[string]                                    `json:"creation,omitzero"`
+	Domain        param.Opt[string]                                    `json:"domain,omitzero"`
+	HostOnly      param.Opt[bool]                                      `json:"hostOnly,omitzero"`
+	HTTPOnly      param.Opt[bool]                                      `json:"httpOnly,omitzero"`
+	LastAccessed  param.Opt[string]                                    `json:"lastAccessed,omitzero"`
+	Path          param.Opt[string]                                    `json:"path,omitzero"`
+	PathIsDefault param.Opt[bool]                                      `json:"pathIsDefault,omitzero"`
+	Expires       param.Opt[string]                                    `json:"expires,omitzero"`
+	Name          param.Opt[string]                                    `json:"name,omitzero"`
+	Secure        param.Opt[bool]                                      `json:"secure,omitzero"`
+	Value         param.Opt[string]                                    `json:"value,omitzero"`
+	Extensions    []string                                             `json:"extensions,omitzero"`
+	MaxAge        CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion `json:"maxAge,omitzero"`
+	// Any of "strict", "lax", "none".
+	SameSite    string         `json:"sameSite,omitzero"`
+	ExtraFields map[string]any `json:"-"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsCookiesArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsCookiesArrayItem
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlParamsExtractOptionsCookiesArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsCookiesArrayItem](
+		"sameSite", "strict", "lax", "none",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString)
+	OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString param.Opt[CrawlParamsExtractOptionsCookiesArrayItemMaxAgeString] `json:",omitzero,inline"`
+	OfFloat                                            param.Opt[float64]                                               `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString, u.OfFloat)
+}
+func (u *CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString) {
+		return &u.OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsCookiesArrayItemMaxAgeString string
+
+const (
+	CrawlParamsExtractOptionsCookiesArrayItemMaxAgeStringInfinity      CrawlParamsExtractOptionsCookiesArrayItemMaxAgeString = "Infinity"
+	CrawlParamsExtractOptionsCookiesArrayItemMaxAgeStringMinusInfinity CrawlParamsExtractOptionsCookiesArrayItemMaxAgeString = "-Infinity"
+)
+
+// Country code for geolocation and proxy selection
+type CrawlParamsExtractOptionsCountry string
+
+const (
+	CrawlParamsExtractOptionsCountryAd  CrawlParamsExtractOptionsCountry = "AD"
+	CrawlParamsExtractOptionsCountryAe  CrawlParamsExtractOptionsCountry = "AE"
+	CrawlParamsExtractOptionsCountryAf  CrawlParamsExtractOptionsCountry = "AF"
+	CrawlParamsExtractOptionsCountryAg  CrawlParamsExtractOptionsCountry = "AG"
+	CrawlParamsExtractOptionsCountryAI  CrawlParamsExtractOptionsCountry = "AI"
+	CrawlParamsExtractOptionsCountryAl  CrawlParamsExtractOptionsCountry = "AL"
+	CrawlParamsExtractOptionsCountryAm  CrawlParamsExtractOptionsCountry = "AM"
+	CrawlParamsExtractOptionsCountryAo  CrawlParamsExtractOptionsCountry = "AO"
+	CrawlParamsExtractOptionsCountryAq  CrawlParamsExtractOptionsCountry = "AQ"
+	CrawlParamsExtractOptionsCountryAr  CrawlParamsExtractOptionsCountry = "AR"
+	CrawlParamsExtractOptionsCountryAs  CrawlParamsExtractOptionsCountry = "AS"
+	CrawlParamsExtractOptionsCountryAt  CrawlParamsExtractOptionsCountry = "AT"
+	CrawlParamsExtractOptionsCountryAu  CrawlParamsExtractOptionsCountry = "AU"
+	CrawlParamsExtractOptionsCountryAw  CrawlParamsExtractOptionsCountry = "AW"
+	CrawlParamsExtractOptionsCountryAx  CrawlParamsExtractOptionsCountry = "AX"
+	CrawlParamsExtractOptionsCountryAz  CrawlParamsExtractOptionsCountry = "AZ"
+	CrawlParamsExtractOptionsCountryBa  CrawlParamsExtractOptionsCountry = "BA"
+	CrawlParamsExtractOptionsCountryBb  CrawlParamsExtractOptionsCountry = "BB"
+	CrawlParamsExtractOptionsCountryBd  CrawlParamsExtractOptionsCountry = "BD"
+	CrawlParamsExtractOptionsCountryBe  CrawlParamsExtractOptionsCountry = "BE"
+	CrawlParamsExtractOptionsCountryBf  CrawlParamsExtractOptionsCountry = "BF"
+	CrawlParamsExtractOptionsCountryBg  CrawlParamsExtractOptionsCountry = "BG"
+	CrawlParamsExtractOptionsCountryBh  CrawlParamsExtractOptionsCountry = "BH"
+	CrawlParamsExtractOptionsCountryBi  CrawlParamsExtractOptionsCountry = "BI"
+	CrawlParamsExtractOptionsCountryBj  CrawlParamsExtractOptionsCountry = "BJ"
+	CrawlParamsExtractOptionsCountryBl  CrawlParamsExtractOptionsCountry = "BL"
+	CrawlParamsExtractOptionsCountryBm  CrawlParamsExtractOptionsCountry = "BM"
+	CrawlParamsExtractOptionsCountryBn  CrawlParamsExtractOptionsCountry = "BN"
+	CrawlParamsExtractOptionsCountryBo  CrawlParamsExtractOptionsCountry = "BO"
+	CrawlParamsExtractOptionsCountryBq  CrawlParamsExtractOptionsCountry = "BQ"
+	CrawlParamsExtractOptionsCountryBr  CrawlParamsExtractOptionsCountry = "BR"
+	CrawlParamsExtractOptionsCountryBs  CrawlParamsExtractOptionsCountry = "BS"
+	CrawlParamsExtractOptionsCountryBt  CrawlParamsExtractOptionsCountry = "BT"
+	CrawlParamsExtractOptionsCountryBv  CrawlParamsExtractOptionsCountry = "BV"
+	CrawlParamsExtractOptionsCountryBw  CrawlParamsExtractOptionsCountry = "BW"
+	CrawlParamsExtractOptionsCountryBy  CrawlParamsExtractOptionsCountry = "BY"
+	CrawlParamsExtractOptionsCountryBz  CrawlParamsExtractOptionsCountry = "BZ"
+	CrawlParamsExtractOptionsCountryCa  CrawlParamsExtractOptionsCountry = "CA"
+	CrawlParamsExtractOptionsCountryCc  CrawlParamsExtractOptionsCountry = "CC"
+	CrawlParamsExtractOptionsCountryCd  CrawlParamsExtractOptionsCountry = "CD"
+	CrawlParamsExtractOptionsCountryCf  CrawlParamsExtractOptionsCountry = "CF"
+	CrawlParamsExtractOptionsCountryCg  CrawlParamsExtractOptionsCountry = "CG"
+	CrawlParamsExtractOptionsCountryCh  CrawlParamsExtractOptionsCountry = "CH"
+	CrawlParamsExtractOptionsCountryCi  CrawlParamsExtractOptionsCountry = "CI"
+	CrawlParamsExtractOptionsCountryCk  CrawlParamsExtractOptionsCountry = "CK"
+	CrawlParamsExtractOptionsCountryCl  CrawlParamsExtractOptionsCountry = "CL"
+	CrawlParamsExtractOptionsCountryCm  CrawlParamsExtractOptionsCountry = "CM"
+	CrawlParamsExtractOptionsCountryCn  CrawlParamsExtractOptionsCountry = "CN"
+	CrawlParamsExtractOptionsCountryCo  CrawlParamsExtractOptionsCountry = "CO"
+	CrawlParamsExtractOptionsCountryCr  CrawlParamsExtractOptionsCountry = "CR"
+	CrawlParamsExtractOptionsCountryCu  CrawlParamsExtractOptionsCountry = "CU"
+	CrawlParamsExtractOptionsCountryCv  CrawlParamsExtractOptionsCountry = "CV"
+	CrawlParamsExtractOptionsCountryCw  CrawlParamsExtractOptionsCountry = "CW"
+	CrawlParamsExtractOptionsCountryCx  CrawlParamsExtractOptionsCountry = "CX"
+	CrawlParamsExtractOptionsCountryCy  CrawlParamsExtractOptionsCountry = "CY"
+	CrawlParamsExtractOptionsCountryCz  CrawlParamsExtractOptionsCountry = "CZ"
+	CrawlParamsExtractOptionsCountryDe  CrawlParamsExtractOptionsCountry = "DE"
+	CrawlParamsExtractOptionsCountryDj  CrawlParamsExtractOptionsCountry = "DJ"
+	CrawlParamsExtractOptionsCountryDk  CrawlParamsExtractOptionsCountry = "DK"
+	CrawlParamsExtractOptionsCountryDm  CrawlParamsExtractOptionsCountry = "DM"
+	CrawlParamsExtractOptionsCountryDo  CrawlParamsExtractOptionsCountry = "DO"
+	CrawlParamsExtractOptionsCountryDz  CrawlParamsExtractOptionsCountry = "DZ"
+	CrawlParamsExtractOptionsCountryEc  CrawlParamsExtractOptionsCountry = "EC"
+	CrawlParamsExtractOptionsCountryEe  CrawlParamsExtractOptionsCountry = "EE"
+	CrawlParamsExtractOptionsCountryEg  CrawlParamsExtractOptionsCountry = "EG"
+	CrawlParamsExtractOptionsCountryEh  CrawlParamsExtractOptionsCountry = "EH"
+	CrawlParamsExtractOptionsCountryEr  CrawlParamsExtractOptionsCountry = "ER"
+	CrawlParamsExtractOptionsCountryEs  CrawlParamsExtractOptionsCountry = "ES"
+	CrawlParamsExtractOptionsCountryEt  CrawlParamsExtractOptionsCountry = "ET"
+	CrawlParamsExtractOptionsCountryFi  CrawlParamsExtractOptionsCountry = "FI"
+	CrawlParamsExtractOptionsCountryFj  CrawlParamsExtractOptionsCountry = "FJ"
+	CrawlParamsExtractOptionsCountryFk  CrawlParamsExtractOptionsCountry = "FK"
+	CrawlParamsExtractOptionsCountryFm  CrawlParamsExtractOptionsCountry = "FM"
+	CrawlParamsExtractOptionsCountryFo  CrawlParamsExtractOptionsCountry = "FO"
+	CrawlParamsExtractOptionsCountryFr  CrawlParamsExtractOptionsCountry = "FR"
+	CrawlParamsExtractOptionsCountryGa  CrawlParamsExtractOptionsCountry = "GA"
+	CrawlParamsExtractOptionsCountryGB  CrawlParamsExtractOptionsCountry = "GB"
+	CrawlParamsExtractOptionsCountryGd  CrawlParamsExtractOptionsCountry = "GD"
+	CrawlParamsExtractOptionsCountryGe  CrawlParamsExtractOptionsCountry = "GE"
+	CrawlParamsExtractOptionsCountryGf  CrawlParamsExtractOptionsCountry = "GF"
+	CrawlParamsExtractOptionsCountryGg  CrawlParamsExtractOptionsCountry = "GG"
+	CrawlParamsExtractOptionsCountryGh  CrawlParamsExtractOptionsCountry = "GH"
+	CrawlParamsExtractOptionsCountryGi  CrawlParamsExtractOptionsCountry = "GI"
+	CrawlParamsExtractOptionsCountryGl  CrawlParamsExtractOptionsCountry = "GL"
+	CrawlParamsExtractOptionsCountryGm  CrawlParamsExtractOptionsCountry = "GM"
+	CrawlParamsExtractOptionsCountryGn  CrawlParamsExtractOptionsCountry = "GN"
+	CrawlParamsExtractOptionsCountryGp  CrawlParamsExtractOptionsCountry = "GP"
+	CrawlParamsExtractOptionsCountryGq  CrawlParamsExtractOptionsCountry = "GQ"
+	CrawlParamsExtractOptionsCountryGr  CrawlParamsExtractOptionsCountry = "GR"
+	CrawlParamsExtractOptionsCountryGs  CrawlParamsExtractOptionsCountry = "GS"
+	CrawlParamsExtractOptionsCountryGt  CrawlParamsExtractOptionsCountry = "GT"
+	CrawlParamsExtractOptionsCountryGu  CrawlParamsExtractOptionsCountry = "GU"
+	CrawlParamsExtractOptionsCountryGw  CrawlParamsExtractOptionsCountry = "GW"
+	CrawlParamsExtractOptionsCountryGy  CrawlParamsExtractOptionsCountry = "GY"
+	CrawlParamsExtractOptionsCountryHk  CrawlParamsExtractOptionsCountry = "HK"
+	CrawlParamsExtractOptionsCountryHm  CrawlParamsExtractOptionsCountry = "HM"
+	CrawlParamsExtractOptionsCountryHn  CrawlParamsExtractOptionsCountry = "HN"
+	CrawlParamsExtractOptionsCountryHr  CrawlParamsExtractOptionsCountry = "HR"
+	CrawlParamsExtractOptionsCountryHt  CrawlParamsExtractOptionsCountry = "HT"
+	CrawlParamsExtractOptionsCountryHu  CrawlParamsExtractOptionsCountry = "HU"
+	CrawlParamsExtractOptionsCountryID  CrawlParamsExtractOptionsCountry = "ID"
+	CrawlParamsExtractOptionsCountryIe  CrawlParamsExtractOptionsCountry = "IE"
+	CrawlParamsExtractOptionsCountryIl  CrawlParamsExtractOptionsCountry = "IL"
+	CrawlParamsExtractOptionsCountryIm  CrawlParamsExtractOptionsCountry = "IM"
+	CrawlParamsExtractOptionsCountryIn  CrawlParamsExtractOptionsCountry = "IN"
+	CrawlParamsExtractOptionsCountryIo  CrawlParamsExtractOptionsCountry = "IO"
+	CrawlParamsExtractOptionsCountryIq  CrawlParamsExtractOptionsCountry = "IQ"
+	CrawlParamsExtractOptionsCountryIr  CrawlParamsExtractOptionsCountry = "IR"
+	CrawlParamsExtractOptionsCountryIs  CrawlParamsExtractOptionsCountry = "IS"
+	CrawlParamsExtractOptionsCountryIt  CrawlParamsExtractOptionsCountry = "IT"
+	CrawlParamsExtractOptionsCountryJe  CrawlParamsExtractOptionsCountry = "JE"
+	CrawlParamsExtractOptionsCountryJm  CrawlParamsExtractOptionsCountry = "JM"
+	CrawlParamsExtractOptionsCountryJo  CrawlParamsExtractOptionsCountry = "JO"
+	CrawlParamsExtractOptionsCountryJp  CrawlParamsExtractOptionsCountry = "JP"
+	CrawlParamsExtractOptionsCountryKe  CrawlParamsExtractOptionsCountry = "KE"
+	CrawlParamsExtractOptionsCountryKg  CrawlParamsExtractOptionsCountry = "KG"
+	CrawlParamsExtractOptionsCountryKh  CrawlParamsExtractOptionsCountry = "KH"
+	CrawlParamsExtractOptionsCountryKi  CrawlParamsExtractOptionsCountry = "KI"
+	CrawlParamsExtractOptionsCountryKm  CrawlParamsExtractOptionsCountry = "KM"
+	CrawlParamsExtractOptionsCountryKn  CrawlParamsExtractOptionsCountry = "KN"
+	CrawlParamsExtractOptionsCountryKp  CrawlParamsExtractOptionsCountry = "KP"
+	CrawlParamsExtractOptionsCountryKr  CrawlParamsExtractOptionsCountry = "KR"
+	CrawlParamsExtractOptionsCountryKw  CrawlParamsExtractOptionsCountry = "KW"
+	CrawlParamsExtractOptionsCountryKy  CrawlParamsExtractOptionsCountry = "KY"
+	CrawlParamsExtractOptionsCountryKz  CrawlParamsExtractOptionsCountry = "KZ"
+	CrawlParamsExtractOptionsCountryLa  CrawlParamsExtractOptionsCountry = "LA"
+	CrawlParamsExtractOptionsCountryLb  CrawlParamsExtractOptionsCountry = "LB"
+	CrawlParamsExtractOptionsCountryLc  CrawlParamsExtractOptionsCountry = "LC"
+	CrawlParamsExtractOptionsCountryLi  CrawlParamsExtractOptionsCountry = "LI"
+	CrawlParamsExtractOptionsCountryLk  CrawlParamsExtractOptionsCountry = "LK"
+	CrawlParamsExtractOptionsCountryLr  CrawlParamsExtractOptionsCountry = "LR"
+	CrawlParamsExtractOptionsCountryLs  CrawlParamsExtractOptionsCountry = "LS"
+	CrawlParamsExtractOptionsCountryLt  CrawlParamsExtractOptionsCountry = "LT"
+	CrawlParamsExtractOptionsCountryLu  CrawlParamsExtractOptionsCountry = "LU"
+	CrawlParamsExtractOptionsCountryLv  CrawlParamsExtractOptionsCountry = "LV"
+	CrawlParamsExtractOptionsCountryLy  CrawlParamsExtractOptionsCountry = "LY"
+	CrawlParamsExtractOptionsCountryMa  CrawlParamsExtractOptionsCountry = "MA"
+	CrawlParamsExtractOptionsCountryMc  CrawlParamsExtractOptionsCountry = "MC"
+	CrawlParamsExtractOptionsCountryMd  CrawlParamsExtractOptionsCountry = "MD"
+	CrawlParamsExtractOptionsCountryMe  CrawlParamsExtractOptionsCountry = "ME"
+	CrawlParamsExtractOptionsCountryMf  CrawlParamsExtractOptionsCountry = "MF"
+	CrawlParamsExtractOptionsCountryMg  CrawlParamsExtractOptionsCountry = "MG"
+	CrawlParamsExtractOptionsCountryMh  CrawlParamsExtractOptionsCountry = "MH"
+	CrawlParamsExtractOptionsCountryMk  CrawlParamsExtractOptionsCountry = "MK"
+	CrawlParamsExtractOptionsCountryMl  CrawlParamsExtractOptionsCountry = "ML"
+	CrawlParamsExtractOptionsCountryMm  CrawlParamsExtractOptionsCountry = "MM"
+	CrawlParamsExtractOptionsCountryMn  CrawlParamsExtractOptionsCountry = "MN"
+	CrawlParamsExtractOptionsCountryMo  CrawlParamsExtractOptionsCountry = "MO"
+	CrawlParamsExtractOptionsCountryMp  CrawlParamsExtractOptionsCountry = "MP"
+	CrawlParamsExtractOptionsCountryMq  CrawlParamsExtractOptionsCountry = "MQ"
+	CrawlParamsExtractOptionsCountryMr  CrawlParamsExtractOptionsCountry = "MR"
+	CrawlParamsExtractOptionsCountryMs  CrawlParamsExtractOptionsCountry = "MS"
+	CrawlParamsExtractOptionsCountryMt  CrawlParamsExtractOptionsCountry = "MT"
+	CrawlParamsExtractOptionsCountryMu  CrawlParamsExtractOptionsCountry = "MU"
+	CrawlParamsExtractOptionsCountryMv  CrawlParamsExtractOptionsCountry = "MV"
+	CrawlParamsExtractOptionsCountryMw  CrawlParamsExtractOptionsCountry = "MW"
+	CrawlParamsExtractOptionsCountryMx  CrawlParamsExtractOptionsCountry = "MX"
+	CrawlParamsExtractOptionsCountryMy  CrawlParamsExtractOptionsCountry = "MY"
+	CrawlParamsExtractOptionsCountryMz  CrawlParamsExtractOptionsCountry = "MZ"
+	CrawlParamsExtractOptionsCountryNa  CrawlParamsExtractOptionsCountry = "NA"
+	CrawlParamsExtractOptionsCountryNc  CrawlParamsExtractOptionsCountry = "NC"
+	CrawlParamsExtractOptionsCountryNe  CrawlParamsExtractOptionsCountry = "NE"
+	CrawlParamsExtractOptionsCountryNf  CrawlParamsExtractOptionsCountry = "NF"
+	CrawlParamsExtractOptionsCountryNg  CrawlParamsExtractOptionsCountry = "NG"
+	CrawlParamsExtractOptionsCountryNi  CrawlParamsExtractOptionsCountry = "NI"
+	CrawlParamsExtractOptionsCountryNl  CrawlParamsExtractOptionsCountry = "NL"
+	CrawlParamsExtractOptionsCountryNo  CrawlParamsExtractOptionsCountry = "NO"
+	CrawlParamsExtractOptionsCountryNp  CrawlParamsExtractOptionsCountry = "NP"
+	CrawlParamsExtractOptionsCountryNr  CrawlParamsExtractOptionsCountry = "NR"
+	CrawlParamsExtractOptionsCountryNu  CrawlParamsExtractOptionsCountry = "NU"
+	CrawlParamsExtractOptionsCountryNz  CrawlParamsExtractOptionsCountry = "NZ"
+	CrawlParamsExtractOptionsCountryOm  CrawlParamsExtractOptionsCountry = "OM"
+	CrawlParamsExtractOptionsCountryPa  CrawlParamsExtractOptionsCountry = "PA"
+	CrawlParamsExtractOptionsCountryPe  CrawlParamsExtractOptionsCountry = "PE"
+	CrawlParamsExtractOptionsCountryPf  CrawlParamsExtractOptionsCountry = "PF"
+	CrawlParamsExtractOptionsCountryPg  CrawlParamsExtractOptionsCountry = "PG"
+	CrawlParamsExtractOptionsCountryPh  CrawlParamsExtractOptionsCountry = "PH"
+	CrawlParamsExtractOptionsCountryPk  CrawlParamsExtractOptionsCountry = "PK"
+	CrawlParamsExtractOptionsCountryPl  CrawlParamsExtractOptionsCountry = "PL"
+	CrawlParamsExtractOptionsCountryPm  CrawlParamsExtractOptionsCountry = "PM"
+	CrawlParamsExtractOptionsCountryPn  CrawlParamsExtractOptionsCountry = "PN"
+	CrawlParamsExtractOptionsCountryPr  CrawlParamsExtractOptionsCountry = "PR"
+	CrawlParamsExtractOptionsCountryPs  CrawlParamsExtractOptionsCountry = "PS"
+	CrawlParamsExtractOptionsCountryPt  CrawlParamsExtractOptionsCountry = "PT"
+	CrawlParamsExtractOptionsCountryPw  CrawlParamsExtractOptionsCountry = "PW"
+	CrawlParamsExtractOptionsCountryPy  CrawlParamsExtractOptionsCountry = "PY"
+	CrawlParamsExtractOptionsCountryQa  CrawlParamsExtractOptionsCountry = "QA"
+	CrawlParamsExtractOptionsCountryRe  CrawlParamsExtractOptionsCountry = "RE"
+	CrawlParamsExtractOptionsCountryRo  CrawlParamsExtractOptionsCountry = "RO"
+	CrawlParamsExtractOptionsCountryRs  CrawlParamsExtractOptionsCountry = "RS"
+	CrawlParamsExtractOptionsCountryRu  CrawlParamsExtractOptionsCountry = "RU"
+	CrawlParamsExtractOptionsCountryRw  CrawlParamsExtractOptionsCountry = "RW"
+	CrawlParamsExtractOptionsCountrySa  CrawlParamsExtractOptionsCountry = "SA"
+	CrawlParamsExtractOptionsCountrySb  CrawlParamsExtractOptionsCountry = "SB"
+	CrawlParamsExtractOptionsCountrySc  CrawlParamsExtractOptionsCountry = "SC"
+	CrawlParamsExtractOptionsCountrySd  CrawlParamsExtractOptionsCountry = "SD"
+	CrawlParamsExtractOptionsCountrySe  CrawlParamsExtractOptionsCountry = "SE"
+	CrawlParamsExtractOptionsCountrySg  CrawlParamsExtractOptionsCountry = "SG"
+	CrawlParamsExtractOptionsCountrySh  CrawlParamsExtractOptionsCountry = "SH"
+	CrawlParamsExtractOptionsCountrySi  CrawlParamsExtractOptionsCountry = "SI"
+	CrawlParamsExtractOptionsCountrySj  CrawlParamsExtractOptionsCountry = "SJ"
+	CrawlParamsExtractOptionsCountrySk  CrawlParamsExtractOptionsCountry = "SK"
+	CrawlParamsExtractOptionsCountrySl  CrawlParamsExtractOptionsCountry = "SL"
+	CrawlParamsExtractOptionsCountrySm  CrawlParamsExtractOptionsCountry = "SM"
+	CrawlParamsExtractOptionsCountrySn  CrawlParamsExtractOptionsCountry = "SN"
+	CrawlParamsExtractOptionsCountrySo  CrawlParamsExtractOptionsCountry = "SO"
+	CrawlParamsExtractOptionsCountrySr  CrawlParamsExtractOptionsCountry = "SR"
+	CrawlParamsExtractOptionsCountrySS  CrawlParamsExtractOptionsCountry = "SS"
+	CrawlParamsExtractOptionsCountrySt  CrawlParamsExtractOptionsCountry = "ST"
+	CrawlParamsExtractOptionsCountrySv  CrawlParamsExtractOptionsCountry = "SV"
+	CrawlParamsExtractOptionsCountrySx  CrawlParamsExtractOptionsCountry = "SX"
+	CrawlParamsExtractOptionsCountrySy  CrawlParamsExtractOptionsCountry = "SY"
+	CrawlParamsExtractOptionsCountrySz  CrawlParamsExtractOptionsCountry = "SZ"
+	CrawlParamsExtractOptionsCountryTc  CrawlParamsExtractOptionsCountry = "TC"
+	CrawlParamsExtractOptionsCountryTd  CrawlParamsExtractOptionsCountry = "TD"
+	CrawlParamsExtractOptionsCountryTf  CrawlParamsExtractOptionsCountry = "TF"
+	CrawlParamsExtractOptionsCountryTg  CrawlParamsExtractOptionsCountry = "TG"
+	CrawlParamsExtractOptionsCountryTh  CrawlParamsExtractOptionsCountry = "TH"
+	CrawlParamsExtractOptionsCountryTj  CrawlParamsExtractOptionsCountry = "TJ"
+	CrawlParamsExtractOptionsCountryTk  CrawlParamsExtractOptionsCountry = "TK"
+	CrawlParamsExtractOptionsCountryTl  CrawlParamsExtractOptionsCountry = "TL"
+	CrawlParamsExtractOptionsCountryTm  CrawlParamsExtractOptionsCountry = "TM"
+	CrawlParamsExtractOptionsCountryTn  CrawlParamsExtractOptionsCountry = "TN"
+	CrawlParamsExtractOptionsCountryTo  CrawlParamsExtractOptionsCountry = "TO"
+	CrawlParamsExtractOptionsCountryTr  CrawlParamsExtractOptionsCountry = "TR"
+	CrawlParamsExtractOptionsCountryTt  CrawlParamsExtractOptionsCountry = "TT"
+	CrawlParamsExtractOptionsCountryTv  CrawlParamsExtractOptionsCountry = "TV"
+	CrawlParamsExtractOptionsCountryTw  CrawlParamsExtractOptionsCountry = "TW"
+	CrawlParamsExtractOptionsCountryTz  CrawlParamsExtractOptionsCountry = "TZ"
+	CrawlParamsExtractOptionsCountryUa  CrawlParamsExtractOptionsCountry = "UA"
+	CrawlParamsExtractOptionsCountryUg  CrawlParamsExtractOptionsCountry = "UG"
+	CrawlParamsExtractOptionsCountryUm  CrawlParamsExtractOptionsCountry = "UM"
+	CrawlParamsExtractOptionsCountryUs  CrawlParamsExtractOptionsCountry = "US"
+	CrawlParamsExtractOptionsCountryUy  CrawlParamsExtractOptionsCountry = "UY"
+	CrawlParamsExtractOptionsCountryUz  CrawlParamsExtractOptionsCountry = "UZ"
+	CrawlParamsExtractOptionsCountryVa  CrawlParamsExtractOptionsCountry = "VA"
+	CrawlParamsExtractOptionsCountryVc  CrawlParamsExtractOptionsCountry = "VC"
+	CrawlParamsExtractOptionsCountryVe  CrawlParamsExtractOptionsCountry = "VE"
+	CrawlParamsExtractOptionsCountryVg  CrawlParamsExtractOptionsCountry = "VG"
+	CrawlParamsExtractOptionsCountryVi  CrawlParamsExtractOptionsCountry = "VI"
+	CrawlParamsExtractOptionsCountryVn  CrawlParamsExtractOptionsCountry = "VN"
+	CrawlParamsExtractOptionsCountryVu  CrawlParamsExtractOptionsCountry = "VU"
+	CrawlParamsExtractOptionsCountryWf  CrawlParamsExtractOptionsCountry = "WF"
+	CrawlParamsExtractOptionsCountryWs  CrawlParamsExtractOptionsCountry = "WS"
+	CrawlParamsExtractOptionsCountryXk  CrawlParamsExtractOptionsCountry = "XK"
+	CrawlParamsExtractOptionsCountryYe  CrawlParamsExtractOptionsCountry = "YE"
+	CrawlParamsExtractOptionsCountryYt  CrawlParamsExtractOptionsCountry = "YT"
+	CrawlParamsExtractOptionsCountryZa  CrawlParamsExtractOptionsCountry = "ZA"
+	CrawlParamsExtractOptionsCountryZm  CrawlParamsExtractOptionsCountry = "ZM"
+	CrawlParamsExtractOptionsCountryZw  CrawlParamsExtractOptionsCountry = "ZW"
+	CrawlParamsExtractOptionsCountryAll CrawlParamsExtractOptionsCountry = "ALL"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsHeaderUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsHeaderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsHeaderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsHeaderUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Locale for browser language and region settings
+type CrawlParamsExtractOptionsLocale string
+
+const (
+	CrawlParamsExtractOptionsLocaleAaDj      CrawlParamsExtractOptionsLocale = "aa-DJ"
+	CrawlParamsExtractOptionsLocaleAaEr      CrawlParamsExtractOptionsLocale = "aa-ER"
+	CrawlParamsExtractOptionsLocaleAaEt      CrawlParamsExtractOptionsLocale = "aa-ET"
+	CrawlParamsExtractOptionsLocaleAf        CrawlParamsExtractOptionsLocale = "af"
+	CrawlParamsExtractOptionsLocaleAfNa      CrawlParamsExtractOptionsLocale = "af-NA"
+	CrawlParamsExtractOptionsLocaleAfZa      CrawlParamsExtractOptionsLocale = "af-ZA"
+	CrawlParamsExtractOptionsLocaleAk        CrawlParamsExtractOptionsLocale = "ak"
+	CrawlParamsExtractOptionsLocaleAkGh      CrawlParamsExtractOptionsLocale = "ak-GH"
+	CrawlParamsExtractOptionsLocaleAm        CrawlParamsExtractOptionsLocale = "am"
+	CrawlParamsExtractOptionsLocaleAmEt      CrawlParamsExtractOptionsLocale = "am-ET"
+	CrawlParamsExtractOptionsLocaleAnEs      CrawlParamsExtractOptionsLocale = "an-ES"
+	CrawlParamsExtractOptionsLocaleAr        CrawlParamsExtractOptionsLocale = "ar"
+	CrawlParamsExtractOptionsLocaleArAe      CrawlParamsExtractOptionsLocale = "ar-AE"
+	CrawlParamsExtractOptionsLocaleArBh      CrawlParamsExtractOptionsLocale = "ar-BH"
+	CrawlParamsExtractOptionsLocaleArDz      CrawlParamsExtractOptionsLocale = "ar-DZ"
+	CrawlParamsExtractOptionsLocaleArEg      CrawlParamsExtractOptionsLocale = "ar-EG"
+	CrawlParamsExtractOptionsLocaleArIn      CrawlParamsExtractOptionsLocale = "ar-IN"
+	CrawlParamsExtractOptionsLocaleArIq      CrawlParamsExtractOptionsLocale = "ar-IQ"
+	CrawlParamsExtractOptionsLocaleArJo      CrawlParamsExtractOptionsLocale = "ar-JO"
+	CrawlParamsExtractOptionsLocaleArKw      CrawlParamsExtractOptionsLocale = "ar-KW"
+	CrawlParamsExtractOptionsLocaleArLb      CrawlParamsExtractOptionsLocale = "ar-LB"
+	CrawlParamsExtractOptionsLocaleArLy      CrawlParamsExtractOptionsLocale = "ar-LY"
+	CrawlParamsExtractOptionsLocaleArMa      CrawlParamsExtractOptionsLocale = "ar-MA"
+	CrawlParamsExtractOptionsLocaleArOm      CrawlParamsExtractOptionsLocale = "ar-OM"
+	CrawlParamsExtractOptionsLocaleArQa      CrawlParamsExtractOptionsLocale = "ar-QA"
+	CrawlParamsExtractOptionsLocaleArSa      CrawlParamsExtractOptionsLocale = "ar-SA"
+	CrawlParamsExtractOptionsLocaleArSd      CrawlParamsExtractOptionsLocale = "ar-SD"
+	CrawlParamsExtractOptionsLocaleArSy      CrawlParamsExtractOptionsLocale = "ar-SY"
+	CrawlParamsExtractOptionsLocaleArTn      CrawlParamsExtractOptionsLocale = "ar-TN"
+	CrawlParamsExtractOptionsLocaleArYe      CrawlParamsExtractOptionsLocale = "ar-YE"
+	CrawlParamsExtractOptionsLocaleAs        CrawlParamsExtractOptionsLocale = "as"
+	CrawlParamsExtractOptionsLocaleAsIn      CrawlParamsExtractOptionsLocale = "as-IN"
+	CrawlParamsExtractOptionsLocaleAsa       CrawlParamsExtractOptionsLocale = "asa"
+	CrawlParamsExtractOptionsLocaleAsaTz     CrawlParamsExtractOptionsLocale = "asa-TZ"
+	CrawlParamsExtractOptionsLocaleAstEs     CrawlParamsExtractOptionsLocale = "ast-ES"
+	CrawlParamsExtractOptionsLocaleAz        CrawlParamsExtractOptionsLocale = "az"
+	CrawlParamsExtractOptionsLocaleAzAz      CrawlParamsExtractOptionsLocale = "az-AZ"
+	CrawlParamsExtractOptionsLocaleAzCyrl    CrawlParamsExtractOptionsLocale = "az-Cyrl"
+	CrawlParamsExtractOptionsLocaleAzCyrlAz  CrawlParamsExtractOptionsLocale = "az-Cyrl-AZ"
+	CrawlParamsExtractOptionsLocaleAzLatn    CrawlParamsExtractOptionsLocale = "az-Latn"
+	CrawlParamsExtractOptionsLocaleAzLatnAz  CrawlParamsExtractOptionsLocale = "az-Latn-AZ"
+	CrawlParamsExtractOptionsLocaleBe        CrawlParamsExtractOptionsLocale = "be"
+	CrawlParamsExtractOptionsLocaleBeBy      CrawlParamsExtractOptionsLocale = "be-BY"
+	CrawlParamsExtractOptionsLocaleBem       CrawlParamsExtractOptionsLocale = "bem"
+	CrawlParamsExtractOptionsLocaleBemZm     CrawlParamsExtractOptionsLocale = "bem-ZM"
+	CrawlParamsExtractOptionsLocaleBerDz     CrawlParamsExtractOptionsLocale = "ber-DZ"
+	CrawlParamsExtractOptionsLocaleBerMa     CrawlParamsExtractOptionsLocale = "ber-MA"
+	CrawlParamsExtractOptionsLocaleBez       CrawlParamsExtractOptionsLocale = "bez"
+	CrawlParamsExtractOptionsLocaleBezTz     CrawlParamsExtractOptionsLocale = "bez-TZ"
+	CrawlParamsExtractOptionsLocaleBg        CrawlParamsExtractOptionsLocale = "bg"
+	CrawlParamsExtractOptionsLocaleBgBg      CrawlParamsExtractOptionsLocale = "bg-BG"
+	CrawlParamsExtractOptionsLocaleBhoIn     CrawlParamsExtractOptionsLocale = "bho-IN"
+	CrawlParamsExtractOptionsLocaleBm        CrawlParamsExtractOptionsLocale = "bm"
+	CrawlParamsExtractOptionsLocaleBmMl      CrawlParamsExtractOptionsLocale = "bm-ML"
+	CrawlParamsExtractOptionsLocaleBn        CrawlParamsExtractOptionsLocale = "bn"
+	CrawlParamsExtractOptionsLocaleBnBd      CrawlParamsExtractOptionsLocale = "bn-BD"
+	CrawlParamsExtractOptionsLocaleBnIn      CrawlParamsExtractOptionsLocale = "bn-IN"
+	CrawlParamsExtractOptionsLocaleBo        CrawlParamsExtractOptionsLocale = "bo"
+	CrawlParamsExtractOptionsLocaleBoCn      CrawlParamsExtractOptionsLocale = "bo-CN"
+	CrawlParamsExtractOptionsLocaleBoIn      CrawlParamsExtractOptionsLocale = "bo-IN"
+	CrawlParamsExtractOptionsLocaleBrFr      CrawlParamsExtractOptionsLocale = "br-FR"
+	CrawlParamsExtractOptionsLocaleBrxIn     CrawlParamsExtractOptionsLocale = "brx-IN"
+	CrawlParamsExtractOptionsLocaleBs        CrawlParamsExtractOptionsLocale = "bs"
+	CrawlParamsExtractOptionsLocaleBsBa      CrawlParamsExtractOptionsLocale = "bs-BA"
+	CrawlParamsExtractOptionsLocaleBynEr     CrawlParamsExtractOptionsLocale = "byn-ER"
+	CrawlParamsExtractOptionsLocaleCa        CrawlParamsExtractOptionsLocale = "ca"
+	CrawlParamsExtractOptionsLocaleCaAd      CrawlParamsExtractOptionsLocale = "ca-AD"
+	CrawlParamsExtractOptionsLocaleCaEs      CrawlParamsExtractOptionsLocale = "ca-ES"
+	CrawlParamsExtractOptionsLocaleCaFr      CrawlParamsExtractOptionsLocale = "ca-FR"
+	CrawlParamsExtractOptionsLocaleCaIt      CrawlParamsExtractOptionsLocale = "ca-IT"
+	CrawlParamsExtractOptionsLocaleCgg       CrawlParamsExtractOptionsLocale = "cgg"
+	CrawlParamsExtractOptionsLocaleCggUg     CrawlParamsExtractOptionsLocale = "cgg-UG"
+	CrawlParamsExtractOptionsLocaleChr       CrawlParamsExtractOptionsLocale = "chr"
+	CrawlParamsExtractOptionsLocaleChrUs     CrawlParamsExtractOptionsLocale = "chr-US"
+	CrawlParamsExtractOptionsLocaleCrhUa     CrawlParamsExtractOptionsLocale = "crh-UA"
+	CrawlParamsExtractOptionsLocaleCs        CrawlParamsExtractOptionsLocale = "cs"
+	CrawlParamsExtractOptionsLocaleCsCz      CrawlParamsExtractOptionsLocale = "cs-CZ"
+	CrawlParamsExtractOptionsLocaleCsbPl     CrawlParamsExtractOptionsLocale = "csb-PL"
+	CrawlParamsExtractOptionsLocaleCvRu      CrawlParamsExtractOptionsLocale = "cv-RU"
+	CrawlParamsExtractOptionsLocaleCy        CrawlParamsExtractOptionsLocale = "cy"
+	CrawlParamsExtractOptionsLocaleCyGB      CrawlParamsExtractOptionsLocale = "cy-GB"
+	CrawlParamsExtractOptionsLocaleDa        CrawlParamsExtractOptionsLocale = "da"
+	CrawlParamsExtractOptionsLocaleDaDk      CrawlParamsExtractOptionsLocale = "da-DK"
+	CrawlParamsExtractOptionsLocaleDav       CrawlParamsExtractOptionsLocale = "dav"
+	CrawlParamsExtractOptionsLocaleDavKe     CrawlParamsExtractOptionsLocale = "dav-KE"
+	CrawlParamsExtractOptionsLocaleDe        CrawlParamsExtractOptionsLocale = "de"
+	CrawlParamsExtractOptionsLocaleDeAt      CrawlParamsExtractOptionsLocale = "de-AT"
+	CrawlParamsExtractOptionsLocaleDeBe      CrawlParamsExtractOptionsLocale = "de-BE"
+	CrawlParamsExtractOptionsLocaleDeCh      CrawlParamsExtractOptionsLocale = "de-CH"
+	CrawlParamsExtractOptionsLocaleDeDe      CrawlParamsExtractOptionsLocale = "de-DE"
+	CrawlParamsExtractOptionsLocaleDeLi      CrawlParamsExtractOptionsLocale = "de-LI"
+	CrawlParamsExtractOptionsLocaleDeLu      CrawlParamsExtractOptionsLocale = "de-LU"
+	CrawlParamsExtractOptionsLocaleDvMv      CrawlParamsExtractOptionsLocale = "dv-MV"
+	CrawlParamsExtractOptionsLocaleDzBt      CrawlParamsExtractOptionsLocale = "dz-BT"
+	CrawlParamsExtractOptionsLocaleEbu       CrawlParamsExtractOptionsLocale = "ebu"
+	CrawlParamsExtractOptionsLocaleEbuKe     CrawlParamsExtractOptionsLocale = "ebu-KE"
+	CrawlParamsExtractOptionsLocaleEe        CrawlParamsExtractOptionsLocale = "ee"
+	CrawlParamsExtractOptionsLocaleEeGh      CrawlParamsExtractOptionsLocale = "ee-GH"
+	CrawlParamsExtractOptionsLocaleEeTg      CrawlParamsExtractOptionsLocale = "ee-TG"
+	CrawlParamsExtractOptionsLocaleEl        CrawlParamsExtractOptionsLocale = "el"
+	CrawlParamsExtractOptionsLocaleElCy      CrawlParamsExtractOptionsLocale = "el-CY"
+	CrawlParamsExtractOptionsLocaleElGr      CrawlParamsExtractOptionsLocale = "el-GR"
+	CrawlParamsExtractOptionsLocaleEn        CrawlParamsExtractOptionsLocale = "en"
+	CrawlParamsExtractOptionsLocaleEnAg      CrawlParamsExtractOptionsLocale = "en-AG"
+	CrawlParamsExtractOptionsLocaleEnAs      CrawlParamsExtractOptionsLocale = "en-AS"
+	CrawlParamsExtractOptionsLocaleEnAu      CrawlParamsExtractOptionsLocale = "en-AU"
+	CrawlParamsExtractOptionsLocaleEnBe      CrawlParamsExtractOptionsLocale = "en-BE"
+	CrawlParamsExtractOptionsLocaleEnBw      CrawlParamsExtractOptionsLocale = "en-BW"
+	CrawlParamsExtractOptionsLocaleEnBz      CrawlParamsExtractOptionsLocale = "en-BZ"
+	CrawlParamsExtractOptionsLocaleEnCa      CrawlParamsExtractOptionsLocale = "en-CA"
+	CrawlParamsExtractOptionsLocaleEnDk      CrawlParamsExtractOptionsLocale = "en-DK"
+	CrawlParamsExtractOptionsLocaleEnGB      CrawlParamsExtractOptionsLocale = "en-GB"
+	CrawlParamsExtractOptionsLocaleEnGu      CrawlParamsExtractOptionsLocale = "en-GU"
+	CrawlParamsExtractOptionsLocaleEnHk      CrawlParamsExtractOptionsLocale = "en-HK"
+	CrawlParamsExtractOptionsLocaleEnIe      CrawlParamsExtractOptionsLocale = "en-IE"
+	CrawlParamsExtractOptionsLocaleEnIn      CrawlParamsExtractOptionsLocale = "en-IN"
+	CrawlParamsExtractOptionsLocaleEnJm      CrawlParamsExtractOptionsLocale = "en-JM"
+	CrawlParamsExtractOptionsLocaleEnMh      CrawlParamsExtractOptionsLocale = "en-MH"
+	CrawlParamsExtractOptionsLocaleEnMp      CrawlParamsExtractOptionsLocale = "en-MP"
+	CrawlParamsExtractOptionsLocaleEnMt      CrawlParamsExtractOptionsLocale = "en-MT"
+	CrawlParamsExtractOptionsLocaleEnMu      CrawlParamsExtractOptionsLocale = "en-MU"
+	CrawlParamsExtractOptionsLocaleEnNa      CrawlParamsExtractOptionsLocale = "en-NA"
+	CrawlParamsExtractOptionsLocaleEnNg      CrawlParamsExtractOptionsLocale = "en-NG"
+	CrawlParamsExtractOptionsLocaleEnNz      CrawlParamsExtractOptionsLocale = "en-NZ"
+	CrawlParamsExtractOptionsLocaleEnPh      CrawlParamsExtractOptionsLocale = "en-PH"
+	CrawlParamsExtractOptionsLocaleEnPk      CrawlParamsExtractOptionsLocale = "en-PK"
+	CrawlParamsExtractOptionsLocaleEnSg      CrawlParamsExtractOptionsLocale = "en-SG"
+	CrawlParamsExtractOptionsLocaleEnTt      CrawlParamsExtractOptionsLocale = "en-TT"
+	CrawlParamsExtractOptionsLocaleEnUm      CrawlParamsExtractOptionsLocale = "en-UM"
+	CrawlParamsExtractOptionsLocaleEnUs      CrawlParamsExtractOptionsLocale = "en-US"
+	CrawlParamsExtractOptionsLocaleEnVi      CrawlParamsExtractOptionsLocale = "en-VI"
+	CrawlParamsExtractOptionsLocaleEnZa      CrawlParamsExtractOptionsLocale = "en-ZA"
+	CrawlParamsExtractOptionsLocaleEnZm      CrawlParamsExtractOptionsLocale = "en-ZM"
+	CrawlParamsExtractOptionsLocaleEnZw      CrawlParamsExtractOptionsLocale = "en-ZW"
+	CrawlParamsExtractOptionsLocaleEo        CrawlParamsExtractOptionsLocale = "eo"
+	CrawlParamsExtractOptionsLocaleEs        CrawlParamsExtractOptionsLocale = "es"
+	CrawlParamsExtractOptionsLocaleEs419     CrawlParamsExtractOptionsLocale = "es-419"
+	CrawlParamsExtractOptionsLocaleEsAr      CrawlParamsExtractOptionsLocale = "es-AR"
+	CrawlParamsExtractOptionsLocaleEsBo      CrawlParamsExtractOptionsLocale = "es-BO"
+	CrawlParamsExtractOptionsLocaleEsCl      CrawlParamsExtractOptionsLocale = "es-CL"
+	CrawlParamsExtractOptionsLocaleEsCo      CrawlParamsExtractOptionsLocale = "es-CO"
+	CrawlParamsExtractOptionsLocaleEsCr      CrawlParamsExtractOptionsLocale = "es-CR"
+	CrawlParamsExtractOptionsLocaleEsCu      CrawlParamsExtractOptionsLocale = "es-CU"
+	CrawlParamsExtractOptionsLocaleEsDo      CrawlParamsExtractOptionsLocale = "es-DO"
+	CrawlParamsExtractOptionsLocaleEsEc      CrawlParamsExtractOptionsLocale = "es-EC"
+	CrawlParamsExtractOptionsLocaleEsEs      CrawlParamsExtractOptionsLocale = "es-ES"
+	CrawlParamsExtractOptionsLocaleEsGq      CrawlParamsExtractOptionsLocale = "es-GQ"
+	CrawlParamsExtractOptionsLocaleEsGt      CrawlParamsExtractOptionsLocale = "es-GT"
+	CrawlParamsExtractOptionsLocaleEsHn      CrawlParamsExtractOptionsLocale = "es-HN"
+	CrawlParamsExtractOptionsLocaleEsMx      CrawlParamsExtractOptionsLocale = "es-MX"
+	CrawlParamsExtractOptionsLocaleEsNi      CrawlParamsExtractOptionsLocale = "es-NI"
+	CrawlParamsExtractOptionsLocaleEsPa      CrawlParamsExtractOptionsLocale = "es-PA"
+	CrawlParamsExtractOptionsLocaleEsPe      CrawlParamsExtractOptionsLocale = "es-PE"
+	CrawlParamsExtractOptionsLocaleEsPr      CrawlParamsExtractOptionsLocale = "es-PR"
+	CrawlParamsExtractOptionsLocaleEsPy      CrawlParamsExtractOptionsLocale = "es-PY"
+	CrawlParamsExtractOptionsLocaleEsSv      CrawlParamsExtractOptionsLocale = "es-SV"
+	CrawlParamsExtractOptionsLocaleEsUs      CrawlParamsExtractOptionsLocale = "es-US"
+	CrawlParamsExtractOptionsLocaleEsUy      CrawlParamsExtractOptionsLocale = "es-UY"
+	CrawlParamsExtractOptionsLocaleEsVe      CrawlParamsExtractOptionsLocale = "es-VE"
+	CrawlParamsExtractOptionsLocaleEt        CrawlParamsExtractOptionsLocale = "et"
+	CrawlParamsExtractOptionsLocaleEtEe      CrawlParamsExtractOptionsLocale = "et-EE"
+	CrawlParamsExtractOptionsLocaleEu        CrawlParamsExtractOptionsLocale = "eu"
+	CrawlParamsExtractOptionsLocaleEuEs      CrawlParamsExtractOptionsLocale = "eu-ES"
+	CrawlParamsExtractOptionsLocaleFa        CrawlParamsExtractOptionsLocale = "fa"
+	CrawlParamsExtractOptionsLocaleFaAf      CrawlParamsExtractOptionsLocale = "fa-AF"
+	CrawlParamsExtractOptionsLocaleFaIr      CrawlParamsExtractOptionsLocale = "fa-IR"
+	CrawlParamsExtractOptionsLocaleFf        CrawlParamsExtractOptionsLocale = "ff"
+	CrawlParamsExtractOptionsLocaleFfSn      CrawlParamsExtractOptionsLocale = "ff-SN"
+	CrawlParamsExtractOptionsLocaleFi        CrawlParamsExtractOptionsLocale = "fi"
+	CrawlParamsExtractOptionsLocaleFiFi      CrawlParamsExtractOptionsLocale = "fi-FI"
+	CrawlParamsExtractOptionsLocaleFil       CrawlParamsExtractOptionsLocale = "fil"
+	CrawlParamsExtractOptionsLocaleFilPh     CrawlParamsExtractOptionsLocale = "fil-PH"
+	CrawlParamsExtractOptionsLocaleFo        CrawlParamsExtractOptionsLocale = "fo"
+	CrawlParamsExtractOptionsLocaleFoFo      CrawlParamsExtractOptionsLocale = "fo-FO"
+	CrawlParamsExtractOptionsLocaleFr        CrawlParamsExtractOptionsLocale = "fr"
+	CrawlParamsExtractOptionsLocaleFrBe      CrawlParamsExtractOptionsLocale = "fr-BE"
+	CrawlParamsExtractOptionsLocaleFrBf      CrawlParamsExtractOptionsLocale = "fr-BF"
+	CrawlParamsExtractOptionsLocaleFrBi      CrawlParamsExtractOptionsLocale = "fr-BI"
+	CrawlParamsExtractOptionsLocaleFrBj      CrawlParamsExtractOptionsLocale = "fr-BJ"
+	CrawlParamsExtractOptionsLocaleFrBl      CrawlParamsExtractOptionsLocale = "fr-BL"
+	CrawlParamsExtractOptionsLocaleFrCa      CrawlParamsExtractOptionsLocale = "fr-CA"
+	CrawlParamsExtractOptionsLocaleFrCd      CrawlParamsExtractOptionsLocale = "fr-CD"
+	CrawlParamsExtractOptionsLocaleFrCf      CrawlParamsExtractOptionsLocale = "fr-CF"
+	CrawlParamsExtractOptionsLocaleFrCg      CrawlParamsExtractOptionsLocale = "fr-CG"
+	CrawlParamsExtractOptionsLocaleFrCh      CrawlParamsExtractOptionsLocale = "fr-CH"
+	CrawlParamsExtractOptionsLocaleFrCi      CrawlParamsExtractOptionsLocale = "fr-CI"
+	CrawlParamsExtractOptionsLocaleFrCm      CrawlParamsExtractOptionsLocale = "fr-CM"
+	CrawlParamsExtractOptionsLocaleFrDj      CrawlParamsExtractOptionsLocale = "fr-DJ"
+	CrawlParamsExtractOptionsLocaleFrFr      CrawlParamsExtractOptionsLocale = "fr-FR"
+	CrawlParamsExtractOptionsLocaleFrGa      CrawlParamsExtractOptionsLocale = "fr-GA"
+	CrawlParamsExtractOptionsLocaleFrGn      CrawlParamsExtractOptionsLocale = "fr-GN"
+	CrawlParamsExtractOptionsLocaleFrGp      CrawlParamsExtractOptionsLocale = "fr-GP"
+	CrawlParamsExtractOptionsLocaleFrGq      CrawlParamsExtractOptionsLocale = "fr-GQ"
+	CrawlParamsExtractOptionsLocaleFrKm      CrawlParamsExtractOptionsLocale = "fr-KM"
+	CrawlParamsExtractOptionsLocaleFrLu      CrawlParamsExtractOptionsLocale = "fr-LU"
+	CrawlParamsExtractOptionsLocaleFrMc      CrawlParamsExtractOptionsLocale = "fr-MC"
+	CrawlParamsExtractOptionsLocaleFrMf      CrawlParamsExtractOptionsLocale = "fr-MF"
+	CrawlParamsExtractOptionsLocaleFrMg      CrawlParamsExtractOptionsLocale = "fr-MG"
+	CrawlParamsExtractOptionsLocaleFrMl      CrawlParamsExtractOptionsLocale = "fr-ML"
+	CrawlParamsExtractOptionsLocaleFrMq      CrawlParamsExtractOptionsLocale = "fr-MQ"
+	CrawlParamsExtractOptionsLocaleFrNe      CrawlParamsExtractOptionsLocale = "fr-NE"
+	CrawlParamsExtractOptionsLocaleFrRe      CrawlParamsExtractOptionsLocale = "fr-RE"
+	CrawlParamsExtractOptionsLocaleFrRw      CrawlParamsExtractOptionsLocale = "fr-RW"
+	CrawlParamsExtractOptionsLocaleFrSn      CrawlParamsExtractOptionsLocale = "fr-SN"
+	CrawlParamsExtractOptionsLocaleFrTd      CrawlParamsExtractOptionsLocale = "fr-TD"
+	CrawlParamsExtractOptionsLocaleFrTg      CrawlParamsExtractOptionsLocale = "fr-TG"
+	CrawlParamsExtractOptionsLocaleFurIt     CrawlParamsExtractOptionsLocale = "fur-IT"
+	CrawlParamsExtractOptionsLocaleFyDe      CrawlParamsExtractOptionsLocale = "fy-DE"
+	CrawlParamsExtractOptionsLocaleFyNl      CrawlParamsExtractOptionsLocale = "fy-NL"
+	CrawlParamsExtractOptionsLocaleGa        CrawlParamsExtractOptionsLocale = "ga"
+	CrawlParamsExtractOptionsLocaleGaIe      CrawlParamsExtractOptionsLocale = "ga-IE"
+	CrawlParamsExtractOptionsLocaleGdGB      CrawlParamsExtractOptionsLocale = "gd-GB"
+	CrawlParamsExtractOptionsLocaleGezEr     CrawlParamsExtractOptionsLocale = "gez-ER"
+	CrawlParamsExtractOptionsLocaleGezEt     CrawlParamsExtractOptionsLocale = "gez-ET"
+	CrawlParamsExtractOptionsLocaleGl        CrawlParamsExtractOptionsLocale = "gl"
+	CrawlParamsExtractOptionsLocaleGlEs      CrawlParamsExtractOptionsLocale = "gl-ES"
+	CrawlParamsExtractOptionsLocaleGsw       CrawlParamsExtractOptionsLocale = "gsw"
+	CrawlParamsExtractOptionsLocaleGswCh     CrawlParamsExtractOptionsLocale = "gsw-CH"
+	CrawlParamsExtractOptionsLocaleGu        CrawlParamsExtractOptionsLocale = "gu"
+	CrawlParamsExtractOptionsLocaleGuIn      CrawlParamsExtractOptionsLocale = "gu-IN"
+	CrawlParamsExtractOptionsLocaleGuz       CrawlParamsExtractOptionsLocale = "guz"
+	CrawlParamsExtractOptionsLocaleGuzKe     CrawlParamsExtractOptionsLocale = "guz-KE"
+	CrawlParamsExtractOptionsLocaleGv        CrawlParamsExtractOptionsLocale = "gv"
+	CrawlParamsExtractOptionsLocaleGvGB      CrawlParamsExtractOptionsLocale = "gv-GB"
+	CrawlParamsExtractOptionsLocaleHa        CrawlParamsExtractOptionsLocale = "ha"
+	CrawlParamsExtractOptionsLocaleHaLatn    CrawlParamsExtractOptionsLocale = "ha-Latn"
+	CrawlParamsExtractOptionsLocaleHaLatnGh  CrawlParamsExtractOptionsLocale = "ha-Latn-GH"
+	CrawlParamsExtractOptionsLocaleHaLatnNe  CrawlParamsExtractOptionsLocale = "ha-Latn-NE"
+	CrawlParamsExtractOptionsLocaleHaLatnNg  CrawlParamsExtractOptionsLocale = "ha-Latn-NG"
+	CrawlParamsExtractOptionsLocaleHaNg      CrawlParamsExtractOptionsLocale = "ha-NG"
+	CrawlParamsExtractOptionsLocaleHaw       CrawlParamsExtractOptionsLocale = "haw"
+	CrawlParamsExtractOptionsLocaleHawUs     CrawlParamsExtractOptionsLocale = "haw-US"
+	CrawlParamsExtractOptionsLocaleHe        CrawlParamsExtractOptionsLocale = "he"
+	CrawlParamsExtractOptionsLocaleHeIl      CrawlParamsExtractOptionsLocale = "he-IL"
+	CrawlParamsExtractOptionsLocaleHi        CrawlParamsExtractOptionsLocale = "hi"
+	CrawlParamsExtractOptionsLocaleHiIn      CrawlParamsExtractOptionsLocale = "hi-IN"
+	CrawlParamsExtractOptionsLocaleHneIn     CrawlParamsExtractOptionsLocale = "hne-IN"
+	CrawlParamsExtractOptionsLocaleHr        CrawlParamsExtractOptionsLocale = "hr"
+	CrawlParamsExtractOptionsLocaleHrHr      CrawlParamsExtractOptionsLocale = "hr-HR"
+	CrawlParamsExtractOptionsLocaleHsbDe     CrawlParamsExtractOptionsLocale = "hsb-DE"
+	CrawlParamsExtractOptionsLocaleHtHt      CrawlParamsExtractOptionsLocale = "ht-HT"
+	CrawlParamsExtractOptionsLocaleHu        CrawlParamsExtractOptionsLocale = "hu"
+	CrawlParamsExtractOptionsLocaleHuHu      CrawlParamsExtractOptionsLocale = "hu-HU"
+	CrawlParamsExtractOptionsLocaleHy        CrawlParamsExtractOptionsLocale = "hy"
+	CrawlParamsExtractOptionsLocaleHyAm      CrawlParamsExtractOptionsLocale = "hy-AM"
+	CrawlParamsExtractOptionsLocaleID        CrawlParamsExtractOptionsLocale = "id"
+	CrawlParamsExtractOptionsLocaleIDID      CrawlParamsExtractOptionsLocale = "id-ID"
+	CrawlParamsExtractOptionsLocaleIg        CrawlParamsExtractOptionsLocale = "ig"
+	CrawlParamsExtractOptionsLocaleIgNg      CrawlParamsExtractOptionsLocale = "ig-NG"
+	CrawlParamsExtractOptionsLocaleIi        CrawlParamsExtractOptionsLocale = "ii"
+	CrawlParamsExtractOptionsLocaleIiCn      CrawlParamsExtractOptionsLocale = "ii-CN"
+	CrawlParamsExtractOptionsLocaleIkCa      CrawlParamsExtractOptionsLocale = "ik-CA"
+	CrawlParamsExtractOptionsLocaleIs        CrawlParamsExtractOptionsLocale = "is"
+	CrawlParamsExtractOptionsLocaleIsIs      CrawlParamsExtractOptionsLocale = "is-IS"
+	CrawlParamsExtractOptionsLocaleIt        CrawlParamsExtractOptionsLocale = "it"
+	CrawlParamsExtractOptionsLocaleItCh      CrawlParamsExtractOptionsLocale = "it-CH"
+	CrawlParamsExtractOptionsLocaleItIt      CrawlParamsExtractOptionsLocale = "it-IT"
+	CrawlParamsExtractOptionsLocaleIuCa      CrawlParamsExtractOptionsLocale = "iu-CA"
+	CrawlParamsExtractOptionsLocaleIwIl      CrawlParamsExtractOptionsLocale = "iw-IL"
+	CrawlParamsExtractOptionsLocaleJa        CrawlParamsExtractOptionsLocale = "ja"
+	CrawlParamsExtractOptionsLocaleJaJp      CrawlParamsExtractOptionsLocale = "ja-JP"
+	CrawlParamsExtractOptionsLocaleJmc       CrawlParamsExtractOptionsLocale = "jmc"
+	CrawlParamsExtractOptionsLocaleJmcTz     CrawlParamsExtractOptionsLocale = "jmc-TZ"
+	CrawlParamsExtractOptionsLocaleKa        CrawlParamsExtractOptionsLocale = "ka"
+	CrawlParamsExtractOptionsLocaleKaGe      CrawlParamsExtractOptionsLocale = "ka-GE"
+	CrawlParamsExtractOptionsLocaleKab       CrawlParamsExtractOptionsLocale = "kab"
+	CrawlParamsExtractOptionsLocaleKabDz     CrawlParamsExtractOptionsLocale = "kab-DZ"
+	CrawlParamsExtractOptionsLocaleKam       CrawlParamsExtractOptionsLocale = "kam"
+	CrawlParamsExtractOptionsLocaleKamKe     CrawlParamsExtractOptionsLocale = "kam-KE"
+	CrawlParamsExtractOptionsLocaleKde       CrawlParamsExtractOptionsLocale = "kde"
+	CrawlParamsExtractOptionsLocaleKdeTz     CrawlParamsExtractOptionsLocale = "kde-TZ"
+	CrawlParamsExtractOptionsLocaleKea       CrawlParamsExtractOptionsLocale = "kea"
+	CrawlParamsExtractOptionsLocaleKeaCv     CrawlParamsExtractOptionsLocale = "kea-CV"
+	CrawlParamsExtractOptionsLocaleKhq       CrawlParamsExtractOptionsLocale = "khq"
+	CrawlParamsExtractOptionsLocaleKhqMl     CrawlParamsExtractOptionsLocale = "khq-ML"
+	CrawlParamsExtractOptionsLocaleKi        CrawlParamsExtractOptionsLocale = "ki"
+	CrawlParamsExtractOptionsLocaleKiKe      CrawlParamsExtractOptionsLocale = "ki-KE"
+	CrawlParamsExtractOptionsLocaleKk        CrawlParamsExtractOptionsLocale = "kk"
+	CrawlParamsExtractOptionsLocaleKkCyrl    CrawlParamsExtractOptionsLocale = "kk-Cyrl"
+	CrawlParamsExtractOptionsLocaleKkCyrlKz  CrawlParamsExtractOptionsLocale = "kk-Cyrl-KZ"
+	CrawlParamsExtractOptionsLocaleKkKz      CrawlParamsExtractOptionsLocale = "kk-KZ"
+	CrawlParamsExtractOptionsLocaleKl        CrawlParamsExtractOptionsLocale = "kl"
+	CrawlParamsExtractOptionsLocaleKlGl      CrawlParamsExtractOptionsLocale = "kl-GL"
+	CrawlParamsExtractOptionsLocaleKln       CrawlParamsExtractOptionsLocale = "kln"
+	CrawlParamsExtractOptionsLocaleKlnKe     CrawlParamsExtractOptionsLocale = "kln-KE"
+	CrawlParamsExtractOptionsLocaleKm        CrawlParamsExtractOptionsLocale = "km"
+	CrawlParamsExtractOptionsLocaleKmKh      CrawlParamsExtractOptionsLocale = "km-KH"
+	CrawlParamsExtractOptionsLocaleKn        CrawlParamsExtractOptionsLocale = "kn"
+	CrawlParamsExtractOptionsLocaleKnIn      CrawlParamsExtractOptionsLocale = "kn-IN"
+	CrawlParamsExtractOptionsLocaleKo        CrawlParamsExtractOptionsLocale = "ko"
+	CrawlParamsExtractOptionsLocaleKoKr      CrawlParamsExtractOptionsLocale = "ko-KR"
+	CrawlParamsExtractOptionsLocaleKok       CrawlParamsExtractOptionsLocale = "kok"
+	CrawlParamsExtractOptionsLocaleKokIn     CrawlParamsExtractOptionsLocale = "kok-IN"
+	CrawlParamsExtractOptionsLocaleKsIn      CrawlParamsExtractOptionsLocale = "ks-IN"
+	CrawlParamsExtractOptionsLocaleKuTr      CrawlParamsExtractOptionsLocale = "ku-TR"
+	CrawlParamsExtractOptionsLocaleKw        CrawlParamsExtractOptionsLocale = "kw"
+	CrawlParamsExtractOptionsLocaleKwGB      CrawlParamsExtractOptionsLocale = "kw-GB"
+	CrawlParamsExtractOptionsLocaleKyKg      CrawlParamsExtractOptionsLocale = "ky-KG"
+	CrawlParamsExtractOptionsLocaleLag       CrawlParamsExtractOptionsLocale = "lag"
+	CrawlParamsExtractOptionsLocaleLagTz     CrawlParamsExtractOptionsLocale = "lag-TZ"
+	CrawlParamsExtractOptionsLocaleLbLu      CrawlParamsExtractOptionsLocale = "lb-LU"
+	CrawlParamsExtractOptionsLocaleLg        CrawlParamsExtractOptionsLocale = "lg"
+	CrawlParamsExtractOptionsLocaleLgUg      CrawlParamsExtractOptionsLocale = "lg-UG"
+	CrawlParamsExtractOptionsLocaleLiBe      CrawlParamsExtractOptionsLocale = "li-BE"
+	CrawlParamsExtractOptionsLocaleLiNl      CrawlParamsExtractOptionsLocale = "li-NL"
+	CrawlParamsExtractOptionsLocaleLijIt     CrawlParamsExtractOptionsLocale = "lij-IT"
+	CrawlParamsExtractOptionsLocaleLoLa      CrawlParamsExtractOptionsLocale = "lo-LA"
+	CrawlParamsExtractOptionsLocaleLt        CrawlParamsExtractOptionsLocale = "lt"
+	CrawlParamsExtractOptionsLocaleLtLt      CrawlParamsExtractOptionsLocale = "lt-LT"
+	CrawlParamsExtractOptionsLocaleLuo       CrawlParamsExtractOptionsLocale = "luo"
+	CrawlParamsExtractOptionsLocaleLuoKe     CrawlParamsExtractOptionsLocale = "luo-KE"
+	CrawlParamsExtractOptionsLocaleLuy       CrawlParamsExtractOptionsLocale = "luy"
+	CrawlParamsExtractOptionsLocaleLuyKe     CrawlParamsExtractOptionsLocale = "luy-KE"
+	CrawlParamsExtractOptionsLocaleLv        CrawlParamsExtractOptionsLocale = "lv"
+	CrawlParamsExtractOptionsLocaleLvLv      CrawlParamsExtractOptionsLocale = "lv-LV"
+	CrawlParamsExtractOptionsLocaleMagIn     CrawlParamsExtractOptionsLocale = "mag-IN"
+	CrawlParamsExtractOptionsLocaleMaiIn     CrawlParamsExtractOptionsLocale = "mai-IN"
+	CrawlParamsExtractOptionsLocaleMas       CrawlParamsExtractOptionsLocale = "mas"
+	CrawlParamsExtractOptionsLocaleMasKe     CrawlParamsExtractOptionsLocale = "mas-KE"
+	CrawlParamsExtractOptionsLocaleMasTz     CrawlParamsExtractOptionsLocale = "mas-TZ"
+	CrawlParamsExtractOptionsLocaleMer       CrawlParamsExtractOptionsLocale = "mer"
+	CrawlParamsExtractOptionsLocaleMerKe     CrawlParamsExtractOptionsLocale = "mer-KE"
+	CrawlParamsExtractOptionsLocaleMfe       CrawlParamsExtractOptionsLocale = "mfe"
+	CrawlParamsExtractOptionsLocaleMfeMu     CrawlParamsExtractOptionsLocale = "mfe-MU"
+	CrawlParamsExtractOptionsLocaleMg        CrawlParamsExtractOptionsLocale = "mg"
+	CrawlParamsExtractOptionsLocaleMgMg      CrawlParamsExtractOptionsLocale = "mg-MG"
+	CrawlParamsExtractOptionsLocaleMhrRu     CrawlParamsExtractOptionsLocale = "mhr-RU"
+	CrawlParamsExtractOptionsLocaleMiNz      CrawlParamsExtractOptionsLocale = "mi-NZ"
+	CrawlParamsExtractOptionsLocaleMk        CrawlParamsExtractOptionsLocale = "mk"
+	CrawlParamsExtractOptionsLocaleMkMk      CrawlParamsExtractOptionsLocale = "mk-MK"
+	CrawlParamsExtractOptionsLocaleMl        CrawlParamsExtractOptionsLocale = "ml"
+	CrawlParamsExtractOptionsLocaleMlIn      CrawlParamsExtractOptionsLocale = "ml-IN"
+	CrawlParamsExtractOptionsLocaleMnMn      CrawlParamsExtractOptionsLocale = "mn-MN"
+	CrawlParamsExtractOptionsLocaleMr        CrawlParamsExtractOptionsLocale = "mr"
+	CrawlParamsExtractOptionsLocaleMrIn      CrawlParamsExtractOptionsLocale = "mr-IN"
+	CrawlParamsExtractOptionsLocaleMs        CrawlParamsExtractOptionsLocale = "ms"
+	CrawlParamsExtractOptionsLocaleMsBn      CrawlParamsExtractOptionsLocale = "ms-BN"
+	CrawlParamsExtractOptionsLocaleMsMy      CrawlParamsExtractOptionsLocale = "ms-MY"
+	CrawlParamsExtractOptionsLocaleMt        CrawlParamsExtractOptionsLocale = "mt"
+	CrawlParamsExtractOptionsLocaleMtMt      CrawlParamsExtractOptionsLocale = "mt-MT"
+	CrawlParamsExtractOptionsLocaleMy        CrawlParamsExtractOptionsLocale = "my"
+	CrawlParamsExtractOptionsLocaleMyMm      CrawlParamsExtractOptionsLocale = "my-MM"
+	CrawlParamsExtractOptionsLocaleNanTw     CrawlParamsExtractOptionsLocale = "nan-TW"
+	CrawlParamsExtractOptionsLocaleNaq       CrawlParamsExtractOptionsLocale = "naq"
+	CrawlParamsExtractOptionsLocaleNaqNa     CrawlParamsExtractOptionsLocale = "naq-NA"
+	CrawlParamsExtractOptionsLocaleNb        CrawlParamsExtractOptionsLocale = "nb"
+	CrawlParamsExtractOptionsLocaleNbNo      CrawlParamsExtractOptionsLocale = "nb-NO"
+	CrawlParamsExtractOptionsLocaleNd        CrawlParamsExtractOptionsLocale = "nd"
+	CrawlParamsExtractOptionsLocaleNdZw      CrawlParamsExtractOptionsLocale = "nd-ZW"
+	CrawlParamsExtractOptionsLocaleNdsDe     CrawlParamsExtractOptionsLocale = "nds-DE"
+	CrawlParamsExtractOptionsLocaleNdsNl     CrawlParamsExtractOptionsLocale = "nds-NL"
+	CrawlParamsExtractOptionsLocaleNe        CrawlParamsExtractOptionsLocale = "ne"
+	CrawlParamsExtractOptionsLocaleNeIn      CrawlParamsExtractOptionsLocale = "ne-IN"
+	CrawlParamsExtractOptionsLocaleNeNp      CrawlParamsExtractOptionsLocale = "ne-NP"
+	CrawlParamsExtractOptionsLocaleNl        CrawlParamsExtractOptionsLocale = "nl"
+	CrawlParamsExtractOptionsLocaleNlAw      CrawlParamsExtractOptionsLocale = "nl-AW"
+	CrawlParamsExtractOptionsLocaleNlBe      CrawlParamsExtractOptionsLocale = "nl-BE"
+	CrawlParamsExtractOptionsLocaleNlNl      CrawlParamsExtractOptionsLocale = "nl-NL"
+	CrawlParamsExtractOptionsLocaleNn        CrawlParamsExtractOptionsLocale = "nn"
+	CrawlParamsExtractOptionsLocaleNnNo      CrawlParamsExtractOptionsLocale = "nn-NO"
+	CrawlParamsExtractOptionsLocaleNrZa      CrawlParamsExtractOptionsLocale = "nr-ZA"
+	CrawlParamsExtractOptionsLocaleNsoZa     CrawlParamsExtractOptionsLocale = "nso-ZA"
+	CrawlParamsExtractOptionsLocaleNyn       CrawlParamsExtractOptionsLocale = "nyn"
+	CrawlParamsExtractOptionsLocaleNynUg     CrawlParamsExtractOptionsLocale = "nyn-UG"
+	CrawlParamsExtractOptionsLocaleOcFr      CrawlParamsExtractOptionsLocale = "oc-FR"
+	CrawlParamsExtractOptionsLocaleOm        CrawlParamsExtractOptionsLocale = "om"
+	CrawlParamsExtractOptionsLocaleOmEt      CrawlParamsExtractOptionsLocale = "om-ET"
+	CrawlParamsExtractOptionsLocaleOmKe      CrawlParamsExtractOptionsLocale = "om-KE"
+	CrawlParamsExtractOptionsLocaleOr        CrawlParamsExtractOptionsLocale = "or"
+	CrawlParamsExtractOptionsLocaleOrIn      CrawlParamsExtractOptionsLocale = "or-IN"
+	CrawlParamsExtractOptionsLocaleOsRu      CrawlParamsExtractOptionsLocale = "os-RU"
+	CrawlParamsExtractOptionsLocalePa        CrawlParamsExtractOptionsLocale = "pa"
+	CrawlParamsExtractOptionsLocalePaArab    CrawlParamsExtractOptionsLocale = "pa-Arab"
+	CrawlParamsExtractOptionsLocalePaArabPk  CrawlParamsExtractOptionsLocale = "pa-Arab-PK"
+	CrawlParamsExtractOptionsLocalePaGuru    CrawlParamsExtractOptionsLocale = "pa-Guru"
+	CrawlParamsExtractOptionsLocalePaGuruIn  CrawlParamsExtractOptionsLocale = "pa-Guru-IN"
+	CrawlParamsExtractOptionsLocalePaIn      CrawlParamsExtractOptionsLocale = "pa-IN"
+	CrawlParamsExtractOptionsLocalePaPk      CrawlParamsExtractOptionsLocale = "pa-PK"
+	CrawlParamsExtractOptionsLocalePapAn     CrawlParamsExtractOptionsLocale = "pap-AN"
+	CrawlParamsExtractOptionsLocalePl        CrawlParamsExtractOptionsLocale = "pl"
+	CrawlParamsExtractOptionsLocalePlPl      CrawlParamsExtractOptionsLocale = "pl-PL"
+	CrawlParamsExtractOptionsLocalePs        CrawlParamsExtractOptionsLocale = "ps"
+	CrawlParamsExtractOptionsLocalePsAf      CrawlParamsExtractOptionsLocale = "ps-AF"
+	CrawlParamsExtractOptionsLocalePt        CrawlParamsExtractOptionsLocale = "pt"
+	CrawlParamsExtractOptionsLocalePtBr      CrawlParamsExtractOptionsLocale = "pt-BR"
+	CrawlParamsExtractOptionsLocalePtGw      CrawlParamsExtractOptionsLocale = "pt-GW"
+	CrawlParamsExtractOptionsLocalePtMz      CrawlParamsExtractOptionsLocale = "pt-MZ"
+	CrawlParamsExtractOptionsLocalePtPt      CrawlParamsExtractOptionsLocale = "pt-PT"
+	CrawlParamsExtractOptionsLocaleRm        CrawlParamsExtractOptionsLocale = "rm"
+	CrawlParamsExtractOptionsLocaleRmCh      CrawlParamsExtractOptionsLocale = "rm-CH"
+	CrawlParamsExtractOptionsLocaleRo        CrawlParamsExtractOptionsLocale = "ro"
+	CrawlParamsExtractOptionsLocaleRoMd      CrawlParamsExtractOptionsLocale = "ro-MD"
+	CrawlParamsExtractOptionsLocaleRoRo      CrawlParamsExtractOptionsLocale = "ro-RO"
+	CrawlParamsExtractOptionsLocaleRof       CrawlParamsExtractOptionsLocale = "rof"
+	CrawlParamsExtractOptionsLocaleRofTz     CrawlParamsExtractOptionsLocale = "rof-TZ"
+	CrawlParamsExtractOptionsLocaleRu        CrawlParamsExtractOptionsLocale = "ru"
+	CrawlParamsExtractOptionsLocaleRuMd      CrawlParamsExtractOptionsLocale = "ru-MD"
+	CrawlParamsExtractOptionsLocaleRuRu      CrawlParamsExtractOptionsLocale = "ru-RU"
+	CrawlParamsExtractOptionsLocaleRuUa      CrawlParamsExtractOptionsLocale = "ru-UA"
+	CrawlParamsExtractOptionsLocaleRw        CrawlParamsExtractOptionsLocale = "rw"
+	CrawlParamsExtractOptionsLocaleRwRw      CrawlParamsExtractOptionsLocale = "rw-RW"
+	CrawlParamsExtractOptionsLocaleRwk       CrawlParamsExtractOptionsLocale = "rwk"
+	CrawlParamsExtractOptionsLocaleRwkTz     CrawlParamsExtractOptionsLocale = "rwk-TZ"
+	CrawlParamsExtractOptionsLocaleSaIn      CrawlParamsExtractOptionsLocale = "sa-IN"
+	CrawlParamsExtractOptionsLocaleSaq       CrawlParamsExtractOptionsLocale = "saq"
+	CrawlParamsExtractOptionsLocaleSaqKe     CrawlParamsExtractOptionsLocale = "saq-KE"
+	CrawlParamsExtractOptionsLocaleScIt      CrawlParamsExtractOptionsLocale = "sc-IT"
+	CrawlParamsExtractOptionsLocaleSdIn      CrawlParamsExtractOptionsLocale = "sd-IN"
+	CrawlParamsExtractOptionsLocaleSeNo      CrawlParamsExtractOptionsLocale = "se-NO"
+	CrawlParamsExtractOptionsLocaleSeh       CrawlParamsExtractOptionsLocale = "seh"
+	CrawlParamsExtractOptionsLocaleSehMz     CrawlParamsExtractOptionsLocale = "seh-MZ"
+	CrawlParamsExtractOptionsLocaleSes       CrawlParamsExtractOptionsLocale = "ses"
+	CrawlParamsExtractOptionsLocaleSesMl     CrawlParamsExtractOptionsLocale = "ses-ML"
+	CrawlParamsExtractOptionsLocaleSg        CrawlParamsExtractOptionsLocale = "sg"
+	CrawlParamsExtractOptionsLocaleSgCf      CrawlParamsExtractOptionsLocale = "sg-CF"
+	CrawlParamsExtractOptionsLocaleShi       CrawlParamsExtractOptionsLocale = "shi"
+	CrawlParamsExtractOptionsLocaleShiLatn   CrawlParamsExtractOptionsLocale = "shi-Latn"
+	CrawlParamsExtractOptionsLocaleShiLatnMa CrawlParamsExtractOptionsLocale = "shi-Latn-MA"
+	CrawlParamsExtractOptionsLocaleShiTfng   CrawlParamsExtractOptionsLocale = "shi-Tfng"
+	CrawlParamsExtractOptionsLocaleShiTfngMa CrawlParamsExtractOptionsLocale = "shi-Tfng-MA"
+	CrawlParamsExtractOptionsLocaleShsCa     CrawlParamsExtractOptionsLocale = "shs-CA"
+	CrawlParamsExtractOptionsLocaleSi        CrawlParamsExtractOptionsLocale = "si"
+	CrawlParamsExtractOptionsLocaleSiLk      CrawlParamsExtractOptionsLocale = "si-LK"
+	CrawlParamsExtractOptionsLocaleSidEt     CrawlParamsExtractOptionsLocale = "sid-ET"
+	CrawlParamsExtractOptionsLocaleSk        CrawlParamsExtractOptionsLocale = "sk"
+	CrawlParamsExtractOptionsLocaleSkSk      CrawlParamsExtractOptionsLocale = "sk-SK"
+	CrawlParamsExtractOptionsLocaleSl        CrawlParamsExtractOptionsLocale = "sl"
+	CrawlParamsExtractOptionsLocaleSlSi      CrawlParamsExtractOptionsLocale = "sl-SI"
+	CrawlParamsExtractOptionsLocaleSn        CrawlParamsExtractOptionsLocale = "sn"
+	CrawlParamsExtractOptionsLocaleSnZw      CrawlParamsExtractOptionsLocale = "sn-ZW"
+	CrawlParamsExtractOptionsLocaleSo        CrawlParamsExtractOptionsLocale = "so"
+	CrawlParamsExtractOptionsLocaleSoDj      CrawlParamsExtractOptionsLocale = "so-DJ"
+	CrawlParamsExtractOptionsLocaleSoEt      CrawlParamsExtractOptionsLocale = "so-ET"
+	CrawlParamsExtractOptionsLocaleSoKe      CrawlParamsExtractOptionsLocale = "so-KE"
+	CrawlParamsExtractOptionsLocaleSoSo      CrawlParamsExtractOptionsLocale = "so-SO"
+	CrawlParamsExtractOptionsLocaleSq        CrawlParamsExtractOptionsLocale = "sq"
+	CrawlParamsExtractOptionsLocaleSqAl      CrawlParamsExtractOptionsLocale = "sq-AL"
+	CrawlParamsExtractOptionsLocaleSqMk      CrawlParamsExtractOptionsLocale = "sq-MK"
+	CrawlParamsExtractOptionsLocaleSr        CrawlParamsExtractOptionsLocale = "sr"
+	CrawlParamsExtractOptionsLocaleSrCyrl    CrawlParamsExtractOptionsLocale = "sr-Cyrl"
+	CrawlParamsExtractOptionsLocaleSrCyrlBa  CrawlParamsExtractOptionsLocale = "sr-Cyrl-BA"
+	CrawlParamsExtractOptionsLocaleSrCyrlMe  CrawlParamsExtractOptionsLocale = "sr-Cyrl-ME"
+	CrawlParamsExtractOptionsLocaleSrCyrlRs  CrawlParamsExtractOptionsLocale = "sr-Cyrl-RS"
+	CrawlParamsExtractOptionsLocaleSrLatn    CrawlParamsExtractOptionsLocale = "sr-Latn"
+	CrawlParamsExtractOptionsLocaleSrLatnBa  CrawlParamsExtractOptionsLocale = "sr-Latn-BA"
+	CrawlParamsExtractOptionsLocaleSrLatnMe  CrawlParamsExtractOptionsLocale = "sr-Latn-ME"
+	CrawlParamsExtractOptionsLocaleSrLatnRs  CrawlParamsExtractOptionsLocale = "sr-Latn-RS"
+	CrawlParamsExtractOptionsLocaleSrMe      CrawlParamsExtractOptionsLocale = "sr-ME"
+	CrawlParamsExtractOptionsLocaleSrRs      CrawlParamsExtractOptionsLocale = "sr-RS"
+	CrawlParamsExtractOptionsLocaleSSZa      CrawlParamsExtractOptionsLocale = "ss-ZA"
+	CrawlParamsExtractOptionsLocaleStZa      CrawlParamsExtractOptionsLocale = "st-ZA"
+	CrawlParamsExtractOptionsLocaleSv        CrawlParamsExtractOptionsLocale = "sv"
+	CrawlParamsExtractOptionsLocaleSvFi      CrawlParamsExtractOptionsLocale = "sv-FI"
+	CrawlParamsExtractOptionsLocaleSvSe      CrawlParamsExtractOptionsLocale = "sv-SE"
+	CrawlParamsExtractOptionsLocaleSw        CrawlParamsExtractOptionsLocale = "sw"
+	CrawlParamsExtractOptionsLocaleSwKe      CrawlParamsExtractOptionsLocale = "sw-KE"
+	CrawlParamsExtractOptionsLocaleSwTz      CrawlParamsExtractOptionsLocale = "sw-TZ"
+	CrawlParamsExtractOptionsLocaleTa        CrawlParamsExtractOptionsLocale = "ta"
+	CrawlParamsExtractOptionsLocaleTaIn      CrawlParamsExtractOptionsLocale = "ta-IN"
+	CrawlParamsExtractOptionsLocaleTaLk      CrawlParamsExtractOptionsLocale = "ta-LK"
+	CrawlParamsExtractOptionsLocaleTe        CrawlParamsExtractOptionsLocale = "te"
+	CrawlParamsExtractOptionsLocaleTeIn      CrawlParamsExtractOptionsLocale = "te-IN"
+	CrawlParamsExtractOptionsLocaleTeo       CrawlParamsExtractOptionsLocale = "teo"
+	CrawlParamsExtractOptionsLocaleTeoKe     CrawlParamsExtractOptionsLocale = "teo-KE"
+	CrawlParamsExtractOptionsLocaleTeoUg     CrawlParamsExtractOptionsLocale = "teo-UG"
+	CrawlParamsExtractOptionsLocaleTgTj      CrawlParamsExtractOptionsLocale = "tg-TJ"
+	CrawlParamsExtractOptionsLocaleTh        CrawlParamsExtractOptionsLocale = "th"
+	CrawlParamsExtractOptionsLocaleThTh      CrawlParamsExtractOptionsLocale = "th-TH"
+	CrawlParamsExtractOptionsLocaleTi        CrawlParamsExtractOptionsLocale = "ti"
+	CrawlParamsExtractOptionsLocaleTiEr      CrawlParamsExtractOptionsLocale = "ti-ER"
+	CrawlParamsExtractOptionsLocaleTiEt      CrawlParamsExtractOptionsLocale = "ti-ET"
+	CrawlParamsExtractOptionsLocaleTigEr     CrawlParamsExtractOptionsLocale = "tig-ER"
+	CrawlParamsExtractOptionsLocaleTkTm      CrawlParamsExtractOptionsLocale = "tk-TM"
+	CrawlParamsExtractOptionsLocaleTlPh      CrawlParamsExtractOptionsLocale = "tl-PH"
+	CrawlParamsExtractOptionsLocaleTnZa      CrawlParamsExtractOptionsLocale = "tn-ZA"
+	CrawlParamsExtractOptionsLocaleTo        CrawlParamsExtractOptionsLocale = "to"
+	CrawlParamsExtractOptionsLocaleToTo      CrawlParamsExtractOptionsLocale = "to-TO"
+	CrawlParamsExtractOptionsLocaleTr        CrawlParamsExtractOptionsLocale = "tr"
+	CrawlParamsExtractOptionsLocaleTrCy      CrawlParamsExtractOptionsLocale = "tr-CY"
+	CrawlParamsExtractOptionsLocaleTrTr      CrawlParamsExtractOptionsLocale = "tr-TR"
+	CrawlParamsExtractOptionsLocaleTsZa      CrawlParamsExtractOptionsLocale = "ts-ZA"
+	CrawlParamsExtractOptionsLocaleTtRu      CrawlParamsExtractOptionsLocale = "tt-RU"
+	CrawlParamsExtractOptionsLocaleTzm       CrawlParamsExtractOptionsLocale = "tzm"
+	CrawlParamsExtractOptionsLocaleTzmLatn   CrawlParamsExtractOptionsLocale = "tzm-Latn"
+	CrawlParamsExtractOptionsLocaleTzmLatnMa CrawlParamsExtractOptionsLocale = "tzm-Latn-MA"
+	CrawlParamsExtractOptionsLocaleUgCn      CrawlParamsExtractOptionsLocale = "ug-CN"
+	CrawlParamsExtractOptionsLocaleUk        CrawlParamsExtractOptionsLocale = "uk"
+	CrawlParamsExtractOptionsLocaleUkUa      CrawlParamsExtractOptionsLocale = "uk-UA"
+	CrawlParamsExtractOptionsLocaleUnmUs     CrawlParamsExtractOptionsLocale = "unm-US"
+	CrawlParamsExtractOptionsLocaleUr        CrawlParamsExtractOptionsLocale = "ur"
+	CrawlParamsExtractOptionsLocaleUrIn      CrawlParamsExtractOptionsLocale = "ur-IN"
+	CrawlParamsExtractOptionsLocaleUrPk      CrawlParamsExtractOptionsLocale = "ur-PK"
+	CrawlParamsExtractOptionsLocaleUz        CrawlParamsExtractOptionsLocale = "uz"
+	CrawlParamsExtractOptionsLocaleUzArab    CrawlParamsExtractOptionsLocale = "uz-Arab"
+	CrawlParamsExtractOptionsLocaleUzArabAf  CrawlParamsExtractOptionsLocale = "uz-Arab-AF"
+	CrawlParamsExtractOptionsLocaleUzCyrl    CrawlParamsExtractOptionsLocale = "uz-Cyrl"
+	CrawlParamsExtractOptionsLocaleUzCyrlUz  CrawlParamsExtractOptionsLocale = "uz-Cyrl-UZ"
+	CrawlParamsExtractOptionsLocaleUzLatn    CrawlParamsExtractOptionsLocale = "uz-Latn"
+	CrawlParamsExtractOptionsLocaleUzLatnUz  CrawlParamsExtractOptionsLocale = "uz-Latn-UZ"
+	CrawlParamsExtractOptionsLocaleUzUz      CrawlParamsExtractOptionsLocale = "uz-UZ"
+	CrawlParamsExtractOptionsLocaleVeZa      CrawlParamsExtractOptionsLocale = "ve-ZA"
+	CrawlParamsExtractOptionsLocaleVi        CrawlParamsExtractOptionsLocale = "vi"
+	CrawlParamsExtractOptionsLocaleViVn      CrawlParamsExtractOptionsLocale = "vi-VN"
+	CrawlParamsExtractOptionsLocaleVun       CrawlParamsExtractOptionsLocale = "vun"
+	CrawlParamsExtractOptionsLocaleVunTz     CrawlParamsExtractOptionsLocale = "vun-TZ"
+	CrawlParamsExtractOptionsLocaleWaBe      CrawlParamsExtractOptionsLocale = "wa-BE"
+	CrawlParamsExtractOptionsLocaleWaeCh     CrawlParamsExtractOptionsLocale = "wae-CH"
+	CrawlParamsExtractOptionsLocaleWalEt     CrawlParamsExtractOptionsLocale = "wal-ET"
+	CrawlParamsExtractOptionsLocaleWoSn      CrawlParamsExtractOptionsLocale = "wo-SN"
+	CrawlParamsExtractOptionsLocaleXhZa      CrawlParamsExtractOptionsLocale = "xh-ZA"
+	CrawlParamsExtractOptionsLocaleXog       CrawlParamsExtractOptionsLocale = "xog"
+	CrawlParamsExtractOptionsLocaleXogUg     CrawlParamsExtractOptionsLocale = "xog-UG"
+	CrawlParamsExtractOptionsLocaleYiUs      CrawlParamsExtractOptionsLocale = "yi-US"
+	CrawlParamsExtractOptionsLocaleYo        CrawlParamsExtractOptionsLocale = "yo"
+	CrawlParamsExtractOptionsLocaleYoNg      CrawlParamsExtractOptionsLocale = "yo-NG"
+	CrawlParamsExtractOptionsLocaleYueHk     CrawlParamsExtractOptionsLocale = "yue-HK"
+	CrawlParamsExtractOptionsLocaleZh        CrawlParamsExtractOptionsLocale = "zh"
+	CrawlParamsExtractOptionsLocaleZhCn      CrawlParamsExtractOptionsLocale = "zh-CN"
+	CrawlParamsExtractOptionsLocaleZhHk      CrawlParamsExtractOptionsLocale = "zh-HK"
+	CrawlParamsExtractOptionsLocaleZhHans    CrawlParamsExtractOptionsLocale = "zh-Hans"
+	CrawlParamsExtractOptionsLocaleZhHansCn  CrawlParamsExtractOptionsLocale = "zh-Hans-CN"
+	CrawlParamsExtractOptionsLocaleZhHansHk  CrawlParamsExtractOptionsLocale = "zh-Hans-HK"
+	CrawlParamsExtractOptionsLocaleZhHansMo  CrawlParamsExtractOptionsLocale = "zh-Hans-MO"
+	CrawlParamsExtractOptionsLocaleZhHansSg  CrawlParamsExtractOptionsLocale = "zh-Hans-SG"
+	CrawlParamsExtractOptionsLocaleZhHant    CrawlParamsExtractOptionsLocale = "zh-Hant"
+	CrawlParamsExtractOptionsLocaleZhHantHk  CrawlParamsExtractOptionsLocale = "zh-Hant-HK"
+	CrawlParamsExtractOptionsLocaleZhHantMo  CrawlParamsExtractOptionsLocale = "zh-Hant-MO"
+	CrawlParamsExtractOptionsLocaleZhHantTw  CrawlParamsExtractOptionsLocale = "zh-Hant-TW"
+	CrawlParamsExtractOptionsLocaleZhSg      CrawlParamsExtractOptionsLocale = "zh-SG"
+	CrawlParamsExtractOptionsLocaleZhTw      CrawlParamsExtractOptionsLocale = "zh-TW"
+	CrawlParamsExtractOptionsLocaleZu        CrawlParamsExtractOptionsLocale = "zu"
+	CrawlParamsExtractOptionsLocaleZuZa      CrawlParamsExtractOptionsLocale = "zu-ZA"
+	CrawlParamsExtractOptionsLocaleAuto      CrawlParamsExtractOptionsLocale = "auto"
+)
+
+// Structured metadata about the request execution context
+type CrawlParamsExtractOptionsMetadata struct {
+	// Account name associated with the request
+	AccountName param.Opt[string] `json:"account_name,omitzero"`
+	// Definition identifier
+	DefinitionID param.Opt[int64] `json:"definition_id,omitzero"`
+	// Name of the definition
+	DefinitionName param.Opt[string] `json:"definition_name,omitzero"`
+	// API endpoint being called
+	Endpoint param.Opt[string] `json:"endpoint,omitzero"`
+	// Unique identifier for this execution
+	ExecutionID param.Opt[string] `json:"execution_id,omitzero"`
+	// FlowIt task identifier
+	FlowitTaskID param.Opt[string] `json:"flowit_task_id,omitzero"`
+	// Input data identifier
+	InputID param.Opt[string] `json:"input_id,omitzero"`
+	// Identifier for the pipeline execution
+	PipelineExecutionID param.Opt[int64] `json:"pipeline_execution_id,omitzero"`
+	// Query template identifier
+	QueryTemplateID param.Opt[string] `json:"query_template_id,omitzero"`
+	// Source system or application making the request
+	Source param.Opt[string] `json:"source,omitzero"`
+	// Template identifier
+	TemplateID param.Opt[int64] `json:"template_id,omitzero"`
+	// Name of the template
+	TemplateName param.Opt[string] `json:"template_name,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsMetadata) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsMetadata
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlParamsExtractOptionsNetworkCapture struct {
+	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
+	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
+	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Resource type for network capture filtering
+	ResourceType CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion `json:"resource_type,omitzero"`
+	StatusCode   CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion   `json:"status_code,omitzero"`
+	URL          CrawlParamsExtractOptionsNetworkCaptureURL               `json:"url,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsNetworkCapture) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsNetworkCapture
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsNetworkCapture](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion struct {
+	OfFloat      param.Opt[float64] `json:",omitzero,inline"`
+	OfFloatArray []float64          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfFloatArray)
+}
+func (u *CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfFloatArray) {
+		return &u.OfFloatArray
+	}
+	return nil
+}
+
+// The property Value is required.
+type CrawlParamsExtractOptionsNetworkCaptureURL struct {
+	Value string `json:"value,required"`
+	// Any of "exact", "contains".
+	Type string `json:"type,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsNetworkCaptureURL) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsNetworkCaptureURL
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsNetworkCaptureURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsNetworkCaptureURL](
+		"type", "exact", "contains",
+	)
+}
+
+// Configuration options for parsing behavior
+type CrawlParamsExtractOptionsParseOptions struct {
+	// Whether to merge dynamic parsing results with static results
+	MergeDynamic param.Opt[bool] `json:"merge_dynamic,omitzero"`
+	ExtraFields  map[string]any  `json:"-"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsParseOptions) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsParseOptions
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlParamsExtractOptionsParseOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsParserUnion struct {
+	OfAnyMap map[string]any    `json:",omitzero,inline"`
+	OfString param.Opt[string] `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsParserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAnyMap, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsParserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsParserUnion) asAny() any {
+	if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Proxy provider to use for the request
+type CrawlParamsExtractOptionsProxyProvider string
+
+const (
+	CrawlParamsExtractOptionsProxyProviderBrightdata      CrawlParamsExtractOptionsProxyProvider = "brightdata"
+	CrawlParamsExtractOptionsProxyProviderOxylabs         CrawlParamsExtractOptionsProxyProvider = "oxylabs"
+	CrawlParamsExtractOptionsProxyProviderSmartproxy      CrawlParamsExtractOptionsProxyProvider = "smartproxy"
+	CrawlParamsExtractOptionsProxyProviderProxit          CrawlParamsExtractOptionsProxyProvider = "proxit"
+	CrawlParamsExtractOptionsProxyProviderProxitPreprod   CrawlParamsExtractOptionsProxyProvider = "proxit_preprod"
+	CrawlParamsExtractOptionsProxyProviderLocal           CrawlParamsExtractOptionsProxyProvider = "local"
+	CrawlParamsExtractOptionsProxyProviderRayobyte        CrawlParamsExtractOptionsProxyProvider = "rayobyte"
+	CrawlParamsExtractOptionsProxyProviderAlways          CrawlParamsExtractOptionsProxyProvider = "always"
+	CrawlParamsExtractOptionsProxyProviderOculusproxies   CrawlParamsExtractOptionsProxyProvider = "oculusproxies"
+	CrawlParamsExtractOptionsProxyProviderFroxy           CrawlParamsExtractOptionsProxyProvider = "froxy"
+	CrawlParamsExtractOptionsProxyProviderPacketstream    CrawlParamsExtractOptionsProxyProvider = "packetstream"
+	CrawlParamsExtractOptionsProxyProvider911proxy        CrawlParamsExtractOptionsProxyProvider = "911proxy"
+	CrawlParamsExtractOptionsProxyProviderDirect911proxy  CrawlParamsExtractOptionsProxyProvider = "direct911proxy"
+	CrawlParamsExtractOptionsProxyProviderThesocialproxy  CrawlParamsExtractOptionsProxyProvider = "thesocialproxy"
+	CrawlParamsExtractOptionsProxyProviderThesocialproxy2 CrawlParamsExtractOptionsProxyProvider = "thesocialproxy2"
+	CrawlParamsExtractOptionsProxyProviderNimbleIsp       CrawlParamsExtractOptionsProxyProvider = "nimble-isp"
+	CrawlParamsExtractOptionsProxyProviderNimbleIspMobile CrawlParamsExtractOptionsProxyProvider = "nimble-isp-mobile"
+	CrawlParamsExtractOptionsProxyProviderProxitLinux     CrawlParamsExtractOptionsProxyProvider = "proxit-linux"
+	CrawlParamsExtractOptionsProxyProviderProxitMacos     CrawlParamsExtractOptionsProxyProvider = "proxit-macos"
+	CrawlParamsExtractOptionsProxyProviderProxitWindows   CrawlParamsExtractOptionsProxyProvider = "proxit-windows"
+	CrawlParamsExtractOptionsProxyProviderProxitRental    CrawlParamsExtractOptionsProxyProvider = "proxit-rental"
+	CrawlParamsExtractOptionsProxyProviderIpfoxy          CrawlParamsExtractOptionsProxyProvider = "ipfoxy"
+	CrawlParamsExtractOptionsProxyProviderBrightup        CrawlParamsExtractOptionsProxyProvider = "brightup"
+	CrawlParamsExtractOptionsProxyProviderResearch        CrawlParamsExtractOptionsProxyProvider = "research"
+)
+
+// Query template configuration for structured data extraction
+//
+// The property ID is required.
+type CrawlParamsExtractOptionsQueryTemplate struct {
+	ID string `json:"id,required" format:"uuid"`
+	// Any of "WEB", "SERP", "SOCIAL".
+	APIType     string                                                `json:"api_type,omitzero"`
+	Pagination  CrawlParamsExtractOptionsQueryTemplatePaginationUnion `json:"pagination,omitzero"`
+	Params      map[string]any                                        `json:"params,omitzero"`
+	ExtraFields map[string]any                                        `json:"-"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsQueryTemplate) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsQueryTemplate
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlParamsExtractOptionsQueryTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsQueryTemplate](
+		"api_type", "WEB", "SERP", "SOCIAL",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsQueryTemplatePaginationUnion struct {
+	OfCrawlsExtractOptionsQueryTemplatePaginationNextPageParams *CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsQueryTemplatePaginationArray          []CrawlParamsExtractOptionsQueryTemplatePaginationArrayItem     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsQueryTemplatePaginationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsQueryTemplatePaginationNextPageParams, u.OfCrawlsExtractOptionsQueryTemplatePaginationArray)
+}
+func (u *CrawlParamsExtractOptionsQueryTemplatePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsQueryTemplatePaginationUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsQueryTemplatePaginationNextPageParams) {
+		return u.OfCrawlsExtractOptionsQueryTemplatePaginationNextPageParams
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsQueryTemplatePaginationArray) {
+		return &u.OfCrawlsExtractOptionsQueryTemplatePaginationArray
+	}
+	return nil
+}
+
+// The property NextPageParams is required.
+type CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property NextPageParams is required.
+type CrawlParamsExtractOptionsQueryTemplatePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsQueryTemplatePaginationArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsQueryTemplatePaginationArrayItem
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsQueryTemplatePaginationArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Referrer policy for the request
+type CrawlParamsExtractOptionsReferrerType string
+
+const (
+	CrawlParamsExtractOptionsReferrerTypeRandom     CrawlParamsExtractOptionsReferrerType = "random"
+	CrawlParamsExtractOptionsReferrerTypeNoReferer  CrawlParamsExtractOptionsReferrerType = "no-referer"
+	CrawlParamsExtractOptionsReferrerTypeSameOrigin CrawlParamsExtractOptionsReferrerType = "same-origin"
+	CrawlParamsExtractOptionsReferrerTypeGoogle     CrawlParamsExtractOptionsReferrerType = "google"
+	CrawlParamsExtractOptionsReferrerTypeBing       CrawlParamsExtractOptionsReferrerType = "bing"
+	CrawlParamsExtractOptionsReferrerTypeFacebook   CrawlParamsExtractOptionsReferrerType = "facebook"
+	CrawlParamsExtractOptionsReferrerTypeTwitter    CrawlParamsExtractOptionsReferrerType = "twitter"
+	CrawlParamsExtractOptionsReferrerTypeInstagram  CrawlParamsExtractOptionsReferrerType = "instagram"
+)
+
+type CrawlParamsExtractOptionsRenderOptions struct {
+	// Whether to enable ad blocking
+	Adblock param.Opt[bool] `json:"adblock,omitzero"`
+	// Whether to enable browser caching
+	Cache param.Opt[bool] `json:"cache,omitzero"`
+	// Whether to use 2Captcha service for solving captchas
+	Enable2captcha param.Opt[bool] `json:"enable_2captcha,omitzero"`
+	// Fingerprint identifier for browser customization
+	FingerprintID param.Opt[string] `json:"fingerprint_id,omitzero"`
+	// Whether to run browser in headless mode
+	Headless param.Opt[bool] `json:"headless,omitzero"`
+	// Whether to include iframe content in the result
+	IncludeIframes param.Opt[bool] `json:"include_iframes,omitzero"`
+	// Whether to load previously stored localStorage data
+	LoadLocalStorage param.Opt[bool] `json:"load_local_storage,omitzero"`
+	// Disable content encoding to avoid cached responses
+	NoAcceptEncoding param.Opt[bool] `json:"no_accept_encoding,omitzero"`
+	// Whether to override default browser permissions
+	OverridePermissions param.Opt[bool] `json:"override_permissions,omitzero"`
+	// Whether to randomize HTTP header order
+	RandomHeaderOrder param.Opt[bool] `json:"random_header_order,omitzero"`
+	// Whether to store localStorage data for future sessions
+	StoreLocalStorage param.Opt[bool] `json:"store_local_storage,omitzero"`
+	// Maximum time in milliseconds to wait for page render
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Interval in milliseconds between key presses
+	TypingInterval param.Opt[float64] `json:"typing_interval,omitzero"`
+	// Whether to use a persistent browser session
+	Userbrowser param.Opt[bool] `json:"userbrowser,omitzero"`
+	// Whether to collect performance metrics during rendering
+	WithPerformanceMetrics param.Opt[bool] `json:"with_performance_metrics,omitzero"`
+	// Domains to block from loading
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Browser engine to use, or weighted distribution of engines
+	BrowserEngine CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion `json:"browser_engine,omitzero"`
+	// Type of browser connector to use
+	//
+	// Any of "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp",
+	// "playwright".
+	ConnectorType string `json:"connector_type,omitzero"`
+	// Types of resources to block from loading
+	//
+	// Any of "other", "document", "stylesheet", "image", "media", "font", "script",
+	// "texttrack", "xhr", "fetch", "eventsource", "websocket", "manifest",
+	// "signedexchange", "ping", "cspviolationreport", "prefetch", "preflight",
+	// "fedcm".
+	DisabledResources []string `json:"disabled_resources,omitzero"`
+	// Browser extensions to load
+	Extensions []string `json:"extensions,omitzero"`
+	// Configuration for Hackium browser modifications
+	HackiumConfiguration CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration `json:"hackium_configuration,omitzero"`
+	// Specific localStorage keys to load
+	LocalStorageKeysToLoad []string `json:"local_storage_keys_to_load,omitzero"`
+	// Strategy for simulating mouse movements
+	//
+	// Any of "linear", "ghost-cursor", "windmouse".
+	MouseStrategy string `json:"mouse_strategy,omitzero"`
+	// Type of render completion to wait for
+	//
+	// Any of "domcontentloaded", "load", "idle0", "networkidle0", "idle2",
+	// "networkidle2", "navigate".
+	RenderType string `json:"render_type,omitzero"`
+	// Strategy for simulating keyboard typing
+	//
+	// Any of "simple", "distribution".
+	TypingStrategy string `json:"typing_strategy,omitzero"`
+	// Browser event to wait for before considering page loaded
+	//
+	// Any of "load", "domcontentloaded", "idle0", "idle2", "networkidle0",
+	// "networkidle2", "navigate".
+	WaitUntil string `json:"wait_until,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsRenderOptions) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsRenderOptions
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsRenderOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsRenderOptions](
+		"connector_type", "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp", "playwright",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsRenderOptions](
+		"mouse_strategy", "linear", "ghost-cursor", "windmouse",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsRenderOptions](
+		"render_type", "domcontentloaded", "load", "idle0", "networkidle0", "idle2", "networkidle2", "navigate",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsRenderOptions](
+		"typing_strategy", "simple", "distribution",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsRenderOptions](
+		"wait_until", "load", "domcontentloaded", "idle0", "idle2", "networkidle0", "networkidle2", "navigate",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsRenderOptionsBrowserEngineString)
+	OfCrawlsExtractOptionsRenderOptionsBrowserEngineString param.Opt[string]  `json:",omitzero,inline"`
+	OfFloatMap                                             map[string]float64 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsRenderOptionsBrowserEngineString, u.OfFloatMap)
+}
+func (u *CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsRenderOptionsBrowserEngineString) {
+		return &u.OfCrawlsExtractOptionsRenderOptionsBrowserEngineString
+	} else if !param.IsOmitted(u.OfFloatMap) {
+		return &u.OfFloatMap
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsRenderOptionsBrowserEngineString string
+
+const (
+	CrawlParamsExtractOptionsRenderOptionsBrowserEngineStringChrome  CrawlParamsExtractOptionsRenderOptionsBrowserEngineString = "chrome"
+	CrawlParamsExtractOptionsRenderOptionsBrowserEngineStringHackium CrawlParamsExtractOptionsRenderOptionsBrowserEngineString = "hackium"
+	CrawlParamsExtractOptionsRenderOptionsBrowserEngineStringFirefox CrawlParamsExtractOptionsRenderOptionsBrowserEngineString = "firefox"
+	CrawlParamsExtractOptionsRenderOptionsBrowserEngineStringHackfox CrawlParamsExtractOptionsRenderOptionsBrowserEngineString = "hackfox"
+)
+
+// Configuration for Hackium browser modifications
+type CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration struct {
+	CollectLogs                 param.Opt[bool] `json:"collect_logs,omitzero"`
+	DoNotFixMathSalt            param.Opt[bool] `json:"do_not_fix_math_salt,omitzero"`
+	EnableDocumentElementSpoof  param.Opt[bool] `json:"enable_document_element_spoof,omitzero"`
+	EnableDocumentHasFocus      param.Opt[bool] `json:"enable_document_has_focus,omitzero"`
+	EnableFakeNavigationHistory param.Opt[bool] `json:"enable_fake_navigation_history,omitzero"`
+	EnableKeyOrdering           param.Opt[bool] `json:"enable_key_ordering,omitzero"`
+	EnableSniffer               param.Opt[bool] `json:"enable_sniffer,omitzero"`
+	EnableVerboseLogs           param.Opt[bool] `json:"enable_verbose_logs,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlParamsExtractOptionsSession struct {
+	ID                  param.Opt[string]  `json:"id,omitzero"`
+	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	Retry               param.Opt[bool]    `json:"retry,omitzero"`
+	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsSession) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsSession
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsSession) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsSkillUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsSkillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsSkillUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Userbrowser creation template configuration
+//
+// The property Name is required.
+type CrawlParamsExtractOptionsTemplate struct {
+	Name   string         `json:"name,required"`
+	Params map[string]any `json:"params,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsTemplate) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsTemplate
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Pre-rendered userbrowser creation template configuration
+//
+// The properties ID, AllowedParameterNames, RenderFlowRendered are required.
+type CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered struct {
+	ID                    string           `json:"id,required"`
+	AllowedParameterNames []string         `json:"allowed_parameter_names,omitzero,required"`
+	RenderFlowRendered    []map[string]any `json:"render_flow_rendered,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Sitemap and other methods will be used together to find URLs.
+type CrawlParamsSitemap string
+
+const (
+	CrawlParamsSitemapSkip    CrawlParamsSitemap = "skip"
+	CrawlParamsSitemapInclude CrawlParamsSitemap = "include"
+	CrawlParamsSitemapOnly    CrawlParamsSitemap = "only"
+)
+
+type ExtractParams struct {
+	// Target URL to scrape
+	URL string `json:"url,required" format:"uri"`
+	// City for geolocation
+	City param.Opt[string] `json:"city,omitzero"`
+	// Client-side timeout in milliseconds
+	ClientTimeout param.Opt[float64] `json:"client_timeout,omitzero"`
+	// Whether to automatically handle cookie consent headers
+	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
+	// Whether to disable IP address validation
+	DisableIPCheck param.Opt[bool] `json:"disable_ip_check,omitzero"`
+	// Whether to use HTTP/2 protocol
+	Http2 param.Opt[bool] `json:"http2,omitzero"`
+	// Whether to use IPv6 for the request
+	Ip6 param.Opt[bool] `json:"ip6,omitzero"`
+	// Whether to emulate XMLHttpRequest behavior
+	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
+	// Whether to return response in Markdown format
+	Markdown param.Opt[bool] `json:"markdown,omitzero"`
+	// Whether to exclude HTML from the response
+	NoHTML param.Opt[bool] `json:"no_html,omitzero"`
+	// Whether to disable browser-based rendering
+	NoUserbrowser param.Opt[bool] `json:"no_userbrowser,omitzero"`
+	// Whether to parse the response content
+	Parse param.Opt[bool] `json:"parse,omitzero"`
+	// Whether to return raw HTTP headers in response
+	RawHeaders param.Opt[bool] `json:"raw_headers,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render param.Opt[bool] `json:"render,omitzero"`
+	// Request timeout in milliseconds
+	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// Whether to save the userbrowser session for reuse
 	SaveUserbrowser param.Opt[bool] `json:"save_userbrowser,omitzero"`
 	// Whether to skip userbrowser creation template processing
@@ -456,373 +3982,6 @@ func (r ExtractParams) MarshalJSON() (data []byte, err error) {
 func (r *ExtractParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Debug and troubleshooting options for the request
-type ExtractParamsDebugOptions struct {
-	CollectHar       ExtractParamsDebugOptionsCollectHarUnion       `json:"collect_har,omitzero"`
-	NoRetryMode      ExtractParamsDebugOptionsNoRetryModeUnion      `json:"no_retry_mode,omitzero"`
-	RecordScreen     ExtractParamsDebugOptionsRecordScreenUnion     `json:"record_screen,omitzero"`
-	Redact           ExtractParamsDebugOptionsRedactUnion           `json:"redact,omitzero"`
-	ShowCursor       ExtractParamsDebugOptionsShowCursorUnion       `json:"show_cursor,omitzero"`
-	SolveCaptcha     ExtractParamsDebugOptionsSolveCaptchaUnion     `json:"solve_captcha,omitzero"`
-	Trace            ExtractParamsDebugOptionsTraceUnion            `json:"trace,omitzero"`
-	UploadEngineLogs ExtractParamsDebugOptionsUploadEngineLogsUnion `json:"upload_engine_logs,omitzero"`
-	Verbose          ExtractParamsDebugOptionsVerboseUnion          `json:"verbose,omitzero"`
-	WithProxyUsage   ExtractParamsDebugOptionsWithProxyUsageUnion   `json:"with_proxy_usage,omitzero"`
-	paramObj
-}
-
-func (r ExtractParamsDebugOptions) MarshalJSON() (data []byte, err error) {
-	type shadow ExtractParamsDebugOptions
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ExtractParamsDebugOptions) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsCollectHarUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsCollectHarString)
-	OfExtractsDebugOptionsCollectHarString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsCollectHarUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsCollectHarString)
-}
-func (u *ExtractParamsDebugOptionsCollectHarUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsCollectHarUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsCollectHarString) {
-		return &u.OfExtractsDebugOptionsCollectHarString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsCollectHarString string
-
-const (
-	ExtractParamsDebugOptionsCollectHarStringNever   ExtractParamsDebugOptionsCollectHarString = "never"
-	ExtractParamsDebugOptionsCollectHarStringOnError ExtractParamsDebugOptionsCollectHarString = "on-error"
-	ExtractParamsDebugOptionsCollectHarStringAlways  ExtractParamsDebugOptionsCollectHarString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsNoRetryModeUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsNoRetryModeString)
-	OfExtractsDebugOptionsNoRetryModeString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsNoRetryModeUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsNoRetryModeString)
-}
-func (u *ExtractParamsDebugOptionsNoRetryModeUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsNoRetryModeUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsNoRetryModeString) {
-		return &u.OfExtractsDebugOptionsNoRetryModeString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsNoRetryModeString string
-
-const (
-	ExtractParamsDebugOptionsNoRetryModeStringNever  ExtractParamsDebugOptionsNoRetryModeString = "never"
-	ExtractParamsDebugOptionsNoRetryModeStringAlways ExtractParamsDebugOptionsNoRetryModeString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsRecordScreenUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsRecordScreenString)
-	OfExtractsDebugOptionsRecordScreenString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsRecordScreenUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsRecordScreenString)
-}
-func (u *ExtractParamsDebugOptionsRecordScreenUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsRecordScreenUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsRecordScreenString) {
-		return &u.OfExtractsDebugOptionsRecordScreenString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsRecordScreenString string
-
-const (
-	ExtractParamsDebugOptionsRecordScreenStringNever   ExtractParamsDebugOptionsRecordScreenString = "never"
-	ExtractParamsDebugOptionsRecordScreenStringOnError ExtractParamsDebugOptionsRecordScreenString = "on-error"
-	ExtractParamsDebugOptionsRecordScreenStringAlways  ExtractParamsDebugOptionsRecordScreenString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsRedactUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsRedactString)
-	OfExtractsDebugOptionsRedactString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsRedactUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsRedactString)
-}
-func (u *ExtractParamsDebugOptionsRedactUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsRedactUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsRedactString) {
-		return &u.OfExtractsDebugOptionsRedactString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsRedactString string
-
-const (
-	ExtractParamsDebugOptionsRedactStringNever  ExtractParamsDebugOptionsRedactString = "never"
-	ExtractParamsDebugOptionsRedactStringAlways ExtractParamsDebugOptionsRedactString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsShowCursorUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsShowCursorString)
-	OfExtractsDebugOptionsShowCursorString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsShowCursorUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsShowCursorString)
-}
-func (u *ExtractParamsDebugOptionsShowCursorUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsShowCursorUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsShowCursorString) {
-		return &u.OfExtractsDebugOptionsShowCursorString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsShowCursorString string
-
-const (
-	ExtractParamsDebugOptionsShowCursorStringNever  ExtractParamsDebugOptionsShowCursorString = "never"
-	ExtractParamsDebugOptionsShowCursorStringAlways ExtractParamsDebugOptionsShowCursorString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsSolveCaptchaUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsSolveCaptchaString)
-	OfExtractsDebugOptionsSolveCaptchaString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsSolveCaptchaUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsSolveCaptchaString)
-}
-func (u *ExtractParamsDebugOptionsSolveCaptchaUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsSolveCaptchaUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsSolveCaptchaString) {
-		return &u.OfExtractsDebugOptionsSolveCaptchaString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsSolveCaptchaString string
-
-const (
-	ExtractParamsDebugOptionsSolveCaptchaStringNever  ExtractParamsDebugOptionsSolveCaptchaString = "never"
-	ExtractParamsDebugOptionsSolveCaptchaStringAlways ExtractParamsDebugOptionsSolveCaptchaString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsTraceUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsTraceString)
-	OfExtractsDebugOptionsTraceString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsTraceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsTraceString)
-}
-func (u *ExtractParamsDebugOptionsTraceUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsTraceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsTraceString) {
-		return &u.OfExtractsDebugOptionsTraceString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsTraceString string
-
-const (
-	ExtractParamsDebugOptionsTraceStringNever   ExtractParamsDebugOptionsTraceString = "never"
-	ExtractParamsDebugOptionsTraceStringOnError ExtractParamsDebugOptionsTraceString = "on-error"
-	ExtractParamsDebugOptionsTraceStringAlways  ExtractParamsDebugOptionsTraceString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsUploadEngineLogsUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsUploadEngineLogsString)
-	OfExtractsDebugOptionsUploadEngineLogsString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsUploadEngineLogsUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsUploadEngineLogsString)
-}
-func (u *ExtractParamsDebugOptionsUploadEngineLogsUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsUploadEngineLogsUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsUploadEngineLogsString) {
-		return &u.OfExtractsDebugOptionsUploadEngineLogsString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsUploadEngineLogsString string
-
-const (
-	ExtractParamsDebugOptionsUploadEngineLogsStringNever   ExtractParamsDebugOptionsUploadEngineLogsString = "never"
-	ExtractParamsDebugOptionsUploadEngineLogsStringOnError ExtractParamsDebugOptionsUploadEngineLogsString = "on-error"
-	ExtractParamsDebugOptionsUploadEngineLogsStringAlways  ExtractParamsDebugOptionsUploadEngineLogsString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsVerboseUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsVerboseString)
-	OfExtractsDebugOptionsVerboseString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsVerboseUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsVerboseString)
-}
-func (u *ExtractParamsDebugOptionsVerboseUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsVerboseUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsVerboseString) {
-		return &u.OfExtractsDebugOptionsVerboseString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsVerboseString string
-
-const (
-	ExtractParamsDebugOptionsVerboseStringNever  ExtractParamsDebugOptionsVerboseString = "never"
-	ExtractParamsDebugOptionsVerboseStringAlways ExtractParamsDebugOptionsVerboseString = "always"
-)
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ExtractParamsDebugOptionsWithProxyUsageUnion struct {
-	OfBool param.Opt[bool] `json:",omitzero,inline"`
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfExtractsDebugOptionsWithProxyUsageString)
-	OfExtractsDebugOptionsWithProxyUsageString param.Opt[string] `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ExtractParamsDebugOptionsWithProxyUsageUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBool, u.OfExtractsDebugOptionsWithProxyUsageString)
-}
-func (u *ExtractParamsDebugOptionsWithProxyUsageUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *ExtractParamsDebugOptionsWithProxyUsageUnion) asAny() any {
-	if !param.IsOmitted(u.OfBool) {
-		return &u.OfBool.Value
-	} else if !param.IsOmitted(u.OfExtractsDebugOptionsWithProxyUsageString) {
-		return &u.OfExtractsDebugOptionsWithProxyUsageString
-	}
-	return nil
-}
-
-type ExtractParamsDebugOptionsWithProxyUsageString string
-
-const (
-	ExtractParamsDebugOptionsWithProxyUsageStringNever  ExtractParamsDebugOptionsWithProxyUsageString = "never"
-	ExtractParamsDebugOptionsWithProxyUsageStringAlways ExtractParamsDebugOptionsWithProxyUsageString = "always"
-)
 
 // Only one field can be non-zero.
 //
@@ -2458,23 +5617,9 @@ func (r *ExtractParamsUserbrowserCreationTemplateRendered) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type ExtractTemplateParams struct {
-	Params   map[string]any `json:"params,omitzero,required"`
-	Template string         `json:"template,required"`
-	paramObj
-}
-
-func (r ExtractTemplateParams) MarshalJSON() (data []byte, err error) {
-	type shadow ExtractTemplateParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ExtractTemplateParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type MapParams struct {
 	// Url to map.
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url,required"`
 	// Maximum number of links to return.
 	Limit param.Opt[int64] `json:"limit,omitzero"`
 	// Country code for geolocation and proxy selection

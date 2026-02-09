@@ -17,6 +17,7 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
+	Agents  AgentService
 	Crawl   CrawlService
 }
 
@@ -42,6 +43,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
+	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 
 	return
@@ -116,18 +118,26 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
 }
 
-// Webit v2 Realtime extract Endpoint
-func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
+// Execute WSA Realtime Endpoint
+func (r *Client) Agent(ctx context.Context, body AgentParams, opts ...option.RequestOption) (res *AgentResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract"
+	path := "v1/agent"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
 
-// Execute WSA Template Realtime Endpoint
-func (r *Client) ExtractTemplate(ctx context.Context, body ExtractTemplateParams, opts ...option.RequestOption) (res *ExtractTemplateResponse, err error) {
+// Create crawl task
+func (r *Client) Crawl(ctx context.Context, body CrawlParams, opts ...option.RequestOption) (res *CrawlResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract-template"
+	path := "v1/crawl"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
+// Extract
+func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/extract"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
