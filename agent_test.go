@@ -13,7 +13,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestCrawlListWithOptionalParams(t *testing.T) {
+func TestAgentListWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,10 +26,10 @@ func TestCrawlListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Crawl.List(context.TODO(), githubcomnimblewaynimblego.CrawlListParams{
-		Status: githubcomnimblewaynimblego.CrawlListParamsStatusQueued,
-		Cursor: githubcomnimblewaynimblego.String("cursor"),
-		Limit:  githubcomnimblewaynimblego.Int(10),
+	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
+		Limit:   githubcomnimblewaynimblego.Int(1),
+		Offset:  githubcomnimblewaynimblego.Int(0),
+		Privacy: githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -40,7 +40,7 @@ func TestCrawlListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestCrawlStatus(t *testing.T) {
+func TestAgentGet(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -53,30 +53,7 @@ func TestCrawlStatus(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Crawl.Status(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestCrawlTerminate(t *testing.T) {
-	t.Skip("Prism tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Crawl.Terminate(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
+	_, err := client.Agents.Get(context.TODO(), "template_name")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
