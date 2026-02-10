@@ -53,7 +53,8 @@ func (r *AgentResponse) UnmarshalJSON(data []byte) error {
 }
 
 type AgentResponseData struct {
-	// The render flow browser actions status results.
+	// Browser actions execution results. Present only when browser_actions were
+	// specified in the request.
 	BrowserActions AgentResponseDataBrowserActions `json:"browser_actions"`
 	// The cookies collected from browser actions during the task.
 	Cookies []any `json:"cookies"`
@@ -99,16 +100,19 @@ func (r *AgentResponseData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The render flow browser actions status results.
+// Browser actions execution results. Present only when browser_actions were
+// specified in the request.
 type AgentResponseDataBrowserActions struct {
-	Results []AgentResponseDataBrowserActionsResultUnion `json:"results,required"`
-	Success bool                                         `json:"success,required"`
+	Results       []AgentResponseDataBrowserActionsResult `json:"results,required"`
+	Success       bool                                    `json:"success,required"`
+	TotalDuration float64                                 `json:"total_duration,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Results     respjson.Field
-		Success     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Results       respjson.Field
+		Success       respjson.Field
+		TotalDuration respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -118,60 +122,22 @@ func (r *AgentResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// AgentResponseDataBrowserActionsResultUnion contains all possible properties and
-// values from [AgentResponseDataBrowserActionsResultObject],
-// [AgentResponseDataBrowserActionsResultObject].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type AgentResponseDataBrowserActionsResultUnion struct {
-	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
-	Duration float64 `json:"duration"`
-	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
-	Name string `json:"name"`
-	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
-	Status string `json:"status"`
-	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
-	Result any `json:"result"`
-	// This field is from variant [AgentResponseDataBrowserActionsResultObject].
-	Error string `json:"error"`
-	JSON  struct {
-		Duration respjson.Field
-		Name     respjson.Field
-		Status   respjson.Field
-		Result   respjson.Field
-		Error    respjson.Field
-		raw      string
-	} `json:"-"`
-}
-
-func (u AgentResponseDataBrowserActionsResultUnion) AsAgentResponseDataBrowserActionsResultObject() (v AgentResponseDataBrowserActionsResultObject) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentResponseDataBrowserActionsResultUnion) AsVariant2() (v AgentResponseDataBrowserActionsResultObject) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentResponseDataBrowserActionsResultUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *AgentResponseDataBrowserActionsResultUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentResponseDataBrowserActionsResultObject struct {
+type AgentResponseDataBrowserActionsResult struct {
 	Duration float64 `json:"duration,required"`
-	Name     string  `json:"name,required"`
+	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
+	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
+	// "fetch".
+	Name string `json:"name,required"`
 	// Any of "no-run", "in-progress", "done", "error", "skipped".
 	Status string `json:"status,required"`
+	Error  string `json:"error"`
 	Result any    `json:"result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Duration    respjson.Field
 		Name        respjson.Field
 		Status      respjson.Field
+		Error       respjson.Field
 		Result      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -179,8 +145,8 @@ type AgentResponseDataBrowserActionsResultObject struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentResponseDataBrowserActionsResultObject) RawJSON() string { return r.JSON.raw }
-func (r *AgentResponseDataBrowserActionsResultObject) UnmarshalJSON(data []byte) error {
+func (r AgentResponseDataBrowserActionsResult) RawJSON() string { return r.JSON.raw }
+func (r *AgentResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -508,6 +474,8 @@ func (r *AgentResponseDataRedirect) UnmarshalJSON(data []byte) error {
 }
 
 type AgentResponseMetadata struct {
+	// The name of the agent used for the query.
+	Agent string `json:"agent"`
 	// The driver used for the task.
 	Driver string `json:"driver"`
 	// The localization identifier for the query.
@@ -520,17 +488,15 @@ type AgentResponseMetadata struct {
 	ResponseParameters any `json:"response_parameters"`
 	// A tag associated with the query.
 	Tag string `json:"tag"`
-	// The identifier of the template used for the query.
-	TemplateID string `json:"template_id"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		Agent              respjson.Field
 		Driver             respjson.Field
 		LocalizationID     respjson.Field
 		QueryDuration      respjson.Field
 		QueryTime          respjson.Field
 		ResponseParameters respjson.Field
 		Tag                respjson.Field
-		TemplateID         respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -1059,7 +1025,8 @@ func (r *ExtractResponse) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponseData struct {
-	// The render flow browser actions status results.
+	// Browser actions execution results. Present only when browser_actions were
+	// specified in the request.
 	BrowserActions ExtractResponseDataBrowserActions `json:"browser_actions"`
 	// The cookies collected from browser actions during the task.
 	Cookies []any `json:"cookies"`
@@ -1105,16 +1072,19 @@ func (r *ExtractResponseData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The render flow browser actions status results.
+// Browser actions execution results. Present only when browser_actions were
+// specified in the request.
 type ExtractResponseDataBrowserActions struct {
-	Results []ExtractResponseDataBrowserActionsResultUnion `json:"results,required"`
-	Success bool                                           `json:"success,required"`
+	Results       []ExtractResponseDataBrowserActionsResult `json:"results,required"`
+	Success       bool                                      `json:"success,required"`
+	TotalDuration float64                                   `json:"total_duration,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Results     respjson.Field
-		Success     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Results       respjson.Field
+		Success       respjson.Field
+		TotalDuration respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -1124,60 +1094,22 @@ func (r *ExtractResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ExtractResponseDataBrowserActionsResultUnion contains all possible properties
-// and values from [ExtractResponseDataBrowserActionsResultObject],
-// [ExtractResponseDataBrowserActionsResultObject].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ExtractResponseDataBrowserActionsResultUnion struct {
-	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
-	Duration float64 `json:"duration"`
-	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
-	Name string `json:"name"`
-	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
-	Status string `json:"status"`
-	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
-	Result any `json:"result"`
-	// This field is from variant [ExtractResponseDataBrowserActionsResultObject].
-	Error string `json:"error"`
-	JSON  struct {
-		Duration respjson.Field
-		Name     respjson.Field
-		Status   respjson.Field
-		Result   respjson.Field
-		Error    respjson.Field
-		raw      string
-	} `json:"-"`
-}
-
-func (u ExtractResponseDataBrowserActionsResultUnion) AsExtractResponseDataBrowserActionsResultObject() (v ExtractResponseDataBrowserActionsResultObject) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ExtractResponseDataBrowserActionsResultUnion) AsVariant2() (v ExtractResponseDataBrowserActionsResultObject) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u ExtractResponseDataBrowserActionsResultUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *ExtractResponseDataBrowserActionsResultUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ExtractResponseDataBrowserActionsResultObject struct {
+type ExtractResponseDataBrowserActionsResult struct {
 	Duration float64 `json:"duration,required"`
-	Name     string  `json:"name,required"`
+	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
+	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
+	// "fetch".
+	Name string `json:"name,required"`
 	// Any of "no-run", "in-progress", "done", "error", "skipped".
 	Status string `json:"status,required"`
+	Error  string `json:"error"`
 	Result any    `json:"result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Duration    respjson.Field
 		Name        respjson.Field
 		Status      respjson.Field
+		Error       respjson.Field
 		Result      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -1185,8 +1117,8 @@ type ExtractResponseDataBrowserActionsResultObject struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ExtractResponseDataBrowserActionsResultObject) RawJSON() string { return r.JSON.raw }
-func (r *ExtractResponseDataBrowserActionsResultObject) UnmarshalJSON(data []byte) error {
+func (r ExtractResponseDataBrowserActionsResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1514,6 +1446,8 @@ func (r *ExtractResponseDataRedirect) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponseMetadata struct {
+	// The name of the agent used for the query.
+	Agent string `json:"agent"`
 	// The driver used for the task.
 	Driver string `json:"driver"`
 	// The localization identifier for the query.
@@ -1526,17 +1460,15 @@ type ExtractResponseMetadata struct {
 	ResponseParameters any `json:"response_parameters"`
 	// A tag associated with the query.
 	Tag string `json:"tag"`
-	// The identifier of the template used for the query.
-	TemplateID string `json:"template_id"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		Agent              respjson.Field
 		Driver             respjson.Field
 		LocalizationID     respjson.Field
 		QueryDuration      respjson.Field
 		QueryTime          respjson.Field
 		ResponseParameters respjson.Field
 		Tag                respjson.Field
-		TemplateID         respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -2030,10 +1962,6 @@ type CrawlParamsExtractOptions struct {
 	Ip6 param.Opt[bool] `json:"ip6,omitzero"`
 	// Whether to emulate XMLHttpRequest behavior
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
-	// Whether to return response in Markdown format
-	Markdown param.Opt[bool] `json:"markdown,omitzero"`
-	// Whether to exclude HTML from the response
-	NoHTML param.Opt[bool] `json:"no_html,omitzero"`
 	// Whether to disable browser-based rendering
 	NoUserbrowser param.Opt[bool] `json:"no_userbrowser,omitzero"`
 	// Whether to parse the response content
@@ -2056,6 +1984,8 @@ type CrawlParamsExtractOptions struct {
 	URL param.Opt[string] `json:"url,omitzero" format:"uri"`
 	// Browser type to emulate
 	Browser CrawlParamsExtractOptionsBrowserUnion `json:"browser,omitzero"`
+	// Array of browser automation actions to execute sequentially
+	BrowserActions []CrawlParamsExtractOptionsBrowserActionUnion `json:"browser_actions,omitzero"`
 	// Browser cookies as array of cookie objects
 	Cookies CrawlParamsExtractOptionsCookiesUnion `json:"cookies,omitzero"`
 	// Country code for geolocation and proxy selection
@@ -2089,14 +2019,12 @@ type CrawlParamsExtractOptions struct {
 	//
 	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
 	Driver string `json:"driver,omitzero"`
-	// Custom parser configuration as a key-value map
-	DynamicParser map[string]any `json:"dynamic_parser,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
-	// Response format
+	// List of acceptable response formats in order of preference
 	//
-	// Any of "json", "html", "csv", "raw", "json-lines", "markdown".
-	Format string `json:"format,omitzero"`
+	// Any of "html", "markdown".
+	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]CrawlParamsExtractOptionsHeaderUnion `json:"headers,omitzero"`
 	// Locale for browser language and region settings
@@ -2179,8 +2107,6 @@ type CrawlParamsExtractOptions struct {
 	//
 	// Any of "windows", "mac os", "linux", "android", "ios".
 	Os string `json:"os,omitzero"`
-	// Configuration options for parsing behavior
-	ParseOptions CrawlParamsExtractOptionsParseOptions `json:"parse_options,omitzero"`
 	// Custom parser configuration as a key-value map
 	Parser CrawlParamsExtractOptionsParserUnion `json:"parser,omitzero"`
 	// Proxy provider to use for the request
@@ -2235,9 +2161,6 @@ func init() {
 	)
 	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
 		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	)
-	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
-		"format", "json", "html", "csv", "raw", "json-lines", "markdown",
 	)
 	apijson.RegisterFieldValidator[CrawlParamsExtractOptions](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
@@ -2310,6 +2233,2726 @@ func init() {
 		"name", "chrome", "firefox",
 	)
 }
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionUnion struct {
+	OfCrawlsExtractOptionsBrowserActionAutoScrollAction        *CrawlParamsExtractOptionsBrowserActionAutoScrollAction        `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionClickAction             *CrawlParamsExtractOptionsBrowserActionClickAction             `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionEvalAction              *CrawlParamsExtractOptionsBrowserActionEvalAction              `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionFetchAction             *CrawlParamsExtractOptionsBrowserActionFetchAction             `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionFillAction              *CrawlParamsExtractOptionsBrowserActionFillAction              `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionGetCookiesAction        *CrawlParamsExtractOptionsBrowserActionGetCookiesAction        `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionGotoAction              *CrawlParamsExtractOptionsBrowserActionGotoAction              `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionPressAction             *CrawlParamsExtractOptionsBrowserActionPressAction             `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionScreenshotAction        *CrawlParamsExtractOptionsBrowserActionScreenshotAction        `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionScrollAction            *CrawlParamsExtractOptionsBrowserActionScrollAction            `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitAction              *CrawlParamsExtractOptionsBrowserActionWaitAction              `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitForElementAction    *CrawlParamsExtractOptionsBrowserActionWaitForElementAction    `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitForNavigationAction *CrawlParamsExtractOptionsBrowserActionWaitForNavigationAction `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionAutoScrollAction,
+		u.OfCrawlsExtractOptionsBrowserActionClickAction,
+		u.OfCrawlsExtractOptionsBrowserActionEvalAction,
+		u.OfCrawlsExtractOptionsBrowserActionFetchAction,
+		u.OfCrawlsExtractOptionsBrowserActionFillAction,
+		u.OfCrawlsExtractOptionsBrowserActionGetCookiesAction,
+		u.OfCrawlsExtractOptionsBrowserActionGotoAction,
+		u.OfCrawlsExtractOptionsBrowserActionPressAction,
+		u.OfCrawlsExtractOptionsBrowserActionScreenshotAction,
+		u.OfCrawlsExtractOptionsBrowserActionScrollAction,
+		u.OfCrawlsExtractOptionsBrowserActionWaitAction,
+		u.OfCrawlsExtractOptionsBrowserActionWaitForElementAction,
+		u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationAction)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionAutoScrollAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionAutoScrollAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionClickAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionClickAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionEvalAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionEvalAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFetchAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionFetchAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFillAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionFillAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGetCookiesAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionGetCookiesAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGotoAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionGotoAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionPressAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionPressAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScreenshotAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionScreenshotAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScrollAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionScrollAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForElementAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitForElementAction
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationAction) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationAction
+	}
+	return nil
+}
+
+// Continuously scroll to load dynamic content
+//
+// The property AutoScroll is required.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollAction struct {
+	AutoScroll CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion `json:"auto_scroll,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionAutoScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionAutoScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionAutoScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion struct {
+	OfBool                                                              param.Opt[bool]                                                         `json:",omitzero,inline"`
+	OfFloat                                                             param.Opt[float64]                                                      `json:",omitzero,inline"`
+	OfString                                                            param.Opt[string]                                                       `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfFloat, u.OfString, u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject struct {
+	StepSize param.Opt[float64] `json:"step_size,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	ClickSelector CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion `json:"click_selector,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion `json:"container,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	DelayAfterScroll CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion `json:"delay_after_scroll,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	IdleTimeout CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion `json:"idle_timeout,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	LoadingSelector CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion `json:"loading_selector,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	MaxDuration CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion `json:"max_duration,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	PauseOnSelector CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion `json:"pause_on_selector,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                            param.Opt[bool]                                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                        param.Opt[bool]                                                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "false"
+)
+
+// Click on an element by selector
+//
+// The property Click is required.
+type CrawlParamsExtractOptionsBrowserActionClickAction struct {
+	Click CrawlParamsExtractOptionsBrowserActionClickActionClickUnion `json:"click,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionClickAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionClickAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionClickAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickUnion struct {
+	OfString                                                  param.Opt[string]                                             `json:",omitzero,inline"`
+	OfStringArray                                             []string                                                      `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionClickActionClickObject *CrawlParamsExtractOptionsBrowserActionClickActionClickObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionClickActionClickUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfCrawlsExtractOptionsBrowserActionClickActionClickObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionClickActionClickObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionClickActionClickObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion `json:"selector,omitzero,required"`
+	Count    param.Opt[float64]                                                        `json:"count,omitzero"`
+	OffsetX  param.Opt[int64]                                                          `json:"offset_x,omitzero"`
+	OffsetY  param.Opt[int64]                                                          `json:"offset_y,omitzero"`
+	Scroll   param.Opt[bool]                                                           `json:"scroll,omitzero"`
+	Steps    param.Opt[float64]                                                        `json:"steps,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	Strategy string `json:"strategy,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionClickActionClickObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionClickActionClickObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionClickActionClickObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionClickActionClickObject](
+		"strategy", "linear", "ghost-cursor", "windmouse",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionClickActionClickObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                  param.Opt[bool]                                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionClickActionClickObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                              param.Opt[bool]                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionClickActionClickObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionClickActionClickObjectSkipString = "false"
+)
+
+// Execute JavaScript code in page context
+//
+// The property Eval is required.
+type CrawlParamsExtractOptionsBrowserActionEvalAction struct {
+	Eval CrawlParamsExtractOptionsBrowserActionEvalActionEvalUnion `json:"eval,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionEvalAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionEvalAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionEvalAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalUnion struct {
+	OfString                                                param.Opt[string]                                           `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionEvalActionEvalObject *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionEvalActionEvalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObject
+	}
+	return nil
+}
+
+// The property Code is required.
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalObject struct {
+	Code string `json:"code,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionEvalActionEvalObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionEvalActionEvalObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionEvalActionEvalObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString = "false"
+)
+
+// Make an HTTP request in browser context
+//
+// The property Fetch is required.
+type CrawlParamsExtractOptionsBrowserActionFetchAction struct {
+	Fetch CrawlParamsExtractOptionsBrowserActionFetchActionFetchUnion `json:"fetch,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionFetchAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionFetchAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionFetchAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchUnion struct {
+	OfString                                                  param.Opt[string]                                             `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionFetchActionFetchObject *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFetchActionFetchUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject struct {
+	URL  string            `json:"url,required" format:"uri"`
+	Body param.Opt[string] `json:"body,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Headers map[string]string  `json:"headers,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionFetchActionFetchObject](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                  param.Opt[bool]                                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                              param.Opt[bool]                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFetchActionFetchObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString = "false"
+)
+
+// Fill text into an input field
+//
+// The property Fill is required.
+type CrawlParamsExtractOptionsBrowserActionFillAction struct {
+	// Fill options with mode-specific fields. Use "type" mode for behavioral typing
+	// simulation, or "paste" mode for instant paste.
+	Fill CrawlParamsExtractOptionsBrowserActionFillActionFillUnion `json:"fill,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionFillAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionFillAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionFillAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillUnion struct {
+	OfType  *CrawlParamsExtractOptionsBrowserActionFillActionFillType  `json:",omitzero,inline"`
+	OfPaste *CrawlParamsExtractOptionsBrowserActionFillActionFillPaste `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfType, u.OfPaste)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) asAny() any {
+	if !param.IsOmitted(u.OfType) {
+		return u.OfType
+	} else if !param.IsOmitted(u.OfPaste) {
+		return u.OfPaste
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetMouseMovementStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.MouseMovementStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetTypingInterval() *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingInterval
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetTypingStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetValue() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Value)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Value)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetClickOnElement() *bool {
+	if vt := u.OfType; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	} else if vt := u.OfPaste; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetMode() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Mode)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Mode)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetScroll() *bool {
+	if vt := u.OfType; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetTimeout() *float64 {
+	if vt := u.OfType; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetVisible() *bool {
+	if vt := u.OfType; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetSelector() (res crawlParamsExtractOptionsBrowserActionFillActionFillUnionSelector) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Selector.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Selector.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [\*[]string]
+type crawlParamsExtractOptionsBrowserActionFillActionFillUnionSelector struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *[]string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlParamsExtractOptionsBrowserActionFillActionFillUnionSelector) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetDelay() (res crawlParamsExtractOptionsBrowserActionFillActionFillUnionDelay) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Delay.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Delay.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*float64], [*string]
+type crawlParamsExtractOptionsBrowserActionFillActionFillUnionDelay struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *float64:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlParamsExtractOptionsBrowserActionFillActionFillUnionDelay) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetRequired() (res crawlParamsExtractOptionsBrowserActionFillActionFillUnionRequired) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Required.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Required.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type crawlParamsExtractOptionsBrowserActionFillActionFillUnionRequired struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlParamsExtractOptionsBrowserActionFillActionFillUnionRequired) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillUnion) GetSkip() (res crawlParamsExtractOptionsBrowserActionFillActionFillUnionSkip) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Skip.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Skip.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type crawlParamsExtractOptionsBrowserActionFillActionFillUnionSkip struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlParamsExtractOptionsBrowserActionFillActionFillUnionSkip) AsAny() any { return u.any }
+
+func init() {
+	apijson.RegisterUnion[CrawlParamsExtractOptionsBrowserActionFillActionFillUnion](
+		"mode",
+		apijson.Discriminator[CrawlParamsExtractOptionsBrowserActionFillActionFillType]("type"),
+		apijson.Discriminator[CrawlParamsExtractOptionsBrowserActionFillActionFillPaste]("paste"),
+	)
+}
+
+// The properties Selector, Value are required.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillType struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                                `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                                       `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                                       `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion `json:"delay,omitzero"`
+	// Any of "type".
+	Mode string `json:"mode,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	MouseMovementStrategy string `json:"mouse_movement_strategy,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion `json:"skip,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	TypingInterval CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion `json:"typing_interval,omitzero"`
+	// Any of "simple", "distribution".
+	TypingStrategy string `json:"typing_strategy,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionFillActionFillType) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionFillActionFillType
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionFillActionFillType) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionFillActionFillType](
+		"mode", "type",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionFillActionFillType](
+		"mouse_movement_strategy", "linear", "ghost-cursor", "windmouse",
+	)
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionFillActionFillType](
+		"typing_strategy", "simple", "distribution",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString)
+	OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString] `json:",omitzero,inline"`
+	OfBool                                                              param.Opt[bool]                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringFalse CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString)
+	OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipString] `json:",omitzero,inline"`
+	OfBool                                                          param.Opt[bool]                                                               `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringTrue  CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringFalse CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// The properties Mode, Selector, Value are required.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPaste struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                                 `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                                        `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                                        `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion `json:"skip,omitzero"`
+	// This field can be elided, and will marshal its zero value as "paste".
+	Mode constant.Paste `json:"mode,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionFillActionFillPaste) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionFillActionFillPaste
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionFillActionFillPaste) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteRequiredString)
+	OfCrawlsExtractOptionsBrowserActionFillActionFillPasteRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString] `json:",omitzero,inline"`
+	OfBool                                                               param.Opt[bool]                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredStringFalse CrawlParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteSkipString)
+	OfCrawlsExtractOptionsBrowserActionFillActionFillPasteSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipString] `json:",omitzero,inline"`
+	OfBool                                                           param.Opt[bool]                                                                `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionFillActionFillPasteSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipStringTrue  CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipStringFalse CrawlParamsExtractOptionsBrowserActionFillActionFillPasteSkipString = "false"
+)
+
+// Retrieve browser cookies
+//
+// The property GetCookies is required.
+type CrawlParamsExtractOptionsBrowserActionGetCookiesAction struct {
+	GetCookies CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion `json:"get_cookies,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionGetCookiesAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionGetCookiesAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionGetCookiesAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion struct {
+	OfBool                                                              param.Opt[bool]                                                         `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject struct {
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip        CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion `json:"skip,omitzero"`
+	ExtraFields map[string]any                                                                  `json:"-"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                            param.Opt[bool]                                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                        param.Opt[bool]                                                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "false"
+)
+
+// Navigate to a URL
+//
+// The property Goto is required.
+type CrawlParamsExtractOptionsBrowserActionGotoAction struct {
+	Goto CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion `json:"goto,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionGotoAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionGotoAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionGotoAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion struct {
+	OfString                                                param.Opt[string]                                           `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionGotoActionGotoObject *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject struct {
+	URL     string            `json:"url,required" format:"uri"`
+	Referer param.Opt[string] `json:"referer,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	WaitUntil string `json:"wait_until,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionGotoActionGotoObject](
+		"wait_until", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionGotoActionGotoObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString = "false"
+)
+
+// Press a keyboard key
+//
+// The property Press is required.
+type CrawlParamsExtractOptionsBrowserActionPressAction struct {
+	Press CrawlParamsExtractOptionsBrowserActionPressActionPressUnion `json:"press,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionPressAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionPressAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionPressAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionPressActionPressUnion struct {
+	OfString                                                  param.Opt[string]                                             `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionPressActionPressObject *CrawlParamsExtractOptionsBrowserActionPressActionPressObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionPressActionPressUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlsExtractOptionsBrowserActionPressActionPressObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionPressActionPressObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionPressActionPressObject
+	}
+	return nil
+}
+
+// The property Key is required.
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObject struct {
+	// Any of "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject",
+	// "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r",
+	// "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft",
+	// "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space",
+	// "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7",
+	// "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6",
+	// "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0",
+	// "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4",
+	// "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC",
+	// "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM",
+	// "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW",
+	// "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu",
+	// "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2",
+	// "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14",
+	// "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock",
+	// "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp",
+	// "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause",
+	// "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash",
+	// "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph",
+	// "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", "
+	// ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i",
+	// "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+	// "z", "Meta", "\*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'",
+	// "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#",
+	// "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+	// "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":",
+	// "<", "\_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight",
+	// "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp".
+	Key string `json:"key,omitzero,required"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionPressActionPressObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionPressActionPressObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionPressActionPressObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionPressActionPressObject](
+		"key", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject", "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r", "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space", "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7", "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6", "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0", "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC", "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM", "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW", "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu", "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock", "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp", "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause", "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash", "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph", "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", " ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "Meta", "*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'", "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#", "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":", "<", "_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight", "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionPressActionPressObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                  param.Opt[bool]                                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionPressActionPressObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                              param.Opt[bool]                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionPressActionPressObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionPressActionPressObjectSkipString = "false"
+)
+
+// Capture a page screenshot
+//
+// The property Screenshot is required.
+type CrawlParamsExtractOptionsBrowserActionScreenshotAction struct {
+	Screenshot CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion `json:"screenshot,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionScreenshotAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionScreenshotAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionScreenshotAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion struct {
+	OfBool                                                              param.Opt[bool]                                                         `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObject *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObject
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject struct {
+	FullPage param.Opt[bool]    `json:"full_page,omitzero"`
+	Quality  param.Opt[float64] `json:"quality,omitzero"`
+	// Any of "png", "jpeg", "webp".
+	Format string `json:"format,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject](
+		"format", "png", "jpeg", "webp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                            param.Opt[bool]                                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                        param.Opt[bool]                                                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString = "false"
+)
+
+// Scroll the page or an element
+//
+// The property Scroll is required.
+type CrawlParamsExtractOptionsBrowserActionScrollAction struct {
+	Scroll CrawlParamsExtractOptionsBrowserActionScrollActionScrollUnion `json:"scroll,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollUnion struct {
+	OfFloat                                                     param.Opt[float64]                                              `json:",omitzero,inline"`
+	OfString                                                    param.Opt[string]                                               `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionScrollActionScrollObject *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScrollActionScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObject
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObject struct {
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	X       param.Opt[float64] `json:"x,omitzero"`
+	Y       param.Opt[float64] `json:"y,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion `json:"container,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion `json:"skip,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	To CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion `json:"to,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionScrollActionScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionScrollActionScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                    param.Opt[bool]                                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionScrollActionScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Wait for a specified duration
+//
+// The property Wait is required.
+type CrawlParamsExtractOptionsBrowserActionWaitAction struct {
+	Wait CrawlParamsExtractOptionsBrowserActionWaitActionWaitUnion `json:"wait,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitUnion struct {
+	OfFloat                                                 param.Opt[float64]                                          `json:",omitzero,inline"`
+	OfString                                                param.Opt[string]                                           `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitActionWaitObject *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitActionWaitUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObject
+	}
+	return nil
+}
+
+// The property Duration is required.
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObject struct {
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Duration CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion `json:"duration,omitzero,required"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitActionWaitObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitActionWaitObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitActionWaitObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString = "false"
+)
+
+// Wait for an element to appear or reach a specific state
+//
+// The property WaitForElement is required.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementAction struct {
+	WaitForElement CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion `json:"wait_for_element,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitForElementAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitForElementAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitForElementAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion struct {
+	OfString                                                                    param.Opt[string]                                                               `json:",omitzero,inline"`
+	OfStringArray                                                               []string                                                                        `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion `json:"selector,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                                    param.Opt[bool]                                                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                                param.Opt[bool]                                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "false"
+)
+
+// Wait for page navigation to complete
+//
+// The property WaitForNavigation is required.
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationAction struct {
+	WaitForNavigation CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion `json:"wait_for_navigation,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitForNavigationAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitForNavigationAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitForNavigationAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString)
+	OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString param.Opt[string]                                                                     `json:",omitzero,inline"`
+	OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString, u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString
+	} else if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) {
+		return u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringLoad             CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "load"
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringDomcontentloaded CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "domcontentloaded"
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle0     CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle0"
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle2     CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle2"
+)
+
+// The property Navigation is required.
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject struct {
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	Navigation string `json:"navigation,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject](
+		"navigation", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString)
+	OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                                          param.Opt[bool]                                                                                               `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringTrue  CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringFalse CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString)
+	OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString param.Opt[CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                                      param.Opt[bool]                                                                                           `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString, u.OfBool)
+}
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString) {
+		return &u.OfCrawlsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString string
+
+const (
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringTrue  CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "true"
+	CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringFalse CrawlParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "false"
+)
 
 // Only one field can be non-zero.
 //
@@ -3362,22 +6005,6 @@ func init() {
 	)
 }
 
-// Configuration options for parsing behavior
-type CrawlParamsExtractOptionsParseOptions struct {
-	// Whether to merge dynamic parsing results with static results
-	MergeDynamic param.Opt[bool] `json:"merge_dynamic,omitzero"`
-	ExtraFields  map[string]any  `json:"-"`
-	paramObj
-}
-
-func (r CrawlParamsExtractOptionsParseOptions) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlParamsExtractOptionsParseOptions
-	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
-}
-func (r *CrawlParamsExtractOptionsParseOptions) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -3786,10 +6413,6 @@ type ExtractParams struct {
 	Ip6 param.Opt[bool] `json:"ip6,omitzero"`
 	// Whether to emulate XMLHttpRequest behavior
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
-	// Whether to return response in Markdown format
-	Markdown param.Opt[bool] `json:"markdown,omitzero"`
-	// Whether to exclude HTML from the response
-	NoHTML param.Opt[bool] `json:"no_html,omitzero"`
 	// Whether to disable browser-based rendering
 	NoUserbrowser param.Opt[bool] `json:"no_userbrowser,omitzero"`
 	// Whether to parse the response content
@@ -3810,6 +6433,8 @@ type ExtractParams struct {
 	Type param.Opt[string] `json:"type,omitzero"`
 	// Browser type to emulate
 	Browser ExtractParamsBrowserUnion `json:"browser,omitzero"`
+	// Array of browser automation actions to execute sequentially
+	BrowserActions []ExtractParamsBrowserActionUnion `json:"browser_actions,omitzero"`
 	// Browser cookies as array of cookie objects
 	Cookies ExtractParamsCookiesUnion `json:"cookies,omitzero"`
 	// Country code for geolocation and proxy selection
@@ -3843,14 +6468,12 @@ type ExtractParams struct {
 	//
 	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
 	Driver ExtractParamsDriver `json:"driver,omitzero"`
-	// Custom parser configuration as a key-value map
-	DynamicParser map[string]any `json:"dynamic_parser,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
-	// Response format
+	// List of acceptable response formats in order of preference
 	//
-	// Any of "json", "html", "csv", "raw", "json-lines", "markdown".
-	Format ExtractParamsFormat `json:"format,omitzero"`
+	// Any of "html", "markdown".
+	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractParamsHeaderUnion `json:"headers,omitzero"`
 	// Locale for browser language and region settings
@@ -3933,8 +6556,6 @@ type ExtractParams struct {
 	//
 	// Any of "windows", "mac os", "linux", "android", "ios".
 	Os ExtractParamsOs `json:"os,omitzero"`
-	// Configuration options for parsing behavior
-	ParseOptions ExtractParamsParseOptions `json:"parse_options,omitzero"`
 	// Custom parser configuration as a key-value map
 	Parser ExtractParamsParserUnion `json:"parser,omitzero"`
 	// Proxy provider to use for the request
@@ -4040,6 +6661,2726 @@ func init() {
 		"name", "chrome", "firefox",
 	)
 }
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionUnion struct {
+	OfExtractsBrowserActionAutoScrollAction        *ExtractParamsBrowserActionAutoScrollAction        `json:",omitzero,inline"`
+	OfExtractsBrowserActionClickAction             *ExtractParamsBrowserActionClickAction             `json:",omitzero,inline"`
+	OfExtractsBrowserActionEvalAction              *ExtractParamsBrowserActionEvalAction              `json:",omitzero,inline"`
+	OfExtractsBrowserActionFetchAction             *ExtractParamsBrowserActionFetchAction             `json:",omitzero,inline"`
+	OfExtractsBrowserActionFillAction              *ExtractParamsBrowserActionFillAction              `json:",omitzero,inline"`
+	OfExtractsBrowserActionGetCookiesAction        *ExtractParamsBrowserActionGetCookiesAction        `json:",omitzero,inline"`
+	OfExtractsBrowserActionGotoAction              *ExtractParamsBrowserActionGotoAction              `json:",omitzero,inline"`
+	OfExtractsBrowserActionPressAction             *ExtractParamsBrowserActionPressAction             `json:",omitzero,inline"`
+	OfExtractsBrowserActionScreenshotAction        *ExtractParamsBrowserActionScreenshotAction        `json:",omitzero,inline"`
+	OfExtractsBrowserActionScrollAction            *ExtractParamsBrowserActionScrollAction            `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitAction              *ExtractParamsBrowserActionWaitAction              `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitForElementAction    *ExtractParamsBrowserActionWaitForElementAction    `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitForNavigationAction *ExtractParamsBrowserActionWaitForNavigationAction `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionAutoScrollAction,
+		u.OfExtractsBrowserActionClickAction,
+		u.OfExtractsBrowserActionEvalAction,
+		u.OfExtractsBrowserActionFetchAction,
+		u.OfExtractsBrowserActionFillAction,
+		u.OfExtractsBrowserActionGetCookiesAction,
+		u.OfExtractsBrowserActionGotoAction,
+		u.OfExtractsBrowserActionPressAction,
+		u.OfExtractsBrowserActionScreenshotAction,
+		u.OfExtractsBrowserActionScrollAction,
+		u.OfExtractsBrowserActionWaitAction,
+		u.OfExtractsBrowserActionWaitForElementAction,
+		u.OfExtractsBrowserActionWaitForNavigationAction)
+}
+func (u *ExtractParamsBrowserActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionAutoScrollAction) {
+		return u.OfExtractsBrowserActionAutoScrollAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionClickAction) {
+		return u.OfExtractsBrowserActionClickAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionEvalAction) {
+		return u.OfExtractsBrowserActionEvalAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionFetchAction) {
+		return u.OfExtractsBrowserActionFetchAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionFillAction) {
+		return u.OfExtractsBrowserActionFillAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionGetCookiesAction) {
+		return u.OfExtractsBrowserActionGetCookiesAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionGotoAction) {
+		return u.OfExtractsBrowserActionGotoAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionPressAction) {
+		return u.OfExtractsBrowserActionPressAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionScreenshotAction) {
+		return u.OfExtractsBrowserActionScreenshotAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionScrollAction) {
+		return u.OfExtractsBrowserActionScrollAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitAction) {
+		return u.OfExtractsBrowserActionWaitAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitForElementAction) {
+		return u.OfExtractsBrowserActionWaitForElementAction
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitForNavigationAction) {
+		return u.OfExtractsBrowserActionWaitForNavigationAction
+	}
+	return nil
+}
+
+// Continuously scroll to load dynamic content
+//
+// The property AutoScroll is required.
+type ExtractParamsBrowserActionAutoScrollAction struct {
+	AutoScroll ExtractParamsBrowserActionAutoScrollActionAutoScrollUnion `json:"auto_scroll,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionAutoScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionAutoScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionAutoScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollUnion struct {
+	OfBool                                                  param.Opt[bool]                                             `json:",omitzero,inline"`
+	OfFloat                                                 param.Opt[float64]                                          `json:",omitzero,inline"`
+	OfString                                                param.Opt[string]                                           `json:",omitzero,inline"`
+	OfExtractsBrowserActionAutoScrollActionAutoScrollObject *ExtractParamsBrowserActionAutoScrollActionAutoScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfFloat, u.OfString, u.OfExtractsBrowserActionAutoScrollActionAutoScrollObject)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionAutoScrollActionAutoScrollObject) {
+		return u.OfExtractsBrowserActionAutoScrollActionAutoScrollObject
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObject struct {
+	StepSize param.Opt[float64] `json:"step_size,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	ClickSelector ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion `json:"click_selector,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion `json:"container,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	DelayAfterScroll ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion `json:"delay_after_scroll,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	IdleTimeout ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion `json:"idle_timeout,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	LoadingSelector ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion `json:"loading_selector,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	MaxDuration ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion `json:"max_duration,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	PauseOnSelector ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion `json:"pause_on_selector,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionAutoScrollActionAutoScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionAutoScrollActionAutoScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionAutoScrollActionAutoScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectRequiredString)
+	OfExtractsBrowserActionAutoScrollActionAutoScrollObjectRequiredString param.Opt[ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectRequiredString) {
+		return &u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringTrue  ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "true"
+	ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringFalse ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectSkipString)
+	OfExtractsBrowserActionAutoScrollActionAutoScrollObjectSkipString param.Opt[ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectSkipString) {
+		return &u.OfExtractsBrowserActionAutoScrollActionAutoScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipStringTrue  ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "true"
+	ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipStringFalse ExtractParamsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "false"
+)
+
+// Click on an element by selector
+//
+// The property Click is required.
+type ExtractParamsBrowserActionClickAction struct {
+	Click ExtractParamsBrowserActionClickActionClickUnion `json:"click,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionClickAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionClickAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionClickAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionClickActionClickUnion struct {
+	OfString                                      param.Opt[string]                                 `json:",omitzero,inline"`
+	OfStringArray                                 []string                                          `json:",omitzero,inline"`
+	OfExtractsBrowserActionClickActionClickObject *ExtractParamsBrowserActionClickActionClickObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionClickActionClickUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfExtractsBrowserActionClickActionClickObject)
+}
+func (u *ExtractParamsBrowserActionClickActionClickUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionClickActionClickUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionClickActionClickObject) {
+		return u.OfExtractsBrowserActionClickActionClickObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type ExtractParamsBrowserActionClickActionClickObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector ExtractParamsBrowserActionClickActionClickObjectSelectorUnion `json:"selector,omitzero,required"`
+	Count    param.Opt[float64]                                            `json:"count,omitzero"`
+	OffsetX  param.Opt[int64]                                              `json:"offset_x,omitzero"`
+	OffsetY  param.Opt[int64]                                              `json:"offset_y,omitzero"`
+	Scroll   param.Opt[bool]                                               `json:"scroll,omitzero"`
+	Steps    param.Opt[float64]                                            `json:"steps,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay ExtractParamsBrowserActionClickActionClickObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionClickActionClickObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionClickActionClickObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	Strategy string `json:"strategy,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionClickActionClickObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionClickActionClickObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionClickActionClickObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionClickActionClickObject](
+		"strategy", "linear", "ghost-cursor", "windmouse",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionClickActionClickObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionClickActionClickObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionClickActionClickObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionClickActionClickObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionClickActionClickObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionClickActionClickObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionClickActionClickObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionClickActionClickObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionClickActionClickObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionClickActionClickObjectRequiredString)
+	OfExtractsBrowserActionClickActionClickObjectRequiredString param.Opt[ExtractParamsBrowserActionClickActionClickObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                      param.Opt[bool]                                                           `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionClickActionClickObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionClickActionClickObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionClickActionClickObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionClickActionClickObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionClickActionClickObjectRequiredString) {
+		return &u.OfExtractsBrowserActionClickActionClickObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionClickActionClickObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionClickActionClickObjectRequiredStringTrue  ExtractParamsBrowserActionClickActionClickObjectRequiredString = "true"
+	ExtractParamsBrowserActionClickActionClickObjectRequiredStringFalse ExtractParamsBrowserActionClickActionClickObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionClickActionClickObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionClickActionClickObjectSkipString)
+	OfExtractsBrowserActionClickActionClickObjectSkipString param.Opt[ExtractParamsBrowserActionClickActionClickObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                  param.Opt[bool]                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionClickActionClickObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionClickActionClickObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionClickActionClickObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionClickActionClickObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionClickActionClickObjectSkipString) {
+		return &u.OfExtractsBrowserActionClickActionClickObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionClickActionClickObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionClickActionClickObjectSkipStringTrue  ExtractParamsBrowserActionClickActionClickObjectSkipString = "true"
+	ExtractParamsBrowserActionClickActionClickObjectSkipStringFalse ExtractParamsBrowserActionClickActionClickObjectSkipString = "false"
+)
+
+// Execute JavaScript code in page context
+//
+// The property Eval is required.
+type ExtractParamsBrowserActionEvalAction struct {
+	Eval ExtractParamsBrowserActionEvalActionEvalUnion `json:"eval,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionEvalAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionEvalAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionEvalAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionEvalActionEvalUnion struct {
+	OfString                                    param.Opt[string]                               `json:",omitzero,inline"`
+	OfExtractsBrowserActionEvalActionEvalObject *ExtractParamsBrowserActionEvalActionEvalObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionEvalActionEvalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfExtractsBrowserActionEvalActionEvalObject)
+}
+func (u *ExtractParamsBrowserActionEvalActionEvalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionEvalActionEvalUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionEvalActionEvalObject) {
+		return u.OfExtractsBrowserActionEvalActionEvalObject
+	}
+	return nil
+}
+
+// The property Code is required.
+type ExtractParamsBrowserActionEvalActionEvalObject struct {
+	Code string `json:"code,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionEvalActionEvalObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionEvalActionEvalObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionEvalActionEvalObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionEvalActionEvalObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionEvalActionEvalObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionEvalActionEvalObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionEvalActionEvalObjectRequiredString)
+	OfExtractsBrowserActionEvalActionEvalObjectRequiredString param.Opt[ExtractParamsBrowserActionEvalActionEvalObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                    param.Opt[bool]                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionEvalActionEvalObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionEvalActionEvalObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionEvalActionEvalObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionEvalActionEvalObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionEvalActionEvalObjectRequiredString) {
+		return &u.OfExtractsBrowserActionEvalActionEvalObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionEvalActionEvalObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionEvalActionEvalObjectRequiredStringTrue  ExtractParamsBrowserActionEvalActionEvalObjectRequiredString = "true"
+	ExtractParamsBrowserActionEvalActionEvalObjectRequiredStringFalse ExtractParamsBrowserActionEvalActionEvalObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionEvalActionEvalObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionEvalActionEvalObjectSkipString)
+	OfExtractsBrowserActionEvalActionEvalObjectSkipString param.Opt[ExtractParamsBrowserActionEvalActionEvalObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                param.Opt[bool]                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionEvalActionEvalObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionEvalActionEvalObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionEvalActionEvalObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionEvalActionEvalObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionEvalActionEvalObjectSkipString) {
+		return &u.OfExtractsBrowserActionEvalActionEvalObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionEvalActionEvalObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionEvalActionEvalObjectSkipStringTrue  ExtractParamsBrowserActionEvalActionEvalObjectSkipString = "true"
+	ExtractParamsBrowserActionEvalActionEvalObjectSkipStringFalse ExtractParamsBrowserActionEvalActionEvalObjectSkipString = "false"
+)
+
+// Make an HTTP request in browser context
+//
+// The property Fetch is required.
+type ExtractParamsBrowserActionFetchAction struct {
+	Fetch ExtractParamsBrowserActionFetchActionFetchUnion `json:"fetch,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionFetchAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionFetchAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionFetchAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFetchActionFetchUnion struct {
+	OfString                                      param.Opt[string]                                 `json:",omitzero,inline"`
+	OfExtractsBrowserActionFetchActionFetchObject *ExtractParamsBrowserActionFetchActionFetchObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFetchActionFetchUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfExtractsBrowserActionFetchActionFetchObject)
+}
+func (u *ExtractParamsBrowserActionFetchActionFetchUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFetchActionFetchUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionFetchActionFetchObject) {
+		return u.OfExtractsBrowserActionFetchActionFetchObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type ExtractParamsBrowserActionFetchActionFetchObject struct {
+	URL  string            `json:"url,required" format:"uri"`
+	Body param.Opt[string] `json:"body,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Headers map[string]string  `json:"headers,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionFetchActionFetchObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionFetchActionFetchObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionFetchActionFetchObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionFetchActionFetchObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionFetchActionFetchObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionFetchActionFetchObject](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFetchActionFetchObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFetchActionFetchObjectRequiredString)
+	OfExtractsBrowserActionFetchActionFetchObjectRequiredString param.Opt[ExtractParamsBrowserActionFetchActionFetchObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                      param.Opt[bool]                                                           `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFetchActionFetchObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFetchActionFetchObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFetchActionFetchObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFetchActionFetchObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFetchActionFetchObjectRequiredString) {
+		return &u.OfExtractsBrowserActionFetchActionFetchObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFetchActionFetchObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionFetchActionFetchObjectRequiredStringTrue  ExtractParamsBrowserActionFetchActionFetchObjectRequiredString = "true"
+	ExtractParamsBrowserActionFetchActionFetchObjectRequiredStringFalse ExtractParamsBrowserActionFetchActionFetchObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFetchActionFetchObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFetchActionFetchObjectSkipString)
+	OfExtractsBrowserActionFetchActionFetchObjectSkipString param.Opt[ExtractParamsBrowserActionFetchActionFetchObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                  param.Opt[bool]                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFetchActionFetchObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFetchActionFetchObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFetchActionFetchObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFetchActionFetchObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFetchActionFetchObjectSkipString) {
+		return &u.OfExtractsBrowserActionFetchActionFetchObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFetchActionFetchObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionFetchActionFetchObjectSkipStringTrue  ExtractParamsBrowserActionFetchActionFetchObjectSkipString = "true"
+	ExtractParamsBrowserActionFetchActionFetchObjectSkipStringFalse ExtractParamsBrowserActionFetchActionFetchObjectSkipString = "false"
+)
+
+// Fill text into an input field
+//
+// The property Fill is required.
+type ExtractParamsBrowserActionFillAction struct {
+	// Fill options with mode-specific fields. Use "type" mode for behavioral typing
+	// simulation, or "paste" mode for instant paste.
+	Fill ExtractParamsBrowserActionFillActionFillUnion `json:"fill,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionFillAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionFillAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionFillAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillUnion struct {
+	OfType  *ExtractParamsBrowserActionFillActionFillType  `json:",omitzero,inline"`
+	OfPaste *ExtractParamsBrowserActionFillActionFillPaste `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfType, u.OfPaste)
+}
+func (u *ExtractParamsBrowserActionFillActionFillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillUnion) asAny() any {
+	if !param.IsOmitted(u.OfType) {
+		return u.OfType
+	} else if !param.IsOmitted(u.OfPaste) {
+		return u.OfPaste
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetMouseMovementStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.MouseMovementStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetTypingInterval() *ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingInterval
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetTypingStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetValue() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Value)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Value)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetClickOnElement() *bool {
+	if vt := u.OfType; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	} else if vt := u.OfPaste; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetMode() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Mode)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Mode)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetScroll() *bool {
+	if vt := u.OfType; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetTimeout() *float64 {
+	if vt := u.OfType; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetVisible() *bool {
+	if vt := u.OfType; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetSelector() (res extractParamsBrowserActionFillActionFillUnionSelector) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Selector.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Selector.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [\*[]string]
+type extractParamsBrowserActionFillActionFillUnionSelector struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *[]string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u extractParamsBrowserActionFillActionFillUnionSelector) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetDelay() (res extractParamsBrowserActionFillActionFillUnionDelay) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Delay.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Delay.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*float64], [*string]
+type extractParamsBrowserActionFillActionFillUnionDelay struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *float64:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u extractParamsBrowserActionFillActionFillUnionDelay) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetRequired() (res extractParamsBrowserActionFillActionFillUnionRequired) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Required.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Required.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type extractParamsBrowserActionFillActionFillUnionRequired struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u extractParamsBrowserActionFillActionFillUnionRequired) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ExtractParamsBrowserActionFillActionFillUnion) GetSkip() (res extractParamsBrowserActionFillActionFillUnionSkip) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Skip.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Skip.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type extractParamsBrowserActionFillActionFillUnionSkip struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u extractParamsBrowserActionFillActionFillUnionSkip) AsAny() any { return u.any }
+
+func init() {
+	apijson.RegisterUnion[ExtractParamsBrowserActionFillActionFillUnion](
+		"mode",
+		apijson.Discriminator[ExtractParamsBrowserActionFillActionFillType]("type"),
+		apijson.Discriminator[ExtractParamsBrowserActionFillActionFillPaste]("paste"),
+	)
+}
+
+// The properties Selector, Value are required.
+type ExtractParamsBrowserActionFillActionFillType struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       ExtractParamsBrowserActionFillActionFillTypeSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                    `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                           `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                           `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay ExtractParamsBrowserActionFillActionFillTypeDelayUnion `json:"delay,omitzero"`
+	// Any of "type".
+	Mode string `json:"mode,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	MouseMovementStrategy string `json:"mouse_movement_strategy,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionFillActionFillTypeRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionFillActionFillTypeSkipUnion `json:"skip,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	TypingInterval ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion `json:"typing_interval,omitzero"`
+	// Any of "simple", "distribution".
+	TypingStrategy string `json:"typing_strategy,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionFillActionFillType) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionFillActionFillType
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionFillActionFillType) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionFillActionFillType](
+		"mode", "type",
+	)
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionFillActionFillType](
+		"mouse_movement_strategy", "linear", "ghost-cursor", "windmouse",
+	)
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionFillActionFillType](
+		"typing_strategy", "simple", "distribution",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillTypeSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillTypeSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionFillActionFillTypeSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillTypeSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillTypeDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillTypeDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionFillActionFillTypeDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillTypeDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillTypeRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFillActionFillTypeRequiredString)
+	OfExtractsBrowserActionFillActionFillTypeRequiredString param.Opt[ExtractParamsBrowserActionFillActionFillTypeRequiredString] `json:",omitzero,inline"`
+	OfBool                                                  param.Opt[bool]                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillTypeRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFillActionFillTypeRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFillActionFillTypeRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillTypeRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFillActionFillTypeRequiredString) {
+		return &u.OfExtractsBrowserActionFillActionFillTypeRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFillActionFillTypeRequiredString string
+
+const (
+	ExtractParamsBrowserActionFillActionFillTypeRequiredStringTrue  ExtractParamsBrowserActionFillActionFillTypeRequiredString = "true"
+	ExtractParamsBrowserActionFillActionFillTypeRequiredStringFalse ExtractParamsBrowserActionFillActionFillTypeRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillTypeSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFillActionFillTypeSkipString)
+	OfExtractsBrowserActionFillActionFillTypeSkipString param.Opt[ExtractParamsBrowserActionFillActionFillTypeSkipString] `json:",omitzero,inline"`
+	OfBool                                              param.Opt[bool]                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillTypeSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFillActionFillTypeSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFillActionFillTypeSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillTypeSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFillActionFillTypeSkipString) {
+		return &u.OfExtractsBrowserActionFillActionFillTypeSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFillActionFillTypeSkipString string
+
+const (
+	ExtractParamsBrowserActionFillActionFillTypeSkipStringTrue  ExtractParamsBrowserActionFillActionFillTypeSkipString = "true"
+	ExtractParamsBrowserActionFillActionFillTypeSkipStringFalse ExtractParamsBrowserActionFillActionFillTypeSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillTypeTypingIntervalUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// The properties Mode, Selector, Value are required.
+type ExtractParamsBrowserActionFillActionFillPaste struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       ExtractParamsBrowserActionFillActionFillPasteSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                     `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                            `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                            `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay ExtractParamsBrowserActionFillActionFillPasteDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionFillActionFillPasteRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionFillActionFillPasteSkipUnion `json:"skip,omitzero"`
+	// This field can be elided, and will marshal its zero value as "paste".
+	Mode constant.Paste `json:"mode,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionFillActionFillPaste) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionFillActionFillPaste
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionFillActionFillPaste) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillPasteSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillPasteSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionFillActionFillPasteSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillPasteSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillPasteDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillPasteDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionFillActionFillPasteDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillPasteDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillPasteRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFillActionFillPasteRequiredString)
+	OfExtractsBrowserActionFillActionFillPasteRequiredString param.Opt[ExtractParamsBrowserActionFillActionFillPasteRequiredString] `json:",omitzero,inline"`
+	OfBool                                                   param.Opt[bool]                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillPasteRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFillActionFillPasteRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFillActionFillPasteRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillPasteRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFillActionFillPasteRequiredString) {
+		return &u.OfExtractsBrowserActionFillActionFillPasteRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFillActionFillPasteRequiredString string
+
+const (
+	ExtractParamsBrowserActionFillActionFillPasteRequiredStringTrue  ExtractParamsBrowserActionFillActionFillPasteRequiredString = "true"
+	ExtractParamsBrowserActionFillActionFillPasteRequiredStringFalse ExtractParamsBrowserActionFillActionFillPasteRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionFillActionFillPasteSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionFillActionFillPasteSkipString)
+	OfExtractsBrowserActionFillActionFillPasteSkipString param.Opt[ExtractParamsBrowserActionFillActionFillPasteSkipString] `json:",omitzero,inline"`
+	OfBool                                               param.Opt[bool]                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionFillActionFillPasteSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionFillActionFillPasteSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionFillActionFillPasteSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionFillActionFillPasteSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionFillActionFillPasteSkipString) {
+		return &u.OfExtractsBrowserActionFillActionFillPasteSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionFillActionFillPasteSkipString string
+
+const (
+	ExtractParamsBrowserActionFillActionFillPasteSkipStringTrue  ExtractParamsBrowserActionFillActionFillPasteSkipString = "true"
+	ExtractParamsBrowserActionFillActionFillPasteSkipStringFalse ExtractParamsBrowserActionFillActionFillPasteSkipString = "false"
+)
+
+// Retrieve browser cookies
+//
+// The property GetCookies is required.
+type ExtractParamsBrowserActionGetCookiesAction struct {
+	GetCookies ExtractParamsBrowserActionGetCookiesActionGetCookiesUnion `json:"get_cookies,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionGetCookiesAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionGetCookiesAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionGetCookiesAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesUnion struct {
+	OfBool                                                  param.Opt[bool]                                             `json:",omitzero,inline"`
+	OfExtractsBrowserActionGetCookiesActionGetCookiesObject *ExtractParamsBrowserActionGetCookiesActionGetCookiesObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGetCookiesActionGetCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfExtractsBrowserActionGetCookiesActionGetCookiesObject)
+}
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionGetCookiesActionGetCookiesObject) {
+		return u.OfExtractsBrowserActionGetCookiesActionGetCookiesObject
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesObject struct {
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip        ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion `json:"skip,omitzero"`
+	ExtraFields map[string]any                                                      `json:"-"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionGetCookiesActionGetCookiesObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionGetCookiesActionGetCookiesObject
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *ExtractParamsBrowserActionGetCookiesActionGetCookiesObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectRequiredString)
+	OfExtractsBrowserActionGetCookiesActionGetCookiesObjectRequiredString param.Opt[ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectRequiredString) {
+		return &u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringTrue  ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "true"
+	ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringFalse ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectSkipString)
+	OfExtractsBrowserActionGetCookiesActionGetCookiesObjectSkipString param.Opt[ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectSkipString) {
+		return &u.OfExtractsBrowserActionGetCookiesActionGetCookiesObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipStringTrue  ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "true"
+	ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipStringFalse ExtractParamsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "false"
+)
+
+// Navigate to a URL
+//
+// The property Goto is required.
+type ExtractParamsBrowserActionGotoAction struct {
+	Goto ExtractParamsBrowserActionGotoActionGotoUnion `json:"goto,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionGotoAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionGotoAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionGotoAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGotoActionGotoUnion struct {
+	OfString                                    param.Opt[string]                               `json:",omitzero,inline"`
+	OfExtractsBrowserActionGotoActionGotoObject *ExtractParamsBrowserActionGotoActionGotoObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGotoActionGotoUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfExtractsBrowserActionGotoActionGotoObject)
+}
+func (u *ExtractParamsBrowserActionGotoActionGotoUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGotoActionGotoUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionGotoActionGotoObject) {
+		return u.OfExtractsBrowserActionGotoActionGotoObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type ExtractParamsBrowserActionGotoActionGotoObject struct {
+	URL     string            `json:"url,required" format:"uri"`
+	Referer param.Opt[string] `json:"referer,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionGotoActionGotoObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionGotoActionGotoObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	WaitUntil string `json:"wait_until,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionGotoActionGotoObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionGotoActionGotoObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionGotoActionGotoObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionGotoActionGotoObject](
+		"wait_until", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGotoActionGotoObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionGotoActionGotoObjectRequiredString)
+	OfExtractsBrowserActionGotoActionGotoObjectRequiredString param.Opt[ExtractParamsBrowserActionGotoActionGotoObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                    param.Opt[bool]                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGotoActionGotoObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionGotoActionGotoObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionGotoActionGotoObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGotoActionGotoObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionGotoActionGotoObjectRequiredString) {
+		return &u.OfExtractsBrowserActionGotoActionGotoObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionGotoActionGotoObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionGotoActionGotoObjectRequiredStringTrue  ExtractParamsBrowserActionGotoActionGotoObjectRequiredString = "true"
+	ExtractParamsBrowserActionGotoActionGotoObjectRequiredStringFalse ExtractParamsBrowserActionGotoActionGotoObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionGotoActionGotoObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionGotoActionGotoObjectSkipString)
+	OfExtractsBrowserActionGotoActionGotoObjectSkipString param.Opt[ExtractParamsBrowserActionGotoActionGotoObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                param.Opt[bool]                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionGotoActionGotoObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionGotoActionGotoObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionGotoActionGotoObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionGotoActionGotoObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionGotoActionGotoObjectSkipString) {
+		return &u.OfExtractsBrowserActionGotoActionGotoObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionGotoActionGotoObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionGotoActionGotoObjectSkipStringTrue  ExtractParamsBrowserActionGotoActionGotoObjectSkipString = "true"
+	ExtractParamsBrowserActionGotoActionGotoObjectSkipStringFalse ExtractParamsBrowserActionGotoActionGotoObjectSkipString = "false"
+)
+
+// Press a keyboard key
+//
+// The property Press is required.
+type ExtractParamsBrowserActionPressAction struct {
+	Press ExtractParamsBrowserActionPressActionPressUnion `json:"press,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionPressAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionPressAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionPressAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionPressActionPressUnion struct {
+	OfString                                      param.Opt[string]                                 `json:",omitzero,inline"`
+	OfExtractsBrowserActionPressActionPressObject *ExtractParamsBrowserActionPressActionPressObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionPressActionPressUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfExtractsBrowserActionPressActionPressObject)
+}
+func (u *ExtractParamsBrowserActionPressActionPressUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionPressActionPressUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionPressActionPressObject) {
+		return u.OfExtractsBrowserActionPressActionPressObject
+	}
+	return nil
+}
+
+// The property Key is required.
+type ExtractParamsBrowserActionPressActionPressObject struct {
+	// Any of "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject",
+	// "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r",
+	// "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft",
+	// "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space",
+	// "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7",
+	// "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6",
+	// "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0",
+	// "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4",
+	// "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC",
+	// "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM",
+	// "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW",
+	// "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu",
+	// "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2",
+	// "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14",
+	// "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock",
+	// "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp",
+	// "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause",
+	// "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash",
+	// "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph",
+	// "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", "
+	// ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i",
+	// "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+	// "z", "Meta", "\*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'",
+	// "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#",
+	// "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+	// "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":",
+	// "<", "\_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight",
+	// "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp".
+	Key string `json:"key,omitzero,required"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay ExtractParamsBrowserActionPressActionPressObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionPressActionPressObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionPressActionPressObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionPressActionPressObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionPressActionPressObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionPressActionPressObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionPressActionPressObject](
+		"key", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject", "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r", "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space", "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7", "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6", "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0", "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC", "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM", "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW", "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu", "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock", "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp", "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause", "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash", "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph", "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", " ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "Meta", "*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'", "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#", "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":", "<", "_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight", "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionPressActionPressObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionPressActionPressObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionPressActionPressObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionPressActionPressObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionPressActionPressObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionPressActionPressObjectRequiredString)
+	OfExtractsBrowserActionPressActionPressObjectRequiredString param.Opt[ExtractParamsBrowserActionPressActionPressObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                      param.Opt[bool]                                                           `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionPressActionPressObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionPressActionPressObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionPressActionPressObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionPressActionPressObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionPressActionPressObjectRequiredString) {
+		return &u.OfExtractsBrowserActionPressActionPressObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionPressActionPressObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionPressActionPressObjectRequiredStringTrue  ExtractParamsBrowserActionPressActionPressObjectRequiredString = "true"
+	ExtractParamsBrowserActionPressActionPressObjectRequiredStringFalse ExtractParamsBrowserActionPressActionPressObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionPressActionPressObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionPressActionPressObjectSkipString)
+	OfExtractsBrowserActionPressActionPressObjectSkipString param.Opt[ExtractParamsBrowserActionPressActionPressObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                  param.Opt[bool]                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionPressActionPressObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionPressActionPressObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionPressActionPressObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionPressActionPressObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionPressActionPressObjectSkipString) {
+		return &u.OfExtractsBrowserActionPressActionPressObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionPressActionPressObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionPressActionPressObjectSkipStringTrue  ExtractParamsBrowserActionPressActionPressObjectSkipString = "true"
+	ExtractParamsBrowserActionPressActionPressObjectSkipStringFalse ExtractParamsBrowserActionPressActionPressObjectSkipString = "false"
+)
+
+// Capture a page screenshot
+//
+// The property Screenshot is required.
+type ExtractParamsBrowserActionScreenshotAction struct {
+	Screenshot ExtractParamsBrowserActionScreenshotActionScreenshotUnion `json:"screenshot,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionScreenshotAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionScreenshotAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionScreenshotAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScreenshotActionScreenshotUnion struct {
+	OfBool                                                  param.Opt[bool]                                             `json:",omitzero,inline"`
+	OfExtractsBrowserActionScreenshotActionScreenshotObject *ExtractParamsBrowserActionScreenshotActionScreenshotObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScreenshotActionScreenshotUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfExtractsBrowserActionScreenshotActionScreenshotObject)
+}
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionScreenshotActionScreenshotObject) {
+		return u.OfExtractsBrowserActionScreenshotActionScreenshotObject
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScreenshotActionScreenshotObject struct {
+	FullPage param.Opt[bool]    `json:"full_page,omitzero"`
+	Quality  param.Opt[float64] `json:"quality,omitzero"`
+	// Any of "png", "jpeg", "webp".
+	Format string `json:"format,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionScreenshotActionScreenshotObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionScreenshotActionScreenshotObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionScreenshotActionScreenshotObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionScreenshotActionScreenshotObject](
+		"format", "png", "jpeg", "webp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionScreenshotActionScreenshotObjectRequiredString)
+	OfExtractsBrowserActionScreenshotActionScreenshotObjectRequiredString param.Opt[ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                param.Opt[bool]                                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionScreenshotActionScreenshotObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionScreenshotActionScreenshotObjectRequiredString) {
+		return &u.OfExtractsBrowserActionScreenshotActionScreenshotObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue  ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredString = "true"
+	ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredStringFalse ExtractParamsBrowserActionScreenshotActionScreenshotObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionScreenshotActionScreenshotObjectSkipString)
+	OfExtractsBrowserActionScreenshotActionScreenshotObjectSkipString param.Opt[ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                            param.Opt[bool]                                                                 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionScreenshotActionScreenshotObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionScreenshotActionScreenshotObjectSkipString) {
+		return &u.OfExtractsBrowserActionScreenshotActionScreenshotObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue  ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipString = "true"
+	ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipStringFalse ExtractParamsBrowserActionScreenshotActionScreenshotObjectSkipString = "false"
+)
+
+// Scroll the page or an element
+//
+// The property Scroll is required.
+type ExtractParamsBrowserActionScrollAction struct {
+	Scroll ExtractParamsBrowserActionScrollActionScrollUnion `json:"scroll,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScrollActionScrollUnion struct {
+	OfFloat                                         param.Opt[float64]                                  `json:",omitzero,inline"`
+	OfString                                        param.Opt[string]                                   `json:",omitzero,inline"`
+	OfExtractsBrowserActionScrollActionScrollObject *ExtractParamsBrowserActionScrollActionScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScrollActionScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfExtractsBrowserActionScrollActionScrollObject)
+}
+func (u *ExtractParamsBrowserActionScrollActionScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScrollActionScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionScrollActionScrollObject) {
+		return u.OfExtractsBrowserActionScrollActionScrollObject
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScrollActionScrollObject struct {
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	X       param.Opt[float64] `json:"x,omitzero"`
+	Y       param.Opt[float64] `json:"y,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container ExtractParamsBrowserActionScrollActionScrollObjectContainerUnion `json:"container,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionScrollActionScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionScrollActionScrollObjectSkipUnion `json:"skip,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	To ExtractParamsBrowserActionScrollActionScrollObjectToUnion `json:"to,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionScrollActionScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionScrollActionScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionScrollActionScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScrollActionScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScrollActionScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScrollActionScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionScrollActionScrollObjectRequiredString)
+	OfExtractsBrowserActionScrollActionScrollObjectRequiredString param.Opt[ExtractParamsBrowserActionScrollActionScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                        param.Opt[bool]                                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScrollActionScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionScrollActionScrollObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionScrollActionScrollObjectRequiredString) {
+		return &u.OfExtractsBrowserActionScrollActionScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScrollActionScrollObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionScrollActionScrollObjectRequiredStringTrue  ExtractParamsBrowserActionScrollActionScrollObjectRequiredString = "true"
+	ExtractParamsBrowserActionScrollActionScrollObjectRequiredStringFalse ExtractParamsBrowserActionScrollActionScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScrollActionScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionScrollActionScrollObjectSkipString)
+	OfExtractsBrowserActionScrollActionScrollObjectSkipString param.Opt[ExtractParamsBrowserActionScrollActionScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                    param.Opt[bool]                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScrollActionScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionScrollActionScrollObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionScrollActionScrollObjectSkipString) {
+		return &u.OfExtractsBrowserActionScrollActionScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionScrollActionScrollObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionScrollActionScrollObjectSkipStringTrue  ExtractParamsBrowserActionScrollActionScrollObjectSkipString = "true"
+	ExtractParamsBrowserActionScrollActionScrollObjectSkipStringFalse ExtractParamsBrowserActionScrollActionScrollObjectSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionScrollActionScrollObjectToUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionScrollActionScrollObjectToUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectToUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionScrollActionScrollObjectToUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Wait for a specified duration
+//
+// The property Wait is required.
+type ExtractParamsBrowserActionWaitAction struct {
+	Wait ExtractParamsBrowserActionWaitActionWaitUnion `json:"wait,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitActionWaitUnion struct {
+	OfFloat                                     param.Opt[float64]                              `json:",omitzero,inline"`
+	OfString                                    param.Opt[string]                               `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitActionWaitObject *ExtractParamsBrowserActionWaitActionWaitObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitActionWaitUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfExtractsBrowserActionWaitActionWaitObject)
+}
+func (u *ExtractParamsBrowserActionWaitActionWaitUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitActionWaitUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitActionWaitObject) {
+		return u.OfExtractsBrowserActionWaitActionWaitObject
+	}
+	return nil
+}
+
+// The property Duration is required.
+type ExtractParamsBrowserActionWaitActionWaitObject struct {
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Duration ExtractParamsBrowserActionWaitActionWaitObjectDurationUnion `json:"duration,omitzero,required"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionWaitActionWaitObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionWaitActionWaitObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitActionWaitObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitActionWaitObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitActionWaitObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitActionWaitObjectDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitActionWaitObjectDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitActionWaitObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitActionWaitObjectRequiredString)
+	OfExtractsBrowserActionWaitActionWaitObjectRequiredString param.Opt[ExtractParamsBrowserActionWaitActionWaitObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                    param.Opt[bool]                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitActionWaitObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitActionWaitObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitActionWaitObjectRequiredString) {
+		return &u.OfExtractsBrowserActionWaitActionWaitObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitActionWaitObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionWaitActionWaitObjectRequiredStringTrue  ExtractParamsBrowserActionWaitActionWaitObjectRequiredString = "true"
+	ExtractParamsBrowserActionWaitActionWaitObjectRequiredStringFalse ExtractParamsBrowserActionWaitActionWaitObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitActionWaitObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitActionWaitObjectSkipString)
+	OfExtractsBrowserActionWaitActionWaitObjectSkipString param.Opt[ExtractParamsBrowserActionWaitActionWaitObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                param.Opt[bool]                                                     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitActionWaitObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitActionWaitObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitActionWaitObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitActionWaitObjectSkipString) {
+		return &u.OfExtractsBrowserActionWaitActionWaitObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitActionWaitObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionWaitActionWaitObjectSkipStringTrue  ExtractParamsBrowserActionWaitActionWaitObjectSkipString = "true"
+	ExtractParamsBrowserActionWaitActionWaitObjectSkipStringFalse ExtractParamsBrowserActionWaitActionWaitObjectSkipString = "false"
+)
+
+// Wait for an element to appear or reach a specific state
+//
+// The property WaitForElement is required.
+type ExtractParamsBrowserActionWaitForElementAction struct {
+	WaitForElement ExtractParamsBrowserActionWaitForElementActionWaitForElementUnion `json:"wait_for_element,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitForElementAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitForElementAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitForElementAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementUnion struct {
+	OfString                                                        param.Opt[string]                                                   `json:",omitzero,inline"`
+	OfStringArray                                                   []string                                                            `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitForElementActionWaitForElementObject *ExtractParamsBrowserActionWaitForElementActionWaitForElementObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForElementActionWaitForElementUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfExtractsBrowserActionWaitForElementActionWaitForElementObject)
+}
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitForElementActionWaitForElementObject) {
+		return u.OfExtractsBrowserActionWaitForElementActionWaitForElementObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion `json:"selector,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitForElementActionWaitForElementObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitForElementActionWaitForElementObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitForElementActionWaitForElementObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectRequiredString)
+	OfExtractsBrowserActionWaitForElementActionWaitForElementObjectRequiredString param.Opt[ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                        param.Opt[bool]                                                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectRequiredString) {
+		return &u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringTrue  ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "true"
+	ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringFalse ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectSkipString)
+	OfExtractsBrowserActionWaitForElementActionWaitForElementObjectSkipString param.Opt[ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                    param.Opt[bool]                                                                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectSkipString) {
+		return &u.OfExtractsBrowserActionWaitForElementActionWaitForElementObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipStringTrue  ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "true"
+	ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipStringFalse ExtractParamsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "false"
+)
+
+// Wait for page navigation to complete
+//
+// The property WaitForNavigation is required.
+type ExtractParamsBrowserActionWaitForNavigationAction struct {
+	WaitForNavigation ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationUnion `json:"wait_for_navigation,omitzero,required"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitForNavigationAction) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitForNavigationAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitForNavigationAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationString)
+	OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationString param.Opt[string]                                                         `json:",omitzero,inline"`
+	OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObject *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationString, u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObject)
+}
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationString) {
+		return &u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationString
+	} else if !param.IsOmitted(u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObject) {
+		return u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationString string
+
+const (
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationStringLoad             ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationString = "load"
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationStringDomcontentloaded ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationString = "domcontentloaded"
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle0     ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle0"
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle2     ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle2"
+)
+
+// The property Navigation is required.
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject struct {
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	Navigation string `json:"navigation,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObject](
+		"navigation", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString)
+	OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString param.Opt[ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                              param.Opt[bool]                                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString) {
+		return &u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString string
+
+const (
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringTrue  ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "true"
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringFalse ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString)
+	OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString param.Opt[ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                          param.Opt[bool]                                                                               `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString, u.OfBool)
+}
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString) {
+		return &u.OfExtractsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString string
+
+const (
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringTrue  ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "true"
+	ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringFalse ExtractParamsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "false"
+)
 
 // Only one field can be non-zero.
 //
@@ -4411,18 +9752,6 @@ const (
 	ExtractParamsDriverVx10Pro ExtractParamsDriver = "vx10-pro"
 	ExtractParamsDriverVx12    ExtractParamsDriver = "vx12"
 	ExtractParamsDriverVx12Pro ExtractParamsDriver = "vx12-pro"
-)
-
-// Response format
-type ExtractParamsFormat string
-
-const (
-	ExtractParamsFormatJson      ExtractParamsFormat = "json"
-	ExtractParamsFormatHTML      ExtractParamsFormat = "html"
-	ExtractParamsFormatCsv       ExtractParamsFormat = "csv"
-	ExtractParamsFormatRaw       ExtractParamsFormat = "raw"
-	ExtractParamsFormatJsonLines ExtractParamsFormat = "json-lines"
-	ExtractParamsFormatMarkdown  ExtractParamsFormat = "markdown"
 )
 
 // Only one field can be non-zero.
@@ -5156,22 +10485,6 @@ const (
 	ExtractParamsOsAndroid ExtractParamsOs = "android"
 	ExtractParamsOsIos     ExtractParamsOs = "ios"
 )
-
-// Configuration options for parsing behavior
-type ExtractParamsParseOptions struct {
-	// Whether to merge dynamic parsing results with static results
-	MergeDynamic param.Opt[bool] `json:"merge_dynamic,omitzero"`
-	ExtraFields  map[string]any  `json:"-"`
-	paramObj
-}
-
-func (r ExtractParamsParseOptions) MarshalJSON() (data []byte, err error) {
-	type shadow ExtractParamsParseOptions
-	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
-}
-func (r *ExtractParamsParseOptions) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
 
 // Only one field can be non-zero.
 //
