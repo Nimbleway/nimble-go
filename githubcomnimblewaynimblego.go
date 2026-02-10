@@ -1981,7 +1981,7 @@ type CrawlParamsExtractOptions struct {
 	// Type of query or scraping template
 	Type param.Opt[string] `json:"type,omitzero"`
 	// Target URL to scrape
-	URL param.Opt[string] `json:"url,omitzero" format:"uri"`
+	URL param.Opt[string] `json:"url,omitzero"`
 	// Browser type to emulate
 	Browser CrawlParamsExtractOptionsBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially
@@ -6398,7 +6398,7 @@ const (
 
 type ExtractParams struct {
 	// Target URL to scrape
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url,required"`
 	// City for geolocation
 	City param.Opt[string] `json:"city,omitzero"`
 	// Client-side timeout in milliseconds

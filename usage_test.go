@@ -26,7 +26,7 @@ func TestUsage(t *testing.T) {
 	)
 	t.Skip("Prism tests are disabled")
 	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
-		URL: "https://example.com/page",
+		URL: "url",
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

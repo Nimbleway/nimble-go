@@ -342,7 +342,7 @@ func TestCrawlWithOptionalParams(t *testing.T) {
 				},
 			},
 			Type: githubcomnimblewaynimblego.String("generic"),
-			URL:  githubcomnimblewaynimblego.String("https://example.com/page"),
+			URL:  githubcomnimblewaynimblego.String("url"),
 			UserbrowserCreationTemplateRendered: githubcomnimblewaynimblego.CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered{
 				ID:                    "id",
 				AllowedParameterNames: []string{"x"},
@@ -381,7 +381,7 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
-		URL: "https://example.com/page",
+		URL: "url",
 		Browser: githubcomnimblewaynimblego.ExtractParamsBrowserUnion{
 			OfExtractsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 		},
