@@ -65,7 +65,7 @@ func main() {
 	client := githubcomnimblewaynimblego.NewClient(
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLE_API_KEY")
 	)
-	response, err := client.Extract.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractExtractParams{
+	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
 	})
 	if err != nil {
@@ -277,7 +277,7 @@ client := githubcomnimblewaynimblego.NewClient(
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
 
-client.Extract.Extract(context.TODO(), ...,
+client.Extract(context.TODO(), ...,
 	// Override the header
 	option.WithHeader("X-Some-Header", "some_other_custom_header_info"),
 	// Add an undocumented field to the request body, using sjson syntax
@@ -295,33 +295,8 @@ This library provides some conveniences for working with paginated list endpoint
 
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
-```go
-iter := client.Crawl.ListAutoPaging(context.TODO(), githubcomnimblewaynimblego.CrawlListParams{})
-// Automatically fetches more pages as needed.
-for iter.Next() {
-	crawlListResponse := iter.Current()
-	fmt.Printf("%+v\n", crawlListResponse)
-}
-if err := iter.Err(); err != nil {
-	panic(err.Error())
-}
-```
-
 Or you can use simple `.List()` methods to fetch a single page and receive a standard response object
 with additional helper methods like `.GetNextPage()`, e.g.:
-
-```go
-page, err := client.Crawl.List(context.TODO(), githubcomnimblewaynimblego.CrawlListParams{})
-for page != nil {
-	for _, crawl := range page.Data {
-		fmt.Printf("%+v\n", crawl)
-	}
-	page, err = page.GetNextPage()
-}
-if err != nil {
-	panic(err.Error())
-}
-```
 
 ### Errors
 
@@ -333,7 +308,7 @@ When the API returns a non-success status code, we return an error with type
 To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
-_, err := client.Extract.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractExtractParams{
+_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 	URL: "url",
 })
 if err != nil {
@@ -360,9 +335,9 @@ To set a per-retry timeout, use `option.WithRequestTimeout()`.
 // This sets the timeout for the request, including all the retries.
 ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 defer cancel()
-client.Extract.Extract(
+client.Extract(
 	ctx,
-	githubcomnimblewaynimblego.ExtractExtractParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
 	},
 	// This sets the per-retry timeout
@@ -398,9 +373,9 @@ client := githubcomnimblewaynimblego.NewClient(
 )
 
 // Override per-request:
-client.Extract.Extract(
+client.Extract(
 	context.TODO(),
-	githubcomnimblewaynimblego.ExtractExtractParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
 	},
 	option.WithMaxRetries(5),
@@ -415,9 +390,9 @@ you need to examine response headers, status codes, or other details.
 ```go
 // Create a variable to store the HTTP response
 var response *http.Response
-response, err := client.Extract.Extract(
+response, err := client.Extract(
 	context.TODO(),
-	githubcomnimblewaynimblego.ExtractExtractParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
 	},
 	option.WithResponseInto(&response),
