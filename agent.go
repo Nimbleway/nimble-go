@@ -222,60 +222,26 @@ const (
 )
 
 type AgentAsyncParams struct {
-
-	//
-	// Request body variants
-	//
-
-	// This field is a request body variant, only one variant field can be set. Request
-	// body for executing a WSA
-	OfExtractTemplateBody *AgentAsyncParamsBodyExtractTemplateBody `json:",inline"`
-	// This field is a request body variant, only one variant field can be set. Request
-	// body for executing a WSA
-	OfAgentBody *AgentAsyncParamsBodyAgentBody `json:",inline"`
-
+	Agent  string         `json:"agent,required"`
+	Params map[string]any `json:"params,omitzero,required"`
+	// URL to call back when async operation completes
+	CallbackURL  param.Opt[string] `json:"callback_url,omitzero"`
+	Localization param.Opt[bool]   `json:"localization,omitzero"`
+	// Whether to compress stored data
+	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
+	// Custom name for the stored object
+	StorageObjectName param.Opt[string] `json:"storage_object_name,omitzero"`
+	// Type of storage to use for results
+	StorageType param.Opt[string] `json:"storage_type,omitzero"`
+	// URL for storage location
+	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
 	paramObj
 }
 
-func (u AgentAsyncParams) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfExtractTemplateBody, u.OfAgentBody)
+func (r AgentAsyncParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentAsyncParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *AgentAsyncParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Request body for executing a WSA
-//
-// The properties Params, Template are required.
-type AgentAsyncParamsBodyExtractTemplateBody struct {
-	Params       map[string]any  `json:"params,omitzero,required"`
-	Template     string          `json:"template,required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	paramObj
-}
-
-func (r AgentAsyncParamsBodyExtractTemplateBody) MarshalJSON() (data []byte, err error) {
-	type shadow AgentAsyncParamsBodyExtractTemplateBody
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentAsyncParamsBodyExtractTemplateBody) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Request body for executing a WSA
-//
-// The properties Agent, Params are required.
-type AgentAsyncParamsBodyAgentBody struct {
-	Agent        string          `json:"agent,required"`
-	Params       map[string]any  `json:"params,omitzero,required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	paramObj
-}
-
-func (r AgentAsyncParamsBodyAgentBody) MarshalJSON() (data []byte, err error) {
-	type shadow AgentAsyncParamsBodyAgentBody
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentAsyncParamsBodyAgentBody) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

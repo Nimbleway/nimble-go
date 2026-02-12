@@ -54,13 +54,16 @@ func TestAgentAsyncWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.Async(context.TODO(), githubcomnimblewaynimblego.AgentAsyncParams{
-		OfExtractTemplateBody: &githubcomnimblewaynimblego.AgentAsyncParamsBodyExtractTemplateBody{
-			Params: map[string]any{
-				"foo": "bar",
-			},
-			Template:     "template",
-			Localization: githubcomnimblewaynimblego.Bool(true),
+		Agent: "agent",
+		Params: map[string]any{
+			"foo": "bar",
 		},
+		CallbackURL:       githubcomnimblewaynimblego.String("https://example.com/webhook/callback"),
+		Localization:      githubcomnimblewaynimblego.Bool(true),
+		StorageCompress:   githubcomnimblewaynimblego.Bool(true),
+		StorageObjectName: githubcomnimblewaynimblego.String("result-2024-01-15.json"),
+		StorageType:       githubcomnimblewaynimblego.String("s3"),
+		StorageURL:        githubcomnimblewaynimblego.String("s3://bucket-name/path/to/object"),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

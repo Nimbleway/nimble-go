@@ -27,13 +27,11 @@ func TestAgentWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agent(context.TODO(), githubcomnimblewaynimblego.AgentParams{
-		OfExtractTemplateBody: &githubcomnimblewaynimblego.AgentParamsBodyExtractTemplateBody{
-			Params: map[string]any{
-				"foo": "bar",
-			},
-			Template:     "template",
-			Localization: githubcomnimblewaynimblego.Bool(true),
+		Agent: "agent",
+		Params: map[string]any{
+			"foo": "bar",
 		},
+		Localization: githubcomnimblewaynimblego.Bool(true),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

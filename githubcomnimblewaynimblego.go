@@ -680,61 +680,17 @@ func (r *MapResponseLink) UnmarshalJSON(data []byte) error {
 }
 
 type AgentParams struct {
-
-	//
-	// Request body variants
-	//
-
-	// This field is a request body variant, only one variant field can be set. Request
-	// body for executing a WSA
-	OfExtractTemplateBody *AgentParamsBodyExtractTemplateBody `json:",inline"`
-	// This field is a request body variant, only one variant field can be set. Request
-	// body for executing a WSA
-	OfAgentBody *AgentParamsBodyAgentBody `json:",inline"`
-
-	paramObj
-}
-
-func (u AgentParams) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfExtractTemplateBody, u.OfAgentBody)
-}
-func (r *AgentParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Request body for executing a WSA
-//
-// The properties Params, Template are required.
-type AgentParamsBodyExtractTemplateBody struct {
-	Params       map[string]any  `json:"params,omitzero,required"`
-	Template     string          `json:"template,required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	paramObj
-}
-
-func (r AgentParamsBodyExtractTemplateBody) MarshalJSON() (data []byte, err error) {
-	type shadow AgentParamsBodyExtractTemplateBody
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentParamsBodyExtractTemplateBody) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Request body for executing a WSA
-//
-// The properties Agent, Params are required.
-type AgentParamsBodyAgentBody struct {
 	Agent        string          `json:"agent,required"`
 	Params       map[string]any  `json:"params,omitzero,required"`
 	Localization param.Opt[bool] `json:"localization,omitzero"`
 	paramObj
 }
 
-func (r AgentParamsBodyAgentBody) MarshalJSON() (data []byte, err error) {
-	type shadow AgentParamsBodyAgentBody
+func (r AgentParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentParamsBodyAgentBody) UnmarshalJSON(data []byte) error {
+func (r *AgentParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
