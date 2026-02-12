@@ -44,329 +44,6 @@ func TestAgentWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestCrawlWithOptionalParams(t *testing.T) {
-	t.Skip("Prism tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Crawl(context.TODO(), githubcomnimblewaynimblego.CrawlParams{
-		URL:                "url",
-		AllowExternalLinks: githubcomnimblewaynimblego.Bool(false),
-		AllowSubdomains:    githubcomnimblewaynimblego.Bool(false),
-		Callback: githubcomnimblewaynimblego.CrawlParamsCallbackUnion{
-			OfCrawlsCallbackObject: &githubcomnimblewaynimblego.CrawlParamsCallbackObject{
-				URL:    "https://example.com",
-				Events: []string{"started"},
-				Headers: map[string]string{
-					"foo": "string",
-				},
-				Metadata: map[string]any{
-					"foo": "bar",
-				},
-			},
-		},
-		CrawlEntireDomain: githubcomnimblewaynimblego.Bool(false),
-		ExcludePaths:      []string{"/exclude-this-path", "/and-this-path"},
-		ExtractOptions: githubcomnimblewaynimblego.CrawlParamsExtractOptions{
-			Browser: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserUnion{
-				OfCrawlsExtractOptionsBrowserString: githubcomnimblewaynimblego.String("chrome"),
-			},
-			BrowserActions: []githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionUnion{{
-				OfCrawlsExtractOptionsBrowserActionGotoAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionGotoAction{
-					Goto: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionGotoActionGotoUnion{
-						OfString: githubcomnimblewaynimblego.String("https://example.com/login"),
-					},
-				},
-			}, {
-				OfCrawlsExtractOptionsBrowserActionWaitForElementAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionWaitForElementAction{
-					WaitForElement: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion{
-						OfString: githubcomnimblewaynimblego.String("#login-form"),
-					},
-				},
-			}, {
-				OfCrawlsExtractOptionsBrowserActionFillAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillAction{
-					Fill: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillUnion{
-						OfType: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillType{
-							Selector: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion{
-								OfString: githubcomnimblewaynimblego.String("#username"),
-							},
-							Value:          "user@example.com",
-							ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-							Delay: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion{
-								OfFloat: githubcomnimblewaynimblego.Float(1000),
-							},
-							Mode:                  "type",
-							MouseMovementStrategy: "linear",
-							Required: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion{
-								OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringTrue),
-							},
-							Scroll: githubcomnimblewaynimblego.Bool(true),
-							Skip: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion{
-								OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringTrue),
-							},
-							Timeout: githubcomnimblewaynimblego.Float(0),
-							TypingInterval: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion{
-								OfFloat: githubcomnimblewaynimblego.Float(1000),
-							},
-							TypingStrategy: "simple",
-							Visible:        githubcomnimblewaynimblego.Bool(true),
-						},
-					},
-				},
-			}, {
-				OfCrawlsExtractOptionsBrowserActionFillAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillAction{
-					Fill: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillUnion{
-						OfType: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillType{
-							Selector: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion{
-								OfString: githubcomnimblewaynimblego.String("#password"),
-							},
-							Value:          "password123",
-							ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-							Delay: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion{
-								OfFloat: githubcomnimblewaynimblego.Float(1000),
-							},
-							Mode:                  "type",
-							MouseMovementStrategy: "linear",
-							Required: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion{
-								OfCrawlsExtractOptionsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringTrue),
-							},
-							Scroll: githubcomnimblewaynimblego.Bool(true),
-							Skip: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion{
-								OfCrawlsExtractOptionsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringTrue),
-							},
-							Timeout: githubcomnimblewaynimblego.Float(0),
-							TypingInterval: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion{
-								OfFloat: githubcomnimblewaynimblego.Float(1000),
-							},
-							TypingStrategy: "simple",
-							Visible:        githubcomnimblewaynimblego.Bool(true),
-						},
-					},
-				},
-			}, {
-				OfCrawlsExtractOptionsBrowserActionClickAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionClickAction{
-					Click: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionClickActionClickUnion{
-						OfString: githubcomnimblewaynimblego.String("#submit"),
-					},
-				},
-			}, {
-				OfCrawlsExtractOptionsBrowserActionScreenshotAction: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotAction{
-					Screenshot: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion{
-						OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObject: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject{
-							Format:   "png",
-							FullPage: githubcomnimblewaynimblego.Bool(true),
-							Quality:  githubcomnimblewaynimblego.Float(0),
-							Required: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion{
-								OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue),
-							},
-							Skip: githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion{
-								OfCrawlsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue),
-							},
-						},
-					},
-				},
-			}},
-			City:          githubcomnimblewaynimblego.String("Los Angeles"),
-			ClientTimeout: githubcomnimblewaynimblego.Float(25000),
-			ConsentHeader: githubcomnimblewaynimblego.Bool(true),
-			Cookies: githubcomnimblewaynimblego.CrawlParamsExtractOptionsCookiesUnion{
-				OfCrawlsExtractOptionsCookiesArray: []githubcomnimblewaynimblego.CrawlParamsExtractOptionsCookiesArrayItem{{
-					Creation:     githubcomnimblewaynimblego.String("creation"),
-					Domain:       githubcomnimblewaynimblego.String("domain"),
-					Expires:      githubcomnimblewaynimblego.String("expires"),
-					Extensions:   []string{"string"},
-					HostOnly:     githubcomnimblewaynimblego.Bool(true),
-					HTTPOnly:     githubcomnimblewaynimblego.Bool(true),
-					LastAccessed: githubcomnimblewaynimblego.String("lastAccessed"),
-					MaxAge: githubcomnimblewaynimblego.CrawlParamsExtractOptionsCookiesArrayItemMaxAgeUnion{
-						OfCrawlsExtractOptionsCookiesArrayItemMaxAgeString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.CrawlParamsExtractOptionsCookiesArrayItemMaxAgeStringInfinity),
-					},
-					Name:          githubcomnimblewaynimblego.String("name"),
-					Path:          githubcomnimblewaynimblego.String("path"),
-					PathIsDefault: githubcomnimblewaynimblego.Bool(true),
-					SameSite:      "strict",
-					Secure:        githubcomnimblewaynimblego.Bool(true),
-					Value:         githubcomnimblewaynimblego.String("value"),
-				}},
-			},
-			Country:             githubcomnimblewaynimblego.CrawlParamsExtractOptionsCountryUs,
-			Device:              "desktop",
-			DisableIPCheck:      githubcomnimblewaynimblego.Bool(false),
-			Driver:              "vx8",
-			ExpectedStatusCodes: []int64{200, 201},
-			Formats:             []string{"html"},
-			Headers: map[string]githubcomnimblewaynimblego.CrawlParamsExtractOptionsHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
-				"Accept-Language": {
-					OfString: githubcomnimblewaynimblego.String("en-US"),
-				},
-			},
-			Http2:  githubcomnimblewaynimblego.Bool(true),
-			Ip6:    githubcomnimblewaynimblego.Bool(false),
-			IsXhr:  githubcomnimblewaynimblego.Bool(true),
-			Locale: githubcomnimblewaynimblego.CrawlParamsExtractOptionsLocaleEnUs,
-			Metadata: githubcomnimblewaynimblego.CrawlParamsExtractOptionsMetadata{
-				AccountName:         githubcomnimblewaynimblego.String("acme-corp"),
-				DefinitionID:        githubcomnimblewaynimblego.Int(456),
-				DefinitionName:      githubcomnimblewaynimblego.String("product-scraper"),
-				Endpoint:            githubcomnimblewaynimblego.String("/api/v2/scrape"),
-				ExecutionID:         githubcomnimblewaynimblego.String("exec-abc123"),
-				FlowitTaskID:        githubcomnimblewaynimblego.String("task-xyz789"),
-				InputID:             githubcomnimblewaynimblego.String("input-123"),
-				PipelineExecutionID: githubcomnimblewaynimblego.Int(12345),
-				QueryTemplateID:     githubcomnimblewaynimblego.String("template-qry-001"),
-				Source:              githubcomnimblewaynimblego.String("web-app"),
-				TemplateID:          githubcomnimblewaynimblego.Int(789),
-				TemplateName:        githubcomnimblewaynimblego.String("e-commerce-template"),
-			},
-			Method:     "GET",
-			NativeMode: "requester",
-			NetworkCapture: []githubcomnimblewaynimblego.CrawlParamsExtractOptionsNetworkCapture{{
-				Method: "GET",
-				ResourceType: githubcomnimblewaynimblego.CrawlParamsExtractOptionsNetworkCaptureResourceTypeUnion{
-					OfString: githubcomnimblewaynimblego.String("document"),
-				},
-				StatusCode: githubcomnimblewaynimblego.CrawlParamsExtractOptionsNetworkCaptureStatusCodeUnion{
-					OfFloat: githubcomnimblewaynimblego.Float(100),
-				},
-				URL: githubcomnimblewaynimblego.CrawlParamsExtractOptionsNetworkCaptureURL{
-					Value: "value",
-					Type:  "exact",
-				},
-				Validation:                  githubcomnimblewaynimblego.Bool(true),
-				WaitForRequestsCount:        githubcomnimblewaynimblego.Float(0),
-				WaitForRequestsCountTimeout: githubcomnimblewaynimblego.Float(1),
-			}},
-			NoUserbrowser: githubcomnimblewaynimblego.Bool(false),
-			Os:            "windows",
-			Parse:         githubcomnimblewaynimblego.Bool(true),
-			Parser: githubcomnimblewaynimblego.CrawlParamsExtractOptionsParserUnion{
-				OfAnyMap: map[string]any{
-					"myParser": "bar",
-				},
-			},
-			ProxyProvider: githubcomnimblewaynimblego.CrawlParamsExtractOptionsProxyProviderBrightdata,
-			ProxyProviders: map[string]float64{
-				"brightdata": 70,
-				"oxylabs":    30,
-			},
-			QueryTemplate: githubcomnimblewaynimblego.CrawlParamsExtractOptionsQueryTemplate{
-				ID:      "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
-				APIType: "WEB",
-				Pagination: githubcomnimblewaynimblego.CrawlParamsExtractOptionsQueryTemplatePaginationUnion{
-					OfCrawlsExtractOptionsQueryTemplatePaginationNextPageParams: &githubcomnimblewaynimblego.CrawlParamsExtractOptionsQueryTemplatePaginationNextPageParams{
-						NextPageParams: map[string]any{
-							"foo": "bar",
-						},
-					},
-				},
-				Params: map[string]any{
-					"foo": "bar",
-				},
-			},
-			RawHeaders:   githubcomnimblewaynimblego.Bool(true),
-			ReferrerType: githubcomnimblewaynimblego.CrawlParamsExtractOptionsReferrerTypeRandom,
-			Render:       githubcomnimblewaynimblego.Bool(true),
-			RenderFlow: []map[string]any{{
-				"wait": "bar",
-			}, {
-				"click": "bar",
-			}},
-			RenderOptions: githubcomnimblewaynimblego.CrawlParamsExtractOptionsRenderOptions{
-				Adblock:        githubcomnimblewaynimblego.Bool(true),
-				BlockedDomains: []string{"ads.example.com", "tracker.com"},
-				BrowserEngine: githubcomnimblewaynimblego.CrawlParamsExtractOptionsRenderOptionsBrowserEngineUnion{
-					OfCrawlsExtractOptionsRenderOptionsBrowserEngineString: githubcomnimblewaynimblego.String("chrome"),
-				},
-				Cache:             githubcomnimblewaynimblego.Bool(false),
-				ConnectorType:     "puppeteer",
-				DisabledResources: []string{"image", "stylesheet"},
-				Enable2captcha:    githubcomnimblewaynimblego.Bool(true),
-				Extensions:        []string{"extension-id-1", "extension-id-2"},
-				FingerprintID:     githubcomnimblewaynimblego.String("fp-abc123"),
-				HackiumConfiguration: githubcomnimblewaynimblego.CrawlParamsExtractOptionsRenderOptionsHackiumConfiguration{
-					CollectLogs:                 githubcomnimblewaynimblego.Bool(true),
-					DoNotFixMathSalt:            githubcomnimblewaynimblego.Bool(true),
-					EnableDocumentElementSpoof:  githubcomnimblewaynimblego.Bool(true),
-					EnableDocumentHasFocus:      githubcomnimblewaynimblego.Bool(true),
-					EnableFakeNavigationHistory: githubcomnimblewaynimblego.Bool(true),
-					EnableKeyOrdering:           githubcomnimblewaynimblego.Bool(true),
-					EnableSniffer:               githubcomnimblewaynimblego.Bool(true),
-					EnableVerboseLogs:           githubcomnimblewaynimblego.Bool(true),
-				},
-				Headless:               githubcomnimblewaynimblego.Bool(true),
-				IncludeIframes:         githubcomnimblewaynimblego.Bool(true),
-				LoadLocalStorage:       githubcomnimblewaynimblego.Bool(true),
-				LocalStorageKeysToLoad: []string{"authToken", "userId"},
-				MouseStrategy:          "linear",
-				NoAcceptEncoding:       githubcomnimblewaynimblego.Bool(true),
-				OverridePermissions:    githubcomnimblewaynimblego.Bool(true),
-				RandomHeaderOrder:      githubcomnimblewaynimblego.Bool(true),
-				RenderType:             "domcontentloaded",
-				StoreLocalStorage:      githubcomnimblewaynimblego.Bool(true),
-				Timeout:                githubcomnimblewaynimblego.Float(30000),
-				TypingInterval:         githubcomnimblewaynimblego.Float(100),
-				TypingStrategy:         "simple",
-				Userbrowser:            githubcomnimblewaynimblego.Bool(true),
-				WaitUntil:              "networkidle2",
-				WithPerformanceMetrics: githubcomnimblewaynimblego.Bool(true),
-			},
-			RequestTimeout:  githubcomnimblewaynimblego.Float(30000),
-			SaveUserbrowser: githubcomnimblewaynimblego.Bool(false),
-			Session: githubcomnimblewaynimblego.CrawlParamsExtractOptionsSession{
-				ID:                  githubcomnimblewaynimblego.String("id"),
-				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
-				Retry:               githubcomnimblewaynimblego.Bool(true),
-				Timeout:             githubcomnimblewaynimblego.Float(1),
-			},
-			Skill: githubcomnimblewaynimblego.CrawlParamsExtractOptionsSkillUnion{
-				OfString: githubcomnimblewaynimblego.String("dynamic-content"),
-			},
-			SkipUbct: githubcomnimblewaynimblego.Bool(false),
-			State:    "CA",
-			Tag:      githubcomnimblewaynimblego.String("campaign-2024-q1"),
-			Template: githubcomnimblewaynimblego.CrawlParamsExtractOptionsTemplate{
-				Name: "x",
-				Params: map[string]any{
-					"foo": "bar",
-				},
-			},
-			Type: githubcomnimblewaynimblego.String("generic"),
-			URL:  githubcomnimblewaynimblego.String("url"),
-			UserbrowserCreationTemplateRendered: githubcomnimblewaynimblego.CrawlParamsExtractOptionsUserbrowserCreationTemplateRendered{
-				ID:                    "id",
-				AllowedParameterNames: []string{"x"},
-				RenderFlowRendered: []map[string]any{{
-					"foo": "bar",
-				}},
-			},
-		},
-		IgnoreQueryParameters: githubcomnimblewaynimblego.Bool(false),
-		IncludePaths:          []string{"/include-this-path", "/and-this-path"},
-		Limit:                 githubcomnimblewaynimblego.Int(100),
-		MaxDiscoveryDepth:     githubcomnimblewaynimblego.Int(3),
-		Name:                  githubcomnimblewaynimblego.String("The best crawl ever"),
-		Sitemap:               githubcomnimblewaynimblego.CrawlParamsSitemapInclude,
-	})
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
 func TestExtractWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
@@ -522,18 +199,28 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		IsXhr:  githubcomnimblewaynimblego.Bool(true),
 		Locale: githubcomnimblewaynimblego.ExtractParamsLocaleEnUs,
 		Metadata: githubcomnimblewaynimblego.ExtractParamsMetadata{
-			AccountName:         githubcomnimblewaynimblego.String("acme-corp"),
-			DefinitionID:        githubcomnimblewaynimblego.Int(456),
-			DefinitionName:      githubcomnimblewaynimblego.String("product-scraper"),
-			Endpoint:            githubcomnimblewaynimblego.String("/api/v2/scrape"),
-			ExecutionID:         githubcomnimblewaynimblego.String("exec-abc123"),
-			FlowitTaskID:        githubcomnimblewaynimblego.String("task-xyz789"),
-			InputID:             githubcomnimblewaynimblego.String("input-123"),
-			PipelineExecutionID: githubcomnimblewaynimblego.Int(12345),
-			QueryTemplateID:     githubcomnimblewaynimblego.String("template-qry-001"),
-			Source:              githubcomnimblewaynimblego.String("web-app"),
-			TemplateID:          githubcomnimblewaynimblego.Int(789),
-			TemplateName:        githubcomnimblewaynimblego.String("e-commerce-template"),
+			AccountName:         githubcomnimblewaynimblego.String("account_name"),
+			APIType:             githubcomnimblewaynimblego.String("api_type"),
+			CrawlDepth:          githubcomnimblewaynimblego.Int(-9007199254740991),
+			CrawlID:             githubcomnimblewaynimblego.String("crawl_id"),
+			DefinitionID:        githubcomnimblewaynimblego.Int(-9007199254740991),
+			DefinitionName:      githubcomnimblewaynimblego.String("definition_name"),
+			Endpoint:            githubcomnimblewaynimblego.String("endpoint"),
+			ExecutionID:         githubcomnimblewaynimblego.String("execution_id"),
+			FlowitTaskID:        githubcomnimblewaynimblego.String("flowit_task_id"),
+			InputID:             githubcomnimblewaynimblego.String("input_id"),
+			IsPublicWsa:         githubcomnimblewaynimblego.Bool(true),
+			IsSitemap:           githubcomnimblewaynimblego.Bool(true),
+			IsWsa:               githubcomnimblewaynimblego.Bool(true),
+			ParserID:            githubcomnimblewaynimblego.String("parser_id"),
+			PipelineExecutionID: githubcomnimblewaynimblego.Int(-9007199254740991),
+			QueryTemplateID:     githubcomnimblewaynimblego.String("query_template_id"),
+			Source:              githubcomnimblewaynimblego.String("source"),
+			TemplateID:          githubcomnimblewaynimblego.Int(-9007199254740991),
+			TemplateName:        githubcomnimblewaynimblego.String("template_name"),
+			WsaID:               githubcomnimblewaynimblego.String("wsa_id"),
+			WsaName:             githubcomnimblewaynimblego.String("wsa_name"),
+			WsaVersion:          githubcomnimblewaynimblego.Float(0),
 		},
 		Method:     githubcomnimblewaynimblego.ExtractParamsMethodGet,
 		NativeMode: githubcomnimblewaynimblego.ExtractParamsNativeModeRequester,
@@ -685,46 +372,6 @@ func TestMapWithOptionalParams(t *testing.T) {
 		Limit:        githubcomnimblewaynimblego.Int(1000),
 		Locale:       githubcomnimblewaynimblego.MapParamsLocaleEnUs,
 		Sitemap:      githubcomnimblewaynimblego.MapParamsSitemapInclude,
-	})
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestSearchWithOptionalParams(t *testing.T) {
-	t.Skip("Prism tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Search(context.TODO(), githubcomnimblewaynimblego.SearchParams{
-		Query:          "x",
-		ContentType:    []string{"string"},
-		Country:        githubcomnimblewaynimblego.String("country"),
-		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
-		EndDate:        githubcomnimblewaynimblego.String("end_date"),
-		ExcludeDomains: []string{"string"},
-		IncludeAnswer:  githubcomnimblewaynimblego.Bool(true),
-		IncludeDomains: []string{"string"},
-		Locale:         githubcomnimblewaynimblego.String("locale"),
-		MaxSubagents:   githubcomnimblewaynimblego.Int(1),
-		NumResults:     githubcomnimblewaynimblego.Int(1),
-		ParsingType:    githubcomnimblewaynimblego.SearchParamsParsingTypePlainText,
-		SearchEngine:   githubcomnimblewaynimblego.SearchParamsSearchEngineGoogleSearch,
-		StartDate:      githubcomnimblewaynimblego.String("start_date"),
-		TimeRange:      githubcomnimblewaynimblego.SearchParamsTimeRangeHour,
-		Topic:          githubcomnimblewaynimblego.SearchParamsTopicGeneral,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

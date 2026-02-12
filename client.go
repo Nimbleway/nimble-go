@@ -126,14 +126,6 @@ func (r *Client) Agent(ctx context.Context, body AgentParams, opts ...option.Req
 	return
 }
 
-// Create crawl task
-func (r *Client) Crawl(ctx context.Context, body CrawlParams, opts ...option.RequestOption) (res *CrawlResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/crawl"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
-}
-
 // Extract
 func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -146,14 +138,6 @@ func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option
 func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.RequestOption) (res *MapResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/map"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
-}
-
-// Search
-func (r *Client) Search(ctx context.Context, body SearchParams, opts ...option.RequestOption) (res *SearchResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/search"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
