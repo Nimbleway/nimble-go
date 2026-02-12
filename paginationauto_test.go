@@ -12,7 +12,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestUsage(t *testing.T) {
+func TestAutoPagination(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -24,12 +24,13 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	t.Skip("Prism tests are disabled")
-	response, err := client.Extract.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractExtractParams{
-		URL: "url",
-	})
-	if err != nil {
+	iter := client.Crawl.ListAutoPaging(context.TODO(), githubcomnimblewaynimblego.CrawlListParams{})
+	// Prism mock isn't going to give us real pagination
+	for i := 0; i < 3 && iter.Next(); i++ {
+		crawl := iter.Current()
+		t.Logf("%+v\n", crawl.CrawlID)
+	}
+	if err := iter.Err(); err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", response.TaskID)
 }

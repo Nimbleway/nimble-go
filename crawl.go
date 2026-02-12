@@ -15,6 +15,7 @@ import (
 	"github.com/Nimbleway/nimble-go/internal/apiquery"
 	"github.com/Nimbleway/nimble-go/internal/requestconfig"
 	"github.com/Nimbleway/nimble-go/option"
+	"github.com/Nimbleway/nimble-go/packages/pagination"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
 	"github.com/Nimbleway/nimble-go/shared/constant"
@@ -40,11 +41,26 @@ func NewCrawlService(opts ...option.RequestOption) (r CrawlService) {
 }
 
 // Crawl by Filter
-func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...option.RequestOption) (res *CrawlListResponse, err error) {
+func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...option.RequestOption) (res *pagination.CrawlPagination[CrawlListResponse], err error) {
+	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/crawl"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
-	return
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// Crawl by Filter
+func (r *CrawlService) ListAutoPaging(ctx context.Context, query CrawlListParams, opts ...option.RequestOption) *pagination.CrawlPaginationAutoPager[CrawlListResponse] {
+	return pagination.NewCrawlPaginationAutoPager(r.List(ctx, query, opts...))
 }
 
 // Create crawl task
@@ -79,43 +95,24 @@ func (r *CrawlService) Terminate(ctx context.Context, id string, opts ...option.
 	return
 }
 
-// Successful get crawl response
-type CrawlListResponse struct {
-	Data       []CrawlListResponseData     `json:"data,required"`
-	Pagination CrawlListResponsePagination `json:"pagination,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Data        respjson.Field
-		Pagination  respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r CrawlListResponse) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // Crawl API response
-type CrawlListResponseData struct {
-	AccountName  string                              `json:"account_name,required"`
-	CrawlID      string                              `json:"crawl_id,required" format:"uuid"`
-	CrawlOptions CrawlListResponseDataCrawlOptions   `json:"crawl_options,required"`
-	CreatedAt    CrawlListResponseDataCreatedAtUnion `json:"created_at,required"`
+type CrawlListResponse struct {
+	AccountName  string                          `json:"account_name,required"`
+	CrawlID      string                          `json:"crawl_id,required" format:"uuid"`
+	CrawlOptions CrawlListResponseCrawlOptions   `json:"crawl_options,required"`
+	CreatedAt    CrawlListResponseCreatedAtUnion `json:"created_at,required"`
 	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status         string                                `json:"status,required"`
-	UpdatedAt      CrawlListResponseDataUpdatedAtUnion   `json:"updated_at,required"`
-	URL            string                                `json:"url,required" format:"uri"`
-	Completed      float64                               `json:"completed"`
-	CompletedAt    CrawlListResponseDataCompletedAtUnion `json:"completed_at,nullable"`
-	ExtractOptions map[string]any                        `json:"extract_options,nullable"`
-	Failed         float64                               `json:"failed"`
-	Name           string                                `json:"name,nullable"`
-	Pending        float64                               `json:"pending"`
-	Tasks          []CrawlListResponseDataTask           `json:"tasks"`
-	Total          float64                               `json:"total"`
+	Status         CrawlListResponseStatus           `json:"status,required"`
+	UpdatedAt      CrawlListResponseUpdatedAtUnion   `json:"updated_at,required"`
+	URL            string                            `json:"url,required" format:"uri"`
+	Completed      float64                           `json:"completed"`
+	CompletedAt    CrawlListResponseCompletedAtUnion `json:"completed_at,nullable"`
+	ExtractOptions map[string]any                    `json:"extract_options,nullable"`
+	Failed         float64                           `json:"failed"`
+	Name           string                            `json:"name,nullable"`
+	Pending        float64                           `json:"pending"`
+	Tasks          []CrawlListResponseTask           `json:"tasks"`
+	Total          float64                           `json:"total"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AccountName    respjson.Field
@@ -139,12 +136,12 @@ type CrawlListResponseData struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CrawlListResponseData) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponseData) UnmarshalJSON(data []byte) error {
+func (r CrawlListResponse) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type CrawlListResponseDataCrawlOptions struct {
+type CrawlListResponseCrawlOptions struct {
 	AllowExternalLinks    bool  `json:"allow_external_links,required"`
 	AllowSubdomains       bool  `json:"allow_subdomains,required"`
 	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
@@ -152,11 +149,11 @@ type CrawlListResponseDataCrawlOptions struct {
 	Limit                 int64 `json:"limit,required"`
 	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
 	// Any of "skip", "include", "only".
-	Sitemap      string                                         `json:"sitemap,required"`
-	Callback     CrawlListResponseDataCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
-	ExcludePaths []string                                       `json:"exclude_paths"`
-	IncludePaths []string                                       `json:"include_paths"`
-	ExtraFields  map[string]any                                 `json:",extras"`
+	Sitemap      string                                     `json:"sitemap,required"`
+	Callback     CrawlListResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
+	ExcludePaths []string                                   `json:"exclude_paths"`
+	IncludePaths []string                                   `json:"include_paths"`
+	ExtraFields  map[string]any                             `json:",extras"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowExternalLinks    respjson.Field
@@ -175,28 +172,28 @@ type CrawlListResponseDataCrawlOptions struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CrawlListResponseDataCrawlOptions) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponseDataCrawlOptions) UnmarshalJSON(data []byte) error {
+func (r CrawlListResponseCrawlOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseCrawlOptions) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CrawlListResponseDataCrawlOptionsCallbackUnion contains all possible properties
-// and values from [CrawlListResponseDataCrawlOptionsCallbackObject], [string].
+// CrawlListResponseCrawlOptionsCallbackUnion contains all possible properties and
+// values from [CrawlListResponseCrawlOptionsCallbackObject], [string].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid: OfString]
-type CrawlListResponseDataCrawlOptionsCallbackUnion struct {
+type CrawlListResponseCrawlOptionsCallbackUnion struct {
 	// This field will be present if the value is a [string] instead of an object.
 	OfString string `json:",inline"`
-	// This field is from variant [CrawlListResponseDataCrawlOptionsCallbackObject].
+	// This field is from variant [CrawlListResponseCrawlOptionsCallbackObject].
 	URL string `json:"url"`
-	// This field is from variant [CrawlListResponseDataCrawlOptionsCallbackObject].
+	// This field is from variant [CrawlListResponseCrawlOptionsCallbackObject].
 	Events []string `json:"events"`
-	// This field is from variant [CrawlListResponseDataCrawlOptionsCallbackObject].
+	// This field is from variant [CrawlListResponseCrawlOptionsCallbackObject].
 	Headers map[string]string `json:"headers"`
-	// This field is from variant [CrawlListResponseDataCrawlOptionsCallbackObject].
+	// This field is from variant [CrawlListResponseCrawlOptionsCallbackObject].
 	Metadata map[string]any `json:"metadata"`
 	JSON     struct {
 		OfString respjson.Field
@@ -208,24 +205,24 @@ type CrawlListResponseDataCrawlOptionsCallbackUnion struct {
 	} `json:"-"`
 }
 
-func (u CrawlListResponseDataCrawlOptionsCallbackUnion) AsCrawlListResponseDataCrawlOptionsCallbackObject() (v CrawlListResponseDataCrawlOptionsCallbackObject) {
+func (u CrawlListResponseCrawlOptionsCallbackUnion) AsCrawlListResponseCrawlOptionsCallbackObject() (v CrawlListResponseCrawlOptionsCallbackObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CrawlListResponseDataCrawlOptionsCallbackUnion) AsString() (v string) {
+func (u CrawlListResponseCrawlOptionsCallbackUnion) AsString() (v string) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataCrawlOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
+func (u CrawlListResponseCrawlOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *CrawlListResponseDataCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
+func (r *CrawlListResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type CrawlListResponseDataCrawlOptionsCallbackObject struct {
+type CrawlListResponseCrawlOptionsCallbackObject struct {
 	URL string `json:"url,required" format:"uri"`
 	// Any of "started", "page", "completed", "failed".
 	Events   []string          `json:"events"`
@@ -243,120 +240,130 @@ type CrawlListResponseDataCrawlOptionsCallbackObject struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CrawlListResponseDataCrawlOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponseDataCrawlOptionsCallbackObject) UnmarshalJSON(data []byte) error {
+func (r CrawlListResponseCrawlOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseCrawlOptionsCallbackObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CrawlListResponseDataCreatedAtUnion contains all possible properties and values
+// CrawlListResponseCreatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlListResponseCreatedAtMapItem]
+type CrawlListResponseCreatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlListResponseCreatedAtMapItem any `json:",inline"`
+	JSON                                struct {
+		OfString                            respjson.Field
+		OfCrawlListResponseCreatedAtMapItem respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseCreatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseCreatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseCreatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlListResponseStatus string
+
+const (
+	CrawlListResponseStatusQueued    CrawlListResponseStatus = "queued"
+	CrawlListResponseStatusRunning   CrawlListResponseStatus = "running"
+	CrawlListResponseStatusSucceeded CrawlListResponseStatus = "succeeded"
+	CrawlListResponseStatusFailed    CrawlListResponseStatus = "failed"
+	CrawlListResponseStatusCanceled  CrawlListResponseStatus = "canceled"
+)
+
+// CrawlListResponseUpdatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlListResponseUpdatedAtMapItem]
+type CrawlListResponseUpdatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlListResponseUpdatedAtMapItem any `json:",inline"`
+	JSON                                struct {
+		OfString                            respjson.Field
+		OfCrawlListResponseUpdatedAtMapItem respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u CrawlListResponseUpdatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlListResponseUpdatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlListResponseUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlListResponseUpdatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlListResponseCompletedAtUnion contains all possible properties and values
 // from [string], [map[string]any].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfCrawlListResponseDataCreatedAtMapItem]
-type CrawlListResponseDataCreatedAtUnion struct {
+// will be valid: OfString OfCrawlListResponseCompletedAtMapItem]
+type CrawlListResponseCompletedAtUnion struct {
 	// This field will be present if the value is a [string] instead of an object.
 	OfString string `json:",inline"`
 	// This field will be present if the value is a [any] instead of an object.
-	OfCrawlListResponseDataCreatedAtMapItem any `json:",inline"`
-	JSON                                    struct {
-		OfString                                respjson.Field
-		OfCrawlListResponseDataCreatedAtMapItem respjson.Field
-		raw                                     string
+	OfCrawlListResponseCompletedAtMapItem any `json:",inline"`
+	JSON                                  struct {
+		OfString                              respjson.Field
+		OfCrawlListResponseCompletedAtMapItem respjson.Field
+		raw                                   string
 	} `json:"-"`
 }
 
-func (u CrawlListResponseDataCreatedAtUnion) AsString() (v string) {
+func (u CrawlListResponseCompletedAtUnion) AsString() (v string) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CrawlListResponseDataCreatedAtUnion) AsAnyMap() (v map[string]any) {
+func (u CrawlListResponseCompletedAtUnion) AsAnyMap() (v map[string]any) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+func (u CrawlListResponseCompletedAtUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *CrawlListResponseDataCreatedAtUnion) UnmarshalJSON(data []byte) error {
+func (r *CrawlListResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CrawlListResponseDataUpdatedAtUnion contains all possible properties and values
-// from [string], [map[string]any].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfCrawlListResponseDataUpdatedAtMapItem]
-type CrawlListResponseDataUpdatedAtUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [any] instead of an object.
-	OfCrawlListResponseDataUpdatedAtMapItem any `json:",inline"`
-	JSON                                    struct {
-		OfString                                respjson.Field
-		OfCrawlListResponseDataUpdatedAtMapItem respjson.Field
-		raw                                     string
-	} `json:"-"`
-}
-
-func (u CrawlListResponseDataUpdatedAtUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CrawlListResponseDataUpdatedAtUnion) AsAnyMap() (v map[string]any) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *CrawlListResponseDataUpdatedAtUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// CrawlListResponseDataCompletedAtUnion contains all possible properties and
-// values from [string], [map[string]any].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfCrawlListResponseDataCompletedAtMapItem]
-type CrawlListResponseDataCompletedAtUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [any] instead of an object.
-	OfCrawlListResponseDataCompletedAtMapItem any `json:",inline"`
-	JSON                                      struct {
-		OfString                                  respjson.Field
-		OfCrawlListResponseDataCompletedAtMapItem respjson.Field
-		raw                                       string
-	} `json:"-"`
-}
-
-func (u CrawlListResponseDataCompletedAtUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CrawlListResponseDataCompletedAtUnion) AsAnyMap() (v map[string]any) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataCompletedAtUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *CrawlListResponseDataCompletedAtUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type CrawlListResponseDataTask struct {
+type CrawlListResponseTask struct {
 	// Any of "pending", "completed", "failed".
 	Status    string `json:"status,required"`
 	TaskID    string `json:"task_id,required"`
@@ -374,28 +381,8 @@ type CrawlListResponseDataTask struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CrawlListResponseDataTask) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponseDataTask) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type CrawlListResponsePagination struct {
-	HasNext    bool    `json:"has_next,required"`
-	NextCursor string  `json:"next_cursor,nullable"`
-	Total      float64 `json:"total"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		HasNext     respjson.Field
-		NextCursor  respjson.Field
-		Total       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r CrawlListResponsePagination) RawJSON() string { return r.JSON.raw }
-func (r *CrawlListResponsePagination) UnmarshalJSON(data []byte) error {
+func (r CrawlListResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *CrawlListResponseTask) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

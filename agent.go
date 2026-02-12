@@ -16,6 +16,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/shared/constant"
 )
 
 // AgentService contains methods and other services that help with interacting with
@@ -42,6 +43,14 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
+	return
+}
+
+// Execute WSA Realtime Endpoint
+func (r *AgentService) Async(ctx context.Context, body AgentAsyncParams, opts ...option.RequestOption) (res *AgentAsyncResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/agent/async"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
 
@@ -82,6 +91,24 @@ type AgentListResponse struct {
 // Returns the unmodified JSON received from the API
 func (r AgentListResponse) RawJSON() string { return r.JSON.raw }
 func (r *AgentListResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentAsyncResponse struct {
+	Status constant.Success `json:"status,required"`
+	Task   map[string]any   `json:"task,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Status      respjson.Field
+		Task        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentAsyncResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentAsyncResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -193,3 +220,62 @@ const (
 	AgentListParamsPrivacyPrivate AgentListParamsPrivacy = "private"
 	AgentListParamsPrivacyAll     AgentListParamsPrivacy = "all"
 )
+
+type AgentAsyncParams struct {
+
+	//
+	// Request body variants
+	//
+
+	// This field is a request body variant, only one variant field can be set. Request
+	// body for executing a WSA
+	OfExtractTemplateBody *AgentAsyncParamsBodyExtractTemplateBody `json:",inline"`
+	// This field is a request body variant, only one variant field can be set. Request
+	// body for executing a WSA
+	OfAgentBody *AgentAsyncParamsBodyAgentBody `json:",inline"`
+
+	paramObj
+}
+
+func (u AgentAsyncParams) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractTemplateBody, u.OfAgentBody)
+}
+func (r *AgentAsyncParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request body for executing a WSA
+//
+// The properties Params, Template are required.
+type AgentAsyncParamsBodyExtractTemplateBody struct {
+	Params       map[string]any  `json:"params,omitzero,required"`
+	Template     string          `json:"template,required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	paramObj
+}
+
+func (r AgentAsyncParamsBodyExtractTemplateBody) MarshalJSON() (data []byte, err error) {
+	type shadow AgentAsyncParamsBodyExtractTemplateBody
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentAsyncParamsBodyExtractTemplateBody) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request body for executing a WSA
+//
+// The properties Agent, Params are required.
+type AgentAsyncParamsBodyAgentBody struct {
+	Agent        string          `json:"agent,required"`
+	Params       map[string]any  `json:"params,omitzero,required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	paramObj
+}
+
+func (r AgentAsyncParamsBodyAgentBody) MarshalJSON() (data []byte, err error) {
+	type shadow AgentAsyncParamsBodyAgentBody
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentAsyncParamsBodyAgentBody) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

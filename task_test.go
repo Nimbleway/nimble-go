@@ -13,7 +13,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestAgentListWithOptionalParams(t *testing.T) {
+func TestTaskListWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,10 +26,9 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
-		Limit:   githubcomnimblewaynimblego.Int(1),
-		Offset:  githubcomnimblewaynimblego.Int(0),
-		Privacy: githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
+	_, err := client.Tasks.List(context.TODO(), githubcomnimblewaynimblego.TaskListParams{
+		Cursor: githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
+		Limit:  githubcomnimblewaynimblego.Int(10),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -40,7 +39,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentAsyncWithOptionalParams(t *testing.T) {
+func TestTaskGet(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -53,15 +52,7 @@ func TestAgentAsyncWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Async(context.TODO(), githubcomnimblewaynimblego.AgentAsyncParams{
-		OfExtractTemplateBody: &githubcomnimblewaynimblego.AgentAsyncParamsBodyExtractTemplateBody{
-			Params: map[string]any{
-				"foo": "bar",
-			},
-			Template:     "template",
-			Localization: githubcomnimblewaynimblego.Bool(true),
-		},
-	})
+	_, err := client.Tasks.Get(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
@@ -71,7 +62,7 @@ func TestAgentAsyncWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentGet(t *testing.T) {
+func TestTaskResults(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -84,7 +75,7 @@ func TestAgentGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Get(context.TODO(), "template_name")
+	_, err := client.Tasks.Results(context.TODO(), "123e4567-e89b-12d3-a456-426614174000")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
