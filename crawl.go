@@ -1005,14 +1005,14 @@ const (
 )
 
 type CrawlListParams struct {
-	// Filter crawls by their status.
-	//
-	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status CrawlListParamsStatus `query:"status,omitzero,required" json:"-"`
 	// Cursor for pagination.
 	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// Number of crawls to return per page.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Filter crawls by their status.
+	//
+	// Any of "queued", "running", "succeeded", "failed", "canceled", "all".
+	Status CrawlListParamsStatus `query:"status,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1033,6 +1033,7 @@ const (
 	CrawlListParamsStatusSucceeded CrawlListParamsStatus = "succeeded"
 	CrawlListParamsStatusFailed    CrawlListParamsStatus = "failed"
 	CrawlListParamsStatusCanceled  CrawlListParamsStatus = "canceled"
+	CrawlListParamsStatusAll       CrawlListParamsStatus = "all"
 )
 
 type CrawlRunParams struct {

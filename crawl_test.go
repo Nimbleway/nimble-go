@@ -27,9 +27,9 @@ func TestCrawlListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Crawl.List(context.TODO(), githubcomnimblewaynimblego.CrawlListParams{
-		Status: githubcomnimblewaynimblego.CrawlListParamsStatusQueued,
 		Cursor: githubcomnimblewaynimblego.String("cursor"),
 		Limit:  githubcomnimblewaynimblego.Int(10),
+		Status: githubcomnimblewaynimblego.CrawlListParamsStatusQueued,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
