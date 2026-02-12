@@ -17,6 +17,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/shared/constant"
 )
 
 // CrawlService contains methods and other services that help with interacting with
@@ -43,6 +44,14 @@ func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/crawl"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
+	return
+}
+
+// Create crawl task
+func (r *CrawlService) Run(ctx context.Context, body CrawlRunParams, opts ...option.RequestOption) (res *CrawlRunResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/crawl"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
 
@@ -89,9 +98,10 @@ func (r *CrawlListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Crawl API response
 type CrawlListResponseData struct {
-	ID           string                              `json:"id,required" format:"uuid"`
 	AccountName  string                              `json:"account_name,required"`
+	CrawlID      string                              `json:"crawl_id,required" format:"uuid"`
 	CrawlOptions CrawlListResponseDataCrawlOptions   `json:"crawl_options,required"`
 	CreatedAt    CrawlListResponseDataCreatedAtUnion `json:"created_at,required"`
 	// Any of "queued", "running", "succeeded", "failed", "canceled".
@@ -100,7 +110,6 @@ type CrawlListResponseData struct {
 	URL            string                                `json:"url,required" format:"uri"`
 	Completed      float64                               `json:"completed"`
 	CompletedAt    CrawlListResponseDataCompletedAtUnion `json:"completed_at,nullable"`
-	EncryptedToken string                                `json:"encrypted_token,nullable"`
 	ExtractOptions map[string]any                        `json:"extract_options,nullable"`
 	Failed         float64                               `json:"failed"`
 	Name           string                                `json:"name,nullable"`
@@ -109,8 +118,8 @@ type CrawlListResponseData struct {
 	Total          float64                               `json:"total"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
 		AccountName    respjson.Field
+		CrawlID        respjson.Field
 		CrawlOptions   respjson.Field
 		CreatedAt      respjson.Field
 		Status         respjson.Field
@@ -118,7 +127,6 @@ type CrawlListResponseData struct {
 		URL            respjson.Field
 		Completed      respjson.Field
 		CompletedAt    respjson.Field
-		EncryptedToken respjson.Field
 		ExtractOptions respjson.Field
 		Failed         respjson.Field
 		Name           respjson.Field
@@ -349,17 +357,15 @@ func (r *CrawlListResponseDataCompletedAtUnion) UnmarshalJSON(data []byte) error
 }
 
 type CrawlListResponseDataTask struct {
-	CrawlID string `json:"crawl_id,required" format:"uuid"`
 	// Any of "pending", "completed", "failed".
-	Status      string                                  `json:"status,required"`
-	WebitTaskID string                                  `json:"webit_task_id,required"`
-	CreatedAt   CrawlListResponseDataTaskCreatedAtUnion `json:"created_at"`
-	UpdatedAt   CrawlListResponseDataTaskUpdatedAtUnion `json:"updated_at"`
+	Status    string `json:"status,required"`
+	TaskID    string `json:"task_id,required"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CrawlID     respjson.Field
 		Status      respjson.Field
-		WebitTaskID respjson.Field
+		TaskID      respjson.Field
 		CreatedAt   respjson.Field
 		UpdatedAt   respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -370,78 +376,6 @@ type CrawlListResponseDataTask struct {
 // Returns the unmodified JSON received from the API
 func (r CrawlListResponseDataTask) RawJSON() string { return r.JSON.raw }
 func (r *CrawlListResponseDataTask) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// CrawlListResponseDataTaskCreatedAtUnion contains all possible properties and
-// values from [string], [map[string]any].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfCrawlListResponseDataTaskCreatedAtMapItem]
-type CrawlListResponseDataTaskCreatedAtUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [any] instead of an object.
-	OfCrawlListResponseDataTaskCreatedAtMapItem any `json:",inline"`
-	JSON                                        struct {
-		OfString                                    respjson.Field
-		OfCrawlListResponseDataTaskCreatedAtMapItem respjson.Field
-		raw                                         string
-	} `json:"-"`
-}
-
-func (u CrawlListResponseDataTaskCreatedAtUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CrawlListResponseDataTaskCreatedAtUnion) AsAnyMap() (v map[string]any) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataTaskCreatedAtUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *CrawlListResponseDataTaskCreatedAtUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// CrawlListResponseDataTaskUpdatedAtUnion contains all possible properties and
-// values from [string], [map[string]any].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfCrawlListResponseDataTaskUpdatedAtMapItem]
-type CrawlListResponseDataTaskUpdatedAtUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [any] instead of an object.
-	OfCrawlListResponseDataTaskUpdatedAtMapItem any `json:",inline"`
-	JSON                                        struct {
-		OfString                                    respjson.Field
-		OfCrawlListResponseDataTaskUpdatedAtMapItem respjson.Field
-		raw                                         string
-	} `json:"-"`
-}
-
-func (u CrawlListResponseDataTaskUpdatedAtUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CrawlListResponseDataTaskUpdatedAtUnion) AsAnyMap() (v map[string]any) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u CrawlListResponseDataTaskUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *CrawlListResponseDataTaskUpdatedAtUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -465,7 +399,587 @@ func (r *CrawlListResponsePagination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type CrawlStatusResponse map[string]any
+// Crawl API response
+type CrawlRunResponse struct {
+	AccountName  string                         `json:"account_name,required"`
+	CrawlID      string                         `json:"crawl_id,required" format:"uuid"`
+	CrawlOptions CrawlRunResponseCrawlOptions   `json:"crawl_options,required"`
+	CreatedAt    CrawlRunResponseCreatedAtUnion `json:"created_at,required"`
+	// Any of "queued", "running", "succeeded", "failed", "canceled".
+	Status         CrawlRunResponseStatus           `json:"status,required"`
+	UpdatedAt      CrawlRunResponseUpdatedAtUnion   `json:"updated_at,required"`
+	URL            string                           `json:"url,required" format:"uri"`
+	Completed      float64                          `json:"completed"`
+	CompletedAt    CrawlRunResponseCompletedAtUnion `json:"completed_at,nullable"`
+	ExtractOptions map[string]any                   `json:"extract_options,nullable"`
+	Failed         float64                          `json:"failed"`
+	Name           string                           `json:"name,nullable"`
+	Pending        float64                          `json:"pending"`
+	Tasks          []CrawlRunResponseTask           `json:"tasks"`
+	Total          float64                          `json:"total"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AccountName    respjson.Field
+		CrawlID        respjson.Field
+		CrawlOptions   respjson.Field
+		CreatedAt      respjson.Field
+		Status         respjson.Field
+		UpdatedAt      respjson.Field
+		URL            respjson.Field
+		Completed      respjson.Field
+		CompletedAt    respjson.Field
+		ExtractOptions respjson.Field
+		Failed         respjson.Field
+		Name           respjson.Field
+		Pending        respjson.Field
+		Tasks          respjson.Field
+		Total          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlRunResponse) RawJSON() string { return r.JSON.raw }
+func (r *CrawlRunResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunResponseCrawlOptions struct {
+	AllowExternalLinks    bool  `json:"allow_external_links,required"`
+	AllowSubdomains       bool  `json:"allow_subdomains,required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
+	Limit                 int64 `json:"limit,required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	// Any of "skip", "include", "only".
+	Sitemap      string                                    `json:"sitemap,required"`
+	Callback     CrawlRunResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
+	ExcludePaths []string                                  `json:"exclude_paths"`
+	IncludePaths []string                                  `json:"include_paths"`
+	ExtraFields  map[string]any                            `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AllowExternalLinks    respjson.Field
+		AllowSubdomains       respjson.Field
+		CrawlEntireDomain     respjson.Field
+		IgnoreQueryParameters respjson.Field
+		Limit                 respjson.Field
+		MaxDiscoveryDepth     respjson.Field
+		Sitemap               respjson.Field
+		Callback              respjson.Field
+		ExcludePaths          respjson.Field
+		IncludePaths          respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlRunResponseCrawlOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlRunResponseCrawlOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlRunResponseCrawlOptionsCallbackUnion contains all possible properties and
+// values from [CrawlRunResponseCrawlOptionsCallbackObject], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
+type CrawlRunResponseCrawlOptionsCallbackUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field is from variant [CrawlRunResponseCrawlOptionsCallbackObject].
+	URL string `json:"url"`
+	// This field is from variant [CrawlRunResponseCrawlOptionsCallbackObject].
+	Events []string `json:"events"`
+	// This field is from variant [CrawlRunResponseCrawlOptionsCallbackObject].
+	Headers map[string]string `json:"headers"`
+	// This field is from variant [CrawlRunResponseCrawlOptionsCallbackObject].
+	Metadata map[string]any `json:"metadata"`
+	JSON     struct {
+		OfString respjson.Field
+		URL      respjson.Field
+		Events   respjson.Field
+		Headers  respjson.Field
+		Metadata respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u CrawlRunResponseCrawlOptionsCallbackUnion) AsCrawlRunResponseCrawlOptionsCallbackObject() (v CrawlRunResponseCrawlOptionsCallbackObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlRunResponseCrawlOptionsCallbackUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlRunResponseCrawlOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlRunResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunResponseCrawlOptionsCallbackObject struct {
+	URL string `json:"url,required" format:"uri"`
+	// Any of "started", "page", "completed", "failed".
+	Events   []string          `json:"events"`
+	Headers  map[string]string `json:"headers"`
+	Metadata map[string]any    `json:"metadata"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL         respjson.Field
+		Events      respjson.Field
+		Headers     respjson.Field
+		Metadata    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlRunResponseCrawlOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlRunResponseCrawlOptionsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlRunResponseCreatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlRunResponseCreatedAtMapItem]
+type CrawlRunResponseCreatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlRunResponseCreatedAtMapItem any `json:",inline"`
+	JSON                               struct {
+		OfString                           respjson.Field
+		OfCrawlRunResponseCreatedAtMapItem respjson.Field
+		raw                                string
+	} `json:"-"`
+}
+
+func (u CrawlRunResponseCreatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlRunResponseCreatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlRunResponseCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlRunResponseCreatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunResponseStatus string
+
+const (
+	CrawlRunResponseStatusQueued    CrawlRunResponseStatus = "queued"
+	CrawlRunResponseStatusRunning   CrawlRunResponseStatus = "running"
+	CrawlRunResponseStatusSucceeded CrawlRunResponseStatus = "succeeded"
+	CrawlRunResponseStatusFailed    CrawlRunResponseStatus = "failed"
+	CrawlRunResponseStatusCanceled  CrawlRunResponseStatus = "canceled"
+)
+
+// CrawlRunResponseUpdatedAtUnion contains all possible properties and values from
+// [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlRunResponseUpdatedAtMapItem]
+type CrawlRunResponseUpdatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlRunResponseUpdatedAtMapItem any `json:",inline"`
+	JSON                               struct {
+		OfString                           respjson.Field
+		OfCrawlRunResponseUpdatedAtMapItem respjson.Field
+		raw                                string
+	} `json:"-"`
+}
+
+func (u CrawlRunResponseUpdatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlRunResponseUpdatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlRunResponseUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlRunResponseUpdatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlRunResponseCompletedAtUnion contains all possible properties and values
+// from [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlRunResponseCompletedAtMapItem]
+type CrawlRunResponseCompletedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlRunResponseCompletedAtMapItem any `json:",inline"`
+	JSON                                 struct {
+		OfString                             respjson.Field
+		OfCrawlRunResponseCompletedAtMapItem respjson.Field
+		raw                                  string
+	} `json:"-"`
+}
+
+func (u CrawlRunResponseCompletedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlRunResponseCompletedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlRunResponseCompletedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlRunResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunResponseTask struct {
+	// Any of "pending", "completed", "failed".
+	Status    string `json:"status,required"`
+	TaskID    string `json:"task_id,required"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Status      respjson.Field
+		TaskID      respjson.Field
+		CreatedAt   respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlRunResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *CrawlRunResponseTask) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Crawl API response
+type CrawlStatusResponse struct {
+	AccountName  string                            `json:"account_name,required"`
+	CrawlID      string                            `json:"crawl_id,required" format:"uuid"`
+	CrawlOptions CrawlStatusResponseCrawlOptions   `json:"crawl_options,required"`
+	CreatedAt    CrawlStatusResponseCreatedAtUnion `json:"created_at,required"`
+	// Any of "queued", "running", "succeeded", "failed", "canceled".
+	Status         CrawlStatusResponseStatus           `json:"status,required"`
+	UpdatedAt      CrawlStatusResponseUpdatedAtUnion   `json:"updated_at,required"`
+	URL            string                              `json:"url,required" format:"uri"`
+	Completed      float64                             `json:"completed"`
+	CompletedAt    CrawlStatusResponseCompletedAtUnion `json:"completed_at,nullable"`
+	ExtractOptions map[string]any                      `json:"extract_options,nullable"`
+	Failed         float64                             `json:"failed"`
+	Name           string                              `json:"name,nullable"`
+	Pending        float64                             `json:"pending"`
+	Tasks          []CrawlStatusResponseTask           `json:"tasks"`
+	Total          float64                             `json:"total"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AccountName    respjson.Field
+		CrawlID        respjson.Field
+		CrawlOptions   respjson.Field
+		CreatedAt      respjson.Field
+		Status         respjson.Field
+		UpdatedAt      respjson.Field
+		URL            respjson.Field
+		Completed      respjson.Field
+		CompletedAt    respjson.Field
+		ExtractOptions respjson.Field
+		Failed         respjson.Field
+		Name           respjson.Field
+		Pending        respjson.Field
+		Tasks          respjson.Field
+		Total          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlStatusResponse) RawJSON() string { return r.JSON.raw }
+func (r *CrawlStatusResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlStatusResponseCrawlOptions struct {
+	AllowExternalLinks    bool  `json:"allow_external_links,required"`
+	AllowSubdomains       bool  `json:"allow_subdomains,required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
+	Limit                 int64 `json:"limit,required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	// Any of "skip", "include", "only".
+	Sitemap      string                                       `json:"sitemap,required"`
+	Callback     CrawlStatusResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
+	ExcludePaths []string                                     `json:"exclude_paths"`
+	IncludePaths []string                                     `json:"include_paths"`
+	ExtraFields  map[string]any                               `json:",extras"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AllowExternalLinks    respjson.Field
+		AllowSubdomains       respjson.Field
+		CrawlEntireDomain     respjson.Field
+		IgnoreQueryParameters respjson.Field
+		Limit                 respjson.Field
+		MaxDiscoveryDepth     respjson.Field
+		Sitemap               respjson.Field
+		Callback              respjson.Field
+		ExcludePaths          respjson.Field
+		IncludePaths          respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlStatusResponseCrawlOptions) RawJSON() string { return r.JSON.raw }
+func (r *CrawlStatusResponseCrawlOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlStatusResponseCrawlOptionsCallbackUnion contains all possible properties
+// and values from [CrawlStatusResponseCrawlOptionsCallbackObject], [string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
+type CrawlStatusResponseCrawlOptionsCallbackUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field is from variant [CrawlStatusResponseCrawlOptionsCallbackObject].
+	URL string `json:"url"`
+	// This field is from variant [CrawlStatusResponseCrawlOptionsCallbackObject].
+	Events []string `json:"events"`
+	// This field is from variant [CrawlStatusResponseCrawlOptionsCallbackObject].
+	Headers map[string]string `json:"headers"`
+	// This field is from variant [CrawlStatusResponseCrawlOptionsCallbackObject].
+	Metadata map[string]any `json:"metadata"`
+	JSON     struct {
+		OfString respjson.Field
+		URL      respjson.Field
+		Events   respjson.Field
+		Headers  respjson.Field
+		Metadata respjson.Field
+		raw      string
+	} `json:"-"`
+}
+
+func (u CrawlStatusResponseCrawlOptionsCallbackUnion) AsCrawlStatusResponseCrawlOptionsCallbackObject() (v CrawlStatusResponseCrawlOptionsCallbackObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlStatusResponseCrawlOptionsCallbackUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlStatusResponseCrawlOptionsCallbackUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlStatusResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlStatusResponseCrawlOptionsCallbackObject struct {
+	URL string `json:"url,required" format:"uri"`
+	// Any of "started", "page", "completed", "failed".
+	Events   []string          `json:"events"`
+	Headers  map[string]string `json:"headers"`
+	Metadata map[string]any    `json:"metadata"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		URL         respjson.Field
+		Events      respjson.Field
+		Headers     respjson.Field
+		Metadata    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlStatusResponseCrawlOptionsCallbackObject) RawJSON() string { return r.JSON.raw }
+func (r *CrawlStatusResponseCrawlOptionsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlStatusResponseCreatedAtUnion contains all possible properties and values
+// from [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlStatusResponseCreatedAtMapItem]
+type CrawlStatusResponseCreatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlStatusResponseCreatedAtMapItem any `json:",inline"`
+	JSON                                  struct {
+		OfString                              respjson.Field
+		OfCrawlStatusResponseCreatedAtMapItem respjson.Field
+		raw                                   string
+	} `json:"-"`
+}
+
+func (u CrawlStatusResponseCreatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlStatusResponseCreatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlStatusResponseCreatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlStatusResponseCreatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlStatusResponseStatus string
+
+const (
+	CrawlStatusResponseStatusQueued    CrawlStatusResponseStatus = "queued"
+	CrawlStatusResponseStatusRunning   CrawlStatusResponseStatus = "running"
+	CrawlStatusResponseStatusSucceeded CrawlStatusResponseStatus = "succeeded"
+	CrawlStatusResponseStatusFailed    CrawlStatusResponseStatus = "failed"
+	CrawlStatusResponseStatusCanceled  CrawlStatusResponseStatus = "canceled"
+)
+
+// CrawlStatusResponseUpdatedAtUnion contains all possible properties and values
+// from [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlStatusResponseUpdatedAtMapItem]
+type CrawlStatusResponseUpdatedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlStatusResponseUpdatedAtMapItem any `json:",inline"`
+	JSON                                  struct {
+		OfString                              respjson.Field
+		OfCrawlStatusResponseUpdatedAtMapItem respjson.Field
+		raw                                   string
+	} `json:"-"`
+}
+
+func (u CrawlStatusResponseUpdatedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlStatusResponseUpdatedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlStatusResponseUpdatedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlStatusResponseUpdatedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CrawlStatusResponseCompletedAtUnion contains all possible properties and values
+// from [string], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString OfCrawlStatusResponseCompletedAtMapItem]
+type CrawlStatusResponseCompletedAtUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfCrawlStatusResponseCompletedAtMapItem any `json:",inline"`
+	JSON                                    struct {
+		OfString                                respjson.Field
+		OfCrawlStatusResponseCompletedAtMapItem respjson.Field
+		raw                                     string
+	} `json:"-"`
+}
+
+func (u CrawlStatusResponseCompletedAtUnion) AsString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CrawlStatusResponseCompletedAtUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CrawlStatusResponseCompletedAtUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CrawlStatusResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlStatusResponseTask struct {
+	// Any of "pending", "completed", "failed".
+	Status    string `json:"status,required"`
+	TaskID    string `json:"task_id,required"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Status      respjson.Field
+		TaskID      respjson.Field
+		CreatedAt   respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CrawlStatusResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *CrawlStatusResponseTask) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type CrawlTerminateResponse struct {
 	// Any of "canceled".
@@ -519,4 +1033,4538 @@ const (
 	CrawlListParamsStatusSucceeded CrawlListParamsStatus = "succeeded"
 	CrawlListParamsStatusFailed    CrawlListParamsStatus = "failed"
 	CrawlListParamsStatusCanceled  CrawlListParamsStatus = "canceled"
+)
+
+type CrawlRunParams struct {
+	// Url to crawl.
+	URL string `json:"url,required"`
+	// Allows the crawler to follow links to external websites.
+	AllowExternalLinks param.Opt[bool] `json:"allow_external_links,omitzero"`
+	// Allows the crawler to follow links to subdomains of the main domain.
+	AllowSubdomains param.Opt[bool] `json:"allow_subdomains,omitzero"`
+	// Allows the crawler to follow internal links to sibling or parent URLs, not just
+	// child paths.
+	CrawlEntireDomain param.Opt[bool] `json:"crawl_entire_domain,omitzero"`
+	// Do not re-scrape the same path with different (or none) query parameters.
+	IgnoreQueryParameters param.Opt[bool] `json:"ignore_query_parameters,omitzero"`
+	// Maximum number of pages to crawl.
+	Limit param.Opt[int64] `json:"limit,omitzero"`
+	// Maximum depth to crawl based on discovery order.
+	MaxDiscoveryDepth param.Opt[int64] `json:"max_discovery_depth,omitzero"`
+	// Name of the crawl.
+	Name param.Opt[string] `json:"name,omitzero"`
+	// Webhook configuration for receiving crawl results.
+	Callback CrawlRunParamsCallbackUnion `json:"callback,omitzero" format:"uri"`
+	// URL pathname regex patterns that exclude matching URLs from the crawl.
+	ExcludePaths   []string                     `json:"exclude_paths,omitzero"`
+	ExtractOptions CrawlRunParamsExtractOptions `json:"extract_options,omitzero"`
+	// URL pathname regex patterns that include matching URLs in the crawl.
+	IncludePaths []string `json:"include_paths,omitzero"`
+	// Sitemap and other methods will be used together to find URLs.
+	//
+	// Any of "skip", "include", "only".
+	Sitemap CrawlRunParamsSitemap `json:"sitemap,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParams) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsCallbackUnion struct {
+	OfCrawlRunsCallbackObject *CrawlRunParamsCallbackObject `json:",omitzero,inline"`
+	OfString                  param.Opt[string]             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsCallbackUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsCallbackObject, u.OfString)
+}
+func (u *CrawlRunParamsCallbackUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsCallbackUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsCallbackObject) {
+		return u.OfCrawlRunsCallbackObject
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlRunParamsCallbackObject struct {
+	URL string `json:"url,required" format:"uri"`
+	// Any of "started", "page", "completed", "failed".
+	Events   []string          `json:"events,omitzero"`
+	Headers  map[string]string `json:"headers,omitzero"`
+	Metadata map[string]any    `json:"metadata,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsCallbackObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsCallbackObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsCallbackObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunParamsExtractOptions struct {
+	// City for geolocation
+	City param.Opt[string] `json:"city,omitzero"`
+	// Client-side timeout in milliseconds
+	ClientTimeout param.Opt[float64] `json:"client_timeout,omitzero"`
+	// Whether to automatically handle cookie consent headers
+	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
+	// Whether to disable IP address validation
+	DisableIPCheck param.Opt[bool] `json:"disable_ip_check,omitzero"`
+	// Whether to use HTTP/2 protocol
+	Http2 param.Opt[bool] `json:"http2,omitzero"`
+	// Whether to use IPv6 for the request
+	Ip6 param.Opt[bool] `json:"ip6,omitzero"`
+	// Whether to emulate XMLHttpRequest behavior
+	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
+	// Whether to disable browser-based rendering
+	NoUserbrowser param.Opt[bool] `json:"no_userbrowser,omitzero"`
+	// Whether to parse the response content
+	Parse param.Opt[bool] `json:"parse,omitzero"`
+	// Whether to return raw HTTP headers in response
+	RawHeaders param.Opt[bool] `json:"raw_headers,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render param.Opt[bool] `json:"render,omitzero"`
+	// Request timeout in milliseconds
+	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
+	// Whether to save the userbrowser session for reuse
+	SaveUserbrowser param.Opt[bool] `json:"save_userbrowser,omitzero"`
+	// Whether to skip userbrowser creation template processing
+	SkipUbct param.Opt[bool] `json:"skip_ubct,omitzero"`
+	// User-defined tag for request identification
+	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Type of query or scraping template
+	Type param.Opt[string] `json:"type,omitzero"`
+	// Target URL to scrape
+	URL param.Opt[string] `json:"url,omitzero"`
+	// Browser type to emulate
+	Browser CrawlRunParamsExtractOptionsBrowserUnion `json:"browser,omitzero"`
+	// Array of browser automation actions to execute sequentially
+	BrowserActions []CrawlRunParamsExtractOptionsBrowserActionUnion `json:"browser_actions,omitzero"`
+	// Browser cookies as array of cookie objects
+	Cookies CrawlRunParamsExtractOptionsCookiesUnion `json:"cookies,omitzero"`
+	// Country code for geolocation and proxy selection
+	//
+	// Any of "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT",
+	// "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ",
+	// "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA",
+	// "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU",
+	// "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE",
+	// "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB",
+	// "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+	// "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL",
+	// "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG",
+	// "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+	// "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG",
+	// "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV",
+	// "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP",
+	// "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN",
+	// "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB",
+	// "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR",
+	// "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+	// "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US",
+	// "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE",
+	// "YT", "ZA", "ZM", "ZW", "ALL".
+	Country CrawlRunParamsExtractOptionsCountry `json:"country,omitzero"`
+	// Device type for browser emulation
+	//
+	// Any of "desktop", "mobile", "tablet".
+	Device string `json:"device,omitzero"`
+	// Browser driver to use
+	//
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	Driver string `json:"driver,omitzero"`
+	// Expected HTTP status codes for successful requests
+	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
+	// List of acceptable response formats in order of preference
+	//
+	// Any of "html", "markdown".
+	Formats []string `json:"formats,omitzero"`
+	// Custom HTTP headers to include in the request
+	Headers map[string]CrawlRunParamsExtractOptionsHeaderUnion `json:"headers,omitzero"`
+	// Locale for browser language and region settings
+	//
+	// Any of "aa-DJ", "aa-ER", "aa-ET", "af", "af-NA", "af-ZA", "ak", "ak-GH", "am",
+	// "am-ET", "an-ES", "ar", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IN", "ar-IQ",
+	// "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA", "ar-SA", "ar-SD",
+	// "ar-SY", "ar-TN", "ar-YE", "as", "as-IN", "asa", "asa-TZ", "ast-ES", "az",
+	// "az-AZ", "az-Cyrl", "az-Cyrl-AZ", "az-Latn", "az-Latn-AZ", "be", "be-BY", "bem",
+	// "bem-ZM", "ber-DZ", "ber-MA", "bez", "bez-TZ", "bg", "bg-BG", "bho-IN", "bm",
+	// "bm-ML", "bn", "bn-BD", "bn-IN", "bo", "bo-CN", "bo-IN", "br-FR", "brx-IN",
+	// "bs", "bs-BA", "byn-ER", "ca", "ca-AD", "ca-ES", "ca-FR", "ca-IT", "cgg",
+	// "cgg-UG", "chr", "chr-US", "crh-UA", "cs", "cs-CZ", "csb-PL", "cv-RU", "cy",
+	// "cy-GB", "da", "da-DK", "dav", "dav-KE", "de", "de-AT", "de-BE", "de-CH",
+	// "de-DE", "de-LI", "de-LU", "dv-MV", "dz-BT", "ebu", "ebu-KE", "ee", "ee-GH",
+	// "ee-TG", "el", "el-CY", "el-GR", "en", "en-AG", "en-AS", "en-AU", "en-BE",
+	// "en-BW", "en-BZ", "en-CA", "en-DK", "en-GB", "en-GU", "en-HK", "en-IE", "en-IN",
+	// "en-JM", "en-MH", "en-MP", "en-MT", "en-MU", "en-NA", "en-NG", "en-NZ", "en-PH",
+	// "en-PK", "en-SG", "en-TT", "en-UM", "en-US", "en-VI", "en-ZA", "en-ZM", "en-ZW",
+	// "eo", "es", "es-419", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU",
+	// "es-DO", "es-EC", "es-ES", "es-GQ", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA",
+	// "es-PE", "es-PR", "es-PY", "es-SV", "es-US", "es-UY", "es-VE", "et", "et-EE",
+	// "eu", "eu-ES", "fa", "fa-AF", "fa-IR", "ff", "ff-SN", "fi", "fi-FI", "fil",
+	// "fil-PH", "fo", "fo-FO", "fr", "fr-BE", "fr-BF", "fr-BI", "fr-BJ", "fr-BL",
+	// "fr-CA", "fr-CD", "fr-CF", "fr-CG", "fr-CH", "fr-CI", "fr-CM", "fr-DJ", "fr-FR",
+	// "fr-GA", "fr-GN", "fr-GP", "fr-GQ", "fr-KM", "fr-LU", "fr-MC", "fr-MF", "fr-MG",
+	// "fr-ML", "fr-MQ", "fr-NE", "fr-RE", "fr-RW", "fr-SN", "fr-TD", "fr-TG",
+	// "fur-IT", "fy-DE", "fy-NL", "ga", "ga-IE", "gd-GB", "gez-ER", "gez-ET", "gl",
+	// "gl-ES", "gsw", "gsw-CH", "gu", "gu-IN", "guz", "guz-KE", "gv", "gv-GB", "ha",
+	// "ha-Latn", "ha-Latn-GH", "ha-Latn-NE", "ha-Latn-NG", "ha-NG", "haw", "haw-US",
+	// "he", "he-IL", "hi", "hi-IN", "hne-IN", "hr", "hr-HR", "hsb-DE", "ht-HT", "hu",
+	// "hu-HU", "hy", "hy-AM", "id", "id-ID", "ig", "ig-NG", "ii", "ii-CN", "ik-CA",
+	// "is", "is-IS", "it", "it-CH", "it-IT", "iu-CA", "iw-IL", "ja", "ja-JP", "jmc",
+	// "jmc-TZ", "ka", "ka-GE", "kab", "kab-DZ", "kam", "kam-KE", "kde", "kde-TZ",
+	// "kea", "kea-CV", "khq", "khq-ML", "ki", "ki-KE", "kk", "kk-Cyrl", "kk-Cyrl-KZ",
+	// "kk-KZ", "kl", "kl-GL", "kln", "kln-KE", "km", "km-KH", "kn", "kn-IN", "ko",
+	// "ko-KR", "kok", "kok-IN", "ks-IN", "ku-TR", "kw", "kw-GB", "ky-KG", "lag",
+	// "lag-TZ", "lb-LU", "lg", "lg-UG", "li-BE", "li-NL", "lij-IT", "lo-LA", "lt",
+	// "lt-LT", "luo", "luo-KE", "luy", "luy-KE", "lv", "lv-LV", "mag-IN", "mai-IN",
+	// "mas", "mas-KE", "mas-TZ", "mer", "mer-KE", "mfe", "mfe-MU", "mg", "mg-MG",
+	// "mhr-RU", "mi-NZ", "mk", "mk-MK", "ml", "ml-IN", "mn-MN", "mr", "mr-IN", "ms",
+	// "ms-BN", "ms-MY", "mt", "mt-MT", "my", "my-MM", "nan-TW", "naq", "naq-NA", "nb",
+	// "nb-NO", "nd", "nd-ZW", "nds-DE", "nds-NL", "ne", "ne-IN", "ne-NP", "nl",
+	// "nl-AW", "nl-BE", "nl-NL", "nn", "nn-NO", "nr-ZA", "nso-ZA", "nyn", "nyn-UG",
+	// "oc-FR", "om", "om-ET", "om-KE", "or", "or-IN", "os-RU", "pa", "pa-Arab",
+	// "pa-Arab-PK", "pa-Guru", "pa-Guru-IN", "pa-IN", "pa-PK", "pap-AN", "pl",
+	// "pl-PL", "ps", "ps-AF", "pt", "pt-BR", "pt-GW", "pt-MZ", "pt-PT", "rm", "rm-CH",
+	// "ro", "ro-MD", "ro-RO", "rof", "rof-TZ", "ru", "ru-MD", "ru-RU", "ru-UA", "rw",
+	// "rw-RW", "rwk", "rwk-TZ", "sa-IN", "saq", "saq-KE", "sc-IT", "sd-IN", "se-NO",
+	// "seh", "seh-MZ", "ses", "ses-ML", "sg", "sg-CF", "shi", "shi-Latn",
+	// "shi-Latn-MA", "shi-Tfng", "shi-Tfng-MA", "shs-CA", "si", "si-LK", "sid-ET",
+	// "sk", "sk-SK", "sl", "sl-SI", "sn", "sn-ZW", "so", "so-DJ", "so-ET", "so-KE",
+	// "so-SO", "sq", "sq-AL", "sq-MK", "sr", "sr-Cyrl", "sr-Cyrl-BA", "sr-Cyrl-ME",
+	// "sr-Cyrl-RS", "sr-Latn", "sr-Latn-BA", "sr-Latn-ME", "sr-Latn-RS", "sr-ME",
+	// "sr-RS", "ss-ZA", "st-ZA", "sv", "sv-FI", "sv-SE", "sw", "sw-KE", "sw-TZ", "ta",
+	// "ta-IN", "ta-LK", "te", "te-IN", "teo", "teo-KE", "teo-UG", "tg-TJ", "th",
+	// "th-TH", "ti", "ti-ER", "ti-ET", "tig-ER", "tk-TM", "tl-PH", "tn-ZA", "to",
+	// "to-TO", "tr", "tr-CY", "tr-TR", "ts-ZA", "tt-RU", "tzm", "tzm-Latn",
+	// "tzm-Latn-MA", "ug-CN", "uk", "uk-UA", "unm-US", "ur", "ur-IN", "ur-PK", "uz",
+	// "uz-Arab", "uz-Arab-AF", "uz-Cyrl", "uz-Cyrl-UZ", "uz-Latn", "uz-Latn-UZ",
+	// "uz-UZ", "ve-ZA", "vi", "vi-VN", "vun", "vun-TZ", "wa-BE", "wae-CH", "wal-ET",
+	// "wo-SN", "xh-ZA", "xog", "xog-UG", "yi-US", "yo", "yo-NG", "yue-HK", "zh",
+	// "zh-CN", "zh-HK", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK", "zh-Hans-MO",
+	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
+	// "zh-TW", "zu", "zu-ZA", "auto".
+	Locale CrawlRunParamsExtractOptionsLocale `json:"locale,omitzero"`
+	// Structured metadata about the request execution context
+	Metadata CrawlRunParamsExtractOptionsMetadata `json:"metadata,omitzero"`
+	// HTTP method for the request
+	//
+	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
+	Method string `json:"method,omitzero"`
+	// Native execution mode
+	//
+	// Any of "requester", "apm", "direct".
+	NativeMode string `json:"native_mode,omitzero"`
+	// Filters for capturing network traffic
+	NetworkCapture []CrawlRunParamsExtractOptionsNetworkCapture `json:"network_capture,omitzero"`
+	// Operating system to emulate
+	//
+	// Any of "windows", "mac os", "linux", "android", "ios".
+	Os string `json:"os,omitzero"`
+	// Custom parser configuration as a key-value map
+	Parser CrawlRunParamsExtractOptionsParserUnion `json:"parser,omitzero"`
+	// Proxy provider to use for the request
+	//
+	// Any of "brightdata", "oxylabs", "smartproxy", "proxit", "proxit_preprod",
+	// "local", "rayobyte", "always", "oculusproxies", "froxy", "packetstream",
+	// "911proxy", "direct911proxy", "thesocialproxy", "thesocialproxy2", "nimble-isp",
+	// "nimble-isp-mobile", "proxit-linux", "proxit-macos", "proxit-windows",
+	// "proxit-rental", "ipfoxy", "brightup", "research".
+	ProxyProvider CrawlRunParamsExtractOptionsProxyProvider `json:"proxy_provider,omitzero"`
+	// Weighted distribution of proxy providers
+	ProxyProviders map[string]float64 `json:"proxy_providers,omitzero"`
+	// Query template configuration for structured data extraction
+	QueryTemplate CrawlRunParamsExtractOptionsQueryTemplate `json:"query_template,omitzero"`
+	// Referrer policy for the request
+	//
+	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
+	// "twitter", "instagram".
+	ReferrerType CrawlRunParamsExtractOptionsReferrerType `json:"referrer_type,omitzero"`
+	// Array of actions to perform during browser rendering
+	RenderFlow    []map[string]any                          `json:"render_flow,omitzero"`
+	RenderOptions CrawlRunParamsExtractOptionsRenderOptions `json:"render_options,omitzero"`
+	Session       CrawlRunParamsExtractOptionsSession       `json:"session,omitzero"`
+	// Skills or capabilities required for the request
+	Skill CrawlRunParamsExtractOptionsSkillUnion `json:"skill,omitzero"`
+	// US state for geolocation (only valid when country is US)
+	//
+	// Any of "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA",
+	// "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+	// "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP",
+	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+	// "VI", "WA", "WV", "WI", "WY".
+	State string `json:"state,omitzero"`
+	// Userbrowser creation template configuration
+	Template CrawlRunParamsExtractOptionsTemplate `json:"template,omitzero"`
+	// Pre-rendered userbrowser creation template configuration
+	UserbrowserCreationTemplateRendered CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered `json:"userbrowser_creation_template_rendered,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptions) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptions
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"device", "desktop", "mobile", "tablet",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"native_mode", "requester", "apm", "direct",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"os", "windows", "mac os", "linux", "android", "ios",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"state", "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "VI", "WA", "WV", "WI", "WY",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserString)
+	OfCrawlRunsExtractOptionsBrowserString param.Opt[string]                          `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserObject *CrawlRunParamsExtractOptionsBrowserObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserString, u.OfCrawlRunsExtractOptionsBrowserObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserString
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserObject
+	}
+	return nil
+}
+
+// Browser type to emulate
+type CrawlRunParamsExtractOptionsBrowserString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserStringChrome  CrawlRunParamsExtractOptionsBrowserString = "chrome"
+	CrawlRunParamsExtractOptionsBrowserStringFirefox CrawlRunParamsExtractOptionsBrowserString = "firefox"
+)
+
+// The property Name is required.
+type CrawlRunParamsExtractOptionsBrowserObject struct {
+	// Any of "chrome", "firefox".
+	Name string `json:"name,omitzero,required"`
+	// Specific browser version to emulate
+	Version param.Opt[string] `json:"version,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserObject](
+		"name", "chrome", "firefox",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionUnion struct {
+	OfCrawlRunsExtractOptionsBrowserActionAutoScrollAction        *CrawlRunParamsExtractOptionsBrowserActionAutoScrollAction        `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionClickAction             *CrawlRunParamsExtractOptionsBrowserActionClickAction             `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionEvalAction              *CrawlRunParamsExtractOptionsBrowserActionEvalAction              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionFetchAction             *CrawlRunParamsExtractOptionsBrowserActionFetchAction             `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionFillAction              *CrawlRunParamsExtractOptionsBrowserActionFillAction              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionGetCookiesAction        *CrawlRunParamsExtractOptionsBrowserActionGetCookiesAction        `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionGotoAction              *CrawlRunParamsExtractOptionsBrowserActionGotoAction              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionPressAction             *CrawlRunParamsExtractOptionsBrowserActionPressAction             `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionScreenshotAction        *CrawlRunParamsExtractOptionsBrowserActionScreenshotAction        `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionScrollAction            *CrawlRunParamsExtractOptionsBrowserActionScrollAction            `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitAction              *CrawlRunParamsExtractOptionsBrowserActionWaitAction              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitForElementAction    *CrawlRunParamsExtractOptionsBrowserActionWaitForElementAction    `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationAction *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationAction `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionClickAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionEvalAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionFetchAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionFillAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionGotoAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionPressAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionScreenshotAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionScrollAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionWaitAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementAction,
+		u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationAction)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionClickAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionClickAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionEvalAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionEvalAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFetchAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionFetchAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFillAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionFillAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGotoAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionGotoAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionPressAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionPressAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScreenshotAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionScreenshotAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScrollAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionScrollAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementAction
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationAction) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationAction
+	}
+	return nil
+}
+
+// Continuously scroll to load dynamic content
+//
+// The property AutoScroll is required.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollAction struct {
+	AutoScroll CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion `json:"auto_scroll,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionAutoScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionAutoScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionAutoScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion struct {
+	OfBool                                                                 param.Opt[bool]                                                            `json:",omitzero,inline"`
+	OfFloat                                                                param.Opt[float64]                                                         `json:",omitzero,inline"`
+	OfString                                                               param.Opt[string]                                                          `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfFloat, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject struct {
+	StepSize param.Opt[float64] `json:"step_size,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	ClickSelector CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion `json:"click_selector,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion `json:"container,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	DelayAfterScroll CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion `json:"delay_after_scroll,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	IdleTimeout CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion `json:"idle_timeout,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	LoadingSelector CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion `json:"loading_selector,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	MaxDuration CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion `json:"max_duration,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	PauseOnSelector CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion `json:"pause_on_selector,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectClickSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectDelayAfterScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectIdleTimeoutUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectLoadingSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectMaxDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectPauseOnSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                               param.Opt[bool]                                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                           param.Opt[bool]                                                                                `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionAutoScrollActionAutoScrollObjectSkipString = "false"
+)
+
+// Click on an element by selector
+//
+// The property Click is required.
+type CrawlRunParamsExtractOptionsBrowserActionClickAction struct {
+	Click CrawlRunParamsExtractOptionsBrowserActionClickActionClickUnion `json:"click,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionClickAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionClickAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionClickAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickUnion struct {
+	OfString                                                     param.Opt[string]                                                `json:",omitzero,inline"`
+	OfStringArray                                                []string                                                         `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionClickActionClickObject *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionClickActionClickUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion `json:"selector,omitzero,required"`
+	Count    param.Opt[float64]                                                           `json:"count,omitzero"`
+	OffsetX  param.Opt[int64]                                                             `json:"offset_x,omitzero"`
+	OffsetY  param.Opt[int64]                                                             `json:"offset_y,omitzero"`
+	Scroll   param.Opt[bool]                                                              `json:"scroll,omitzero"`
+	Steps    param.Opt[float64]                                                           `json:"steps,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	Strategy string `json:"strategy,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionClickActionClickObject](
+		"strategy", "linear", "ghost-cursor", "windmouse",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                     param.Opt[bool]                                                                          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                 param.Opt[bool]                                                                      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionClickActionClickObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionClickActionClickObjectSkipString = "false"
+)
+
+// Execute JavaScript code in page context
+//
+// The property Eval is required.
+type CrawlRunParamsExtractOptionsBrowserActionEvalAction struct {
+	Eval CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalUnion `json:"eval,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionEvalAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionEvalAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionEvalAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalUnion struct {
+	OfString                                                   param.Opt[string]                                              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObject *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObject
+	}
+	return nil
+}
+
+// The property Code is required.
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObject struct {
+	Code string `json:"code,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                   param.Opt[bool]                                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                               param.Opt[bool]                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionEvalActionEvalObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionEvalActionEvalObjectSkipString = "false"
+)
+
+// Make an HTTP request in browser context
+//
+// The property Fetch is required.
+type CrawlRunParamsExtractOptionsBrowserActionFetchAction struct {
+	Fetch CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchUnion `json:"fetch,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionFetchAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionFetchAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionFetchAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchUnion struct {
+	OfString                                                     param.Opt[string]                                                `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObject *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject struct {
+	URL  string            `json:"url,required" format:"uri"`
+	Body param.Opt[string] `json:"body,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Headers map[string]string  `json:"headers,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObject](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                     param.Opt[bool]                                                                          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                 param.Opt[bool]                                                                      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFetchActionFetchObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionFetchActionFetchObjectSkipString = "false"
+)
+
+// Fill text into an input field
+//
+// The property Fill is required.
+type CrawlRunParamsExtractOptionsBrowserActionFillAction struct {
+	// Fill options with mode-specific fields. Use "type" mode for behavioral typing
+	// simulation, or "paste" mode for instant paste.
+	Fill CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion `json:"fill,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionFillAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionFillAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionFillAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion struct {
+	OfType  *CrawlRunParamsExtractOptionsBrowserActionFillActionFillType  `json:",omitzero,inline"`
+	OfPaste *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfType, u.OfPaste)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) asAny() any {
+	if !param.IsOmitted(u.OfType) {
+		return u.OfType
+	} else if !param.IsOmitted(u.OfPaste) {
+		return u.OfPaste
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetMouseMovementStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.MouseMovementStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetTypingInterval() *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingInterval
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetTypingStrategy() *string {
+	if vt := u.OfType; vt != nil {
+		return &vt.TypingStrategy
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetValue() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Value)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Value)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetClickOnElement() *bool {
+	if vt := u.OfType; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	} else if vt := u.OfPaste; vt != nil && vt.ClickOnElement.Valid() {
+		return &vt.ClickOnElement.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetMode() *string {
+	if vt := u.OfType; vt != nil {
+		return (*string)(&vt.Mode)
+	} else if vt := u.OfPaste; vt != nil {
+		return (*string)(&vt.Mode)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetScroll() *bool {
+	if vt := u.OfType; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Scroll.Valid() {
+		return &vt.Scroll.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetTimeout() *float64 {
+	if vt := u.OfType; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Timeout.Valid() {
+		return &vt.Timeout.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetVisible() *bool {
+	if vt := u.OfType; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	} else if vt := u.OfPaste; vt != nil && vt.Visible.Valid() {
+		return &vt.Visible.Value
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetSelector() (res crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSelector) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Selector.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Selector.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [\*[]string]
+type crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSelector struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *[]string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSelector) AsAny() any {
+	return u.any
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetDelay() (res crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionDelay) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Delay.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Delay.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*float64], [*string]
+type crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionDelay struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *float64:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionDelay) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetRequired() (res crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionRequired) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Required.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Required.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionRequired struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionRequired) AsAny() any {
+	return u.any
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion) GetSkip() (res crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSkip) {
+	if vt := u.OfType; vt != nil {
+		res.any = vt.Skip.asAny()
+	} else if vt := u.OfPaste; vt != nil {
+		res.any = vt.Skip.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*string], [*bool]
+type crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSkip struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *string:
+//	case *bool:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u crawlRunParamsExtractOptionsBrowserActionFillActionFillUnionSkip) AsAny() any { return u.any }
+
+func init() {
+	apijson.RegisterUnion[CrawlRunParamsExtractOptionsBrowserActionFillActionFillUnion](
+		"mode",
+		apijson.Discriminator[CrawlRunParamsExtractOptionsBrowserActionFillActionFillType]("type"),
+		apijson.Discriminator[CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste]("paste"),
+	)
+}
+
+// The properties Selector, Value are required.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillType struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                                   `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                                          `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                                          `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion `json:"delay,omitzero"`
+	// Any of "type".
+	Mode string `json:"mode,omitzero"`
+	// Any of "linear", "ghost-cursor", "windmouse".
+	MouseMovementStrategy string `json:"mouse_movement_strategy,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion `json:"skip,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	TypingInterval CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion `json:"typing_interval,omitzero"`
+	// Any of "simple", "distribution".
+	TypingStrategy string `json:"typing_strategy,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionFillActionFillType) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionFillActionFillType
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionFillActionFillType) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionFillActionFillType](
+		"mode", "type",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionFillActionFillType](
+		"mouse_movement_strategy", "linear", "ghost-cursor", "windmouse",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionFillActionFillType](
+		"typing_strategy", "simple", "distribution",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                 param.Opt[bool]                                                                      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipString] `json:",omitzero,inline"`
+	OfBool                                                             param.Opt[bool]                                                                  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillTypeSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillTypeTypingIntervalUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// The properties Mode, Selector, Value are required.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector       CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion `json:"selector,omitzero,required"`
+	Value          string                                                                    `json:"value,required"`
+	ClickOnElement param.Opt[bool]                                                           `json:"click_on_element,omitzero"`
+	Scroll         param.Opt[bool]                                                           `json:"scroll,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion `json:"skip,omitzero"`
+	// This field can be elided, and will marshal its zero value as "paste".
+	Mode constant.Paste `json:"mode,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPaste) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                  param.Opt[bool]                                                                       `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipString] `json:",omitzero,inline"`
+	OfBool                                                              param.Opt[bool]                                                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionFillActionFillPasteSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionFillActionFillPasteSkipString = "false"
+)
+
+// Retrieve browser cookies
+//
+// The property GetCookies is required.
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesAction struct {
+	GetCookies CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion `json:"get_cookies,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionGetCookiesAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionGetCookiesAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionGetCookiesAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion struct {
+	OfBool                                                                 param.Opt[bool]                                                            `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject struct {
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip        CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion `json:"skip,omitzero"`
+	ExtraFields map[string]any                                                                     `json:"-"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                               param.Opt[bool]                                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                           param.Opt[bool]                                                                                `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionGetCookiesActionGetCookiesObjectSkipString = "false"
+)
+
+// Navigate to a URL
+//
+// The property Goto is required.
+type CrawlRunParamsExtractOptionsBrowserActionGotoAction struct {
+	Goto CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoUnion `json:"goto,omitzero,required" format:"uri"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionGotoAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionGotoAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionGotoAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoUnion struct {
+	OfString                                                   param.Opt[string]                                              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObject *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObject
+	}
+	return nil
+}
+
+// The property URL is required.
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject struct {
+	URL     string            `json:"url,required" format:"uri"`
+	Referer param.Opt[string] `json:"referer,omitzero"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion `json:"skip,omitzero"`
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	WaitUntil string `json:"wait_until,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObject](
+		"wait_until", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                   param.Opt[bool]                                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                               param.Opt[bool]                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionGotoActionGotoObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionGotoActionGotoObjectSkipString = "false"
+)
+
+// Press a keyboard key
+//
+// The property Press is required.
+type CrawlRunParamsExtractOptionsBrowserActionPressAction struct {
+	Press CrawlRunParamsExtractOptionsBrowserActionPressActionPressUnion `json:"press,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionPressAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionPressAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionPressAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressUnion struct {
+	OfString                                                     param.Opt[string]                                                `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionPressActionPressObject *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionPressActionPressUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObject
+	}
+	return nil
+}
+
+// The property Key is required.
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject struct {
+	// Any of "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject",
+	// "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r",
+	// "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft",
+	// "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space",
+	// "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7",
+	// "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6",
+	// "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0",
+	// "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4",
+	// "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC",
+	// "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM",
+	// "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW",
+	// "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu",
+	// "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2",
+	// "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14",
+	// "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock",
+	// "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp",
+	// "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause",
+	// "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash",
+	// "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph",
+	// "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", "
+	// ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i",
+	// "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+	// "z", "Meta", "\*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'",
+	// "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#",
+	// "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+	// "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":",
+	// "<", "\_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight",
+	// "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp".
+	Key string `json:"key,omitzero,required"`
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Delay CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion `json:"delay,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionPressActionPressObject](
+		"key", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Power", "Eject", "Abort", "Help", "Backspace", "Tab", "Numpad5", "NumpadEnter", "Enter", "\r", "\n", "ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "Pause", "CapsLock", "Escape", "Convert", "NonConvert", "Space", "Numpad9", "PageUp", "Numpad3", "PageDown", "End", "Numpad1", "Home", "Numpad7", "ArrowLeft", "Numpad4", "Numpad8", "ArrowUp", "ArrowRight", "Numpad6", "Numpad2", "ArrowDown", "Select", "Open", "PrintScreen", "Insert", "Numpad0", "Delete", "NumpadDecimal", "Digit0", "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "KeyA", "KeyB", "KeyC", "KeyD", "KeyE", "KeyF", "KeyG", "KeyH", "KeyI", "KeyJ", "KeyK", "KeyL", "KeyM", "KeyN", "KeyO", "KeyP", "KeyQ", "KeyR", "KeyS", "KeyT", "KeyU", "KeyV", "KeyW", "KeyX", "KeyY", "KeyZ", "MetaLeft", "MetaRight", "ContextMenu", "NumpadMultiply", "NumpadAdd", "NumpadSubtract", "NumpadDivide", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "NumLock", "ScrollLock", "AudioVolumeMute", "AudioVolumeDown", "AudioVolumeUp", "MediaTrackNext", "MediaTrackPrevious", "MediaStop", "MediaPlayPause", "Semicolon", "Equal", "NumpadEqual", "Comma", "Minus", "Period", "Slash", "Backquote", "BracketLeft", "Backslash", "BracketRight", "Quote", "AltGraph", "Props", "Cancel", "Clear", "Shift", "Control", "Alt", "Accept", "ModeChange", " ", "Print", "Execute", "\u0000", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "Meta", "*", "+", "-", "/", ";", "=", ",", ".", "`", "[", "\\", "]", "'", "Attn", "CrSel", "ExSel", "EraseEof", "Play", "ZoomOut", ")", "!", "@", "#", "$", "%", "^", "&", "(", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":", "<", "_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight", "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectDelayUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                     param.Opt[bool]                                                                          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                 param.Opt[bool]                                                                      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionPressActionPressObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionPressActionPressObjectSkipString = "false"
+)
+
+// Capture a page screenshot
+//
+// The property Screenshot is required.
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotAction struct {
+	Screenshot CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion `json:"screenshot,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionScreenshotAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionScreenshotAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionScreenshotAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion struct {
+	OfBool                                                                 param.Opt[bool]                                                            `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObject *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObject
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject struct {
+	FullPage param.Opt[bool]    `json:"full_page,omitzero"`
+	Quality  param.Opt[float64] `json:"quality,omitzero"`
+	// Any of "png", "jpeg", "webp".
+	Format string `json:"format,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObject](
+		"format", "png", "jpeg", "webp",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                               param.Opt[bool]                                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                           param.Opt[bool]                                                                                `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionScreenshotActionScreenshotObjectSkipString = "false"
+)
+
+// Scroll the page or an element
+//
+// The property Scroll is required.
+type CrawlRunParamsExtractOptionsBrowserActionScrollAction struct {
+	Scroll CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollUnion `json:"scroll,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionScrollAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionScrollAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionScrollAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollUnion struct {
+	OfFloat                                                        param.Opt[float64]                                                 `json:",omitzero,inline"`
+	OfString                                                       param.Opt[string]                                                  `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObject *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObject
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObject struct {
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	X       param.Opt[float64] `json:"x,omitzero"`
+	Y       param.Opt[float64] `json:"y,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Container CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion `json:"container,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion `json:"skip,omitzero"`
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	To CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion `json:"to,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                       param.Opt[bool]                                                                            `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                   param.Opt[bool]                                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionScrollActionScrollObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionScrollActionScrollObjectToUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Wait for a specified duration
+//
+// The property Wait is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitAction struct {
+	Wait CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitUnion `json:"wait,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitUnion struct {
+	OfFloat                                                    param.Opt[float64]                                             `json:",omitzero,inline"`
+	OfString                                                   param.Opt[string]                                              `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObject *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString, u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObject
+	}
+	return nil
+}
+
+// The property Duration is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObject struct {
+	// Duration value that accepts various formats. Supports: number (ms), string
+	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
+	Duration CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion `json:"duration,omitzero,required"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion struct {
+	OfFloat  param.Opt[float64] `json:",omitzero,inline"`
+	OfString param.Opt[string]  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectDurationUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                   param.Opt[bool]                                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                               param.Opt[bool]                                                                    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitActionWaitObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitActionWaitObjectSkipString = "false"
+)
+
+// Wait for an element to appear or reach a specific state
+//
+// The property WaitForElement is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementAction struct {
+	WaitForElement CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion `json:"wait_for_element,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitForElementAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitForElementAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitForElementAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion struct {
+	OfString                                                                       param.Opt[string]                                                                  `json:",omitzero,inline"`
+	OfStringArray                                                                  []string                                                                           `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray, u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject
+	}
+	return nil
+}
+
+// The property Selector is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject struct {
+	// CSS selector or array of alternative selectors. Use an array when you have
+	// multiple possible selectors for the same element.
+	Selector CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion `json:"selector,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	Visible param.Opt[bool]    `json:"visible,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSelectorUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                                       param.Opt[bool]                                                                                            `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                                   param.Opt[bool]                                                                                        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitForElementActionWaitForElementObjectSkipString = "false"
+)
+
+// Wait for page navigation to complete
+//
+// The property WaitForNavigation is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationAction struct {
+	WaitForNavigation CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion `json:"wait_for_navigation,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationAction) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationAction
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationAction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString param.Opt[string]                                                                        `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString, u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) {
+		return u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringLoad             CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "load"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringDomcontentloaded CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "domcontentloaded"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle0     CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle0"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationStringNetworkidle2     CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationString = "networkidle2"
+)
+
+// The property Navigation is required.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject struct {
+	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
+	Navigation string `json:"navigation,omitzero,required"`
+	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
+	// 15000ms.
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Whether this action is required. If true, pipeline stops on failure. Accepts
+	// boolean or string "true"/"false". Default: true.
+	Required CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion `json:"required,omitzero"`
+	// Whether to skip this action. Accepts boolean or string "true"/"false". Default:
+	// false.
+	Skip CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion `json:"skip,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObject](
+		"navigation", "load", "domcontentloaded", "networkidle0", "networkidle2",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString] `json:",omitzero,inline"`
+	OfBool                                                                                             param.Opt[bool]                                                                                                  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectRequiredString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString)
+	OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString param.Opt[CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString] `json:",omitzero,inline"`
+	OfBool                                                                                         param.Opt[bool]                                                                                              `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString, u.OfBool)
+}
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString) {
+		return &u.OfCrawlRunsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString
+	} else if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString string
+
+const (
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringTrue  CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "true"
+	CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipStringFalse CrawlRunParamsExtractOptionsBrowserActionWaitForNavigationActionWaitForNavigationObjectSkipString = "false"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsCookiesUnion struct {
+	OfCrawlRunsExtractOptionsCookiesArray []CrawlRunParamsExtractOptionsCookiesArrayItem `json:",omitzero,inline"`
+	OfString                              param.Opt[string]                              `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsCookiesArray, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsCookiesArray) {
+		return &u.OfCrawlRunsExtractOptionsCookiesArray
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsCookiesArrayItem struct {
+	Creation      param.Opt[string]                                       `json:"creation,omitzero"`
+	Domain        param.Opt[string]                                       `json:"domain,omitzero"`
+	HostOnly      param.Opt[bool]                                         `json:"hostOnly,omitzero"`
+	HTTPOnly      param.Opt[bool]                                         `json:"httpOnly,omitzero"`
+	LastAccessed  param.Opt[string]                                       `json:"lastAccessed,omitzero"`
+	Path          param.Opt[string]                                       `json:"path,omitzero"`
+	PathIsDefault param.Opt[bool]                                         `json:"pathIsDefault,omitzero"`
+	Expires       param.Opt[string]                                       `json:"expires,omitzero"`
+	Name          param.Opt[string]                                       `json:"name,omitzero"`
+	Secure        param.Opt[bool]                                         `json:"secure,omitzero"`
+	Value         param.Opt[string]                                       `json:"value,omitzero"`
+	Extensions    []string                                                `json:"extensions,omitzero"`
+	MaxAge        CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeUnion `json:"maxAge,omitzero"`
+	// Any of "strict", "lax", "none".
+	SameSite    string         `json:"sameSite,omitzero"`
+	ExtraFields map[string]any `json:"-"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsCookiesArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsCookiesArrayItem
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlRunParamsExtractOptionsCookiesArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsCookiesArrayItem](
+		"sameSite", "strict", "lax", "none",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsCookiesArrayItemMaxAgeString)
+	OfCrawlRunsExtractOptionsCookiesArrayItemMaxAgeString param.Opt[CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeString] `json:",omitzero,inline"`
+	OfFloat                                               param.Opt[float64]                                                  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsCookiesArrayItemMaxAgeString, u.OfFloat)
+}
+func (u *CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsCookiesArrayItemMaxAgeString) {
+		return &u.OfCrawlRunsExtractOptionsCookiesArrayItemMaxAgeString
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeString string
+
+const (
+	CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeStringInfinity      CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeString = "Infinity"
+	CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeStringMinusInfinity CrawlRunParamsExtractOptionsCookiesArrayItemMaxAgeString = "-Infinity"
+)
+
+// Country code for geolocation and proxy selection
+type CrawlRunParamsExtractOptionsCountry string
+
+const (
+	CrawlRunParamsExtractOptionsCountryAd  CrawlRunParamsExtractOptionsCountry = "AD"
+	CrawlRunParamsExtractOptionsCountryAe  CrawlRunParamsExtractOptionsCountry = "AE"
+	CrawlRunParamsExtractOptionsCountryAf  CrawlRunParamsExtractOptionsCountry = "AF"
+	CrawlRunParamsExtractOptionsCountryAg  CrawlRunParamsExtractOptionsCountry = "AG"
+	CrawlRunParamsExtractOptionsCountryAI  CrawlRunParamsExtractOptionsCountry = "AI"
+	CrawlRunParamsExtractOptionsCountryAl  CrawlRunParamsExtractOptionsCountry = "AL"
+	CrawlRunParamsExtractOptionsCountryAm  CrawlRunParamsExtractOptionsCountry = "AM"
+	CrawlRunParamsExtractOptionsCountryAo  CrawlRunParamsExtractOptionsCountry = "AO"
+	CrawlRunParamsExtractOptionsCountryAq  CrawlRunParamsExtractOptionsCountry = "AQ"
+	CrawlRunParamsExtractOptionsCountryAr  CrawlRunParamsExtractOptionsCountry = "AR"
+	CrawlRunParamsExtractOptionsCountryAs  CrawlRunParamsExtractOptionsCountry = "AS"
+	CrawlRunParamsExtractOptionsCountryAt  CrawlRunParamsExtractOptionsCountry = "AT"
+	CrawlRunParamsExtractOptionsCountryAu  CrawlRunParamsExtractOptionsCountry = "AU"
+	CrawlRunParamsExtractOptionsCountryAw  CrawlRunParamsExtractOptionsCountry = "AW"
+	CrawlRunParamsExtractOptionsCountryAx  CrawlRunParamsExtractOptionsCountry = "AX"
+	CrawlRunParamsExtractOptionsCountryAz  CrawlRunParamsExtractOptionsCountry = "AZ"
+	CrawlRunParamsExtractOptionsCountryBa  CrawlRunParamsExtractOptionsCountry = "BA"
+	CrawlRunParamsExtractOptionsCountryBb  CrawlRunParamsExtractOptionsCountry = "BB"
+	CrawlRunParamsExtractOptionsCountryBd  CrawlRunParamsExtractOptionsCountry = "BD"
+	CrawlRunParamsExtractOptionsCountryBe  CrawlRunParamsExtractOptionsCountry = "BE"
+	CrawlRunParamsExtractOptionsCountryBf  CrawlRunParamsExtractOptionsCountry = "BF"
+	CrawlRunParamsExtractOptionsCountryBg  CrawlRunParamsExtractOptionsCountry = "BG"
+	CrawlRunParamsExtractOptionsCountryBh  CrawlRunParamsExtractOptionsCountry = "BH"
+	CrawlRunParamsExtractOptionsCountryBi  CrawlRunParamsExtractOptionsCountry = "BI"
+	CrawlRunParamsExtractOptionsCountryBj  CrawlRunParamsExtractOptionsCountry = "BJ"
+	CrawlRunParamsExtractOptionsCountryBl  CrawlRunParamsExtractOptionsCountry = "BL"
+	CrawlRunParamsExtractOptionsCountryBm  CrawlRunParamsExtractOptionsCountry = "BM"
+	CrawlRunParamsExtractOptionsCountryBn  CrawlRunParamsExtractOptionsCountry = "BN"
+	CrawlRunParamsExtractOptionsCountryBo  CrawlRunParamsExtractOptionsCountry = "BO"
+	CrawlRunParamsExtractOptionsCountryBq  CrawlRunParamsExtractOptionsCountry = "BQ"
+	CrawlRunParamsExtractOptionsCountryBr  CrawlRunParamsExtractOptionsCountry = "BR"
+	CrawlRunParamsExtractOptionsCountryBs  CrawlRunParamsExtractOptionsCountry = "BS"
+	CrawlRunParamsExtractOptionsCountryBt  CrawlRunParamsExtractOptionsCountry = "BT"
+	CrawlRunParamsExtractOptionsCountryBv  CrawlRunParamsExtractOptionsCountry = "BV"
+	CrawlRunParamsExtractOptionsCountryBw  CrawlRunParamsExtractOptionsCountry = "BW"
+	CrawlRunParamsExtractOptionsCountryBy  CrawlRunParamsExtractOptionsCountry = "BY"
+	CrawlRunParamsExtractOptionsCountryBz  CrawlRunParamsExtractOptionsCountry = "BZ"
+	CrawlRunParamsExtractOptionsCountryCa  CrawlRunParamsExtractOptionsCountry = "CA"
+	CrawlRunParamsExtractOptionsCountryCc  CrawlRunParamsExtractOptionsCountry = "CC"
+	CrawlRunParamsExtractOptionsCountryCd  CrawlRunParamsExtractOptionsCountry = "CD"
+	CrawlRunParamsExtractOptionsCountryCf  CrawlRunParamsExtractOptionsCountry = "CF"
+	CrawlRunParamsExtractOptionsCountryCg  CrawlRunParamsExtractOptionsCountry = "CG"
+	CrawlRunParamsExtractOptionsCountryCh  CrawlRunParamsExtractOptionsCountry = "CH"
+	CrawlRunParamsExtractOptionsCountryCi  CrawlRunParamsExtractOptionsCountry = "CI"
+	CrawlRunParamsExtractOptionsCountryCk  CrawlRunParamsExtractOptionsCountry = "CK"
+	CrawlRunParamsExtractOptionsCountryCl  CrawlRunParamsExtractOptionsCountry = "CL"
+	CrawlRunParamsExtractOptionsCountryCm  CrawlRunParamsExtractOptionsCountry = "CM"
+	CrawlRunParamsExtractOptionsCountryCn  CrawlRunParamsExtractOptionsCountry = "CN"
+	CrawlRunParamsExtractOptionsCountryCo  CrawlRunParamsExtractOptionsCountry = "CO"
+	CrawlRunParamsExtractOptionsCountryCr  CrawlRunParamsExtractOptionsCountry = "CR"
+	CrawlRunParamsExtractOptionsCountryCu  CrawlRunParamsExtractOptionsCountry = "CU"
+	CrawlRunParamsExtractOptionsCountryCv  CrawlRunParamsExtractOptionsCountry = "CV"
+	CrawlRunParamsExtractOptionsCountryCw  CrawlRunParamsExtractOptionsCountry = "CW"
+	CrawlRunParamsExtractOptionsCountryCx  CrawlRunParamsExtractOptionsCountry = "CX"
+	CrawlRunParamsExtractOptionsCountryCy  CrawlRunParamsExtractOptionsCountry = "CY"
+	CrawlRunParamsExtractOptionsCountryCz  CrawlRunParamsExtractOptionsCountry = "CZ"
+	CrawlRunParamsExtractOptionsCountryDe  CrawlRunParamsExtractOptionsCountry = "DE"
+	CrawlRunParamsExtractOptionsCountryDj  CrawlRunParamsExtractOptionsCountry = "DJ"
+	CrawlRunParamsExtractOptionsCountryDk  CrawlRunParamsExtractOptionsCountry = "DK"
+	CrawlRunParamsExtractOptionsCountryDm  CrawlRunParamsExtractOptionsCountry = "DM"
+	CrawlRunParamsExtractOptionsCountryDo  CrawlRunParamsExtractOptionsCountry = "DO"
+	CrawlRunParamsExtractOptionsCountryDz  CrawlRunParamsExtractOptionsCountry = "DZ"
+	CrawlRunParamsExtractOptionsCountryEc  CrawlRunParamsExtractOptionsCountry = "EC"
+	CrawlRunParamsExtractOptionsCountryEe  CrawlRunParamsExtractOptionsCountry = "EE"
+	CrawlRunParamsExtractOptionsCountryEg  CrawlRunParamsExtractOptionsCountry = "EG"
+	CrawlRunParamsExtractOptionsCountryEh  CrawlRunParamsExtractOptionsCountry = "EH"
+	CrawlRunParamsExtractOptionsCountryEr  CrawlRunParamsExtractOptionsCountry = "ER"
+	CrawlRunParamsExtractOptionsCountryEs  CrawlRunParamsExtractOptionsCountry = "ES"
+	CrawlRunParamsExtractOptionsCountryEt  CrawlRunParamsExtractOptionsCountry = "ET"
+	CrawlRunParamsExtractOptionsCountryFi  CrawlRunParamsExtractOptionsCountry = "FI"
+	CrawlRunParamsExtractOptionsCountryFj  CrawlRunParamsExtractOptionsCountry = "FJ"
+	CrawlRunParamsExtractOptionsCountryFk  CrawlRunParamsExtractOptionsCountry = "FK"
+	CrawlRunParamsExtractOptionsCountryFm  CrawlRunParamsExtractOptionsCountry = "FM"
+	CrawlRunParamsExtractOptionsCountryFo  CrawlRunParamsExtractOptionsCountry = "FO"
+	CrawlRunParamsExtractOptionsCountryFr  CrawlRunParamsExtractOptionsCountry = "FR"
+	CrawlRunParamsExtractOptionsCountryGa  CrawlRunParamsExtractOptionsCountry = "GA"
+	CrawlRunParamsExtractOptionsCountryGB  CrawlRunParamsExtractOptionsCountry = "GB"
+	CrawlRunParamsExtractOptionsCountryGd  CrawlRunParamsExtractOptionsCountry = "GD"
+	CrawlRunParamsExtractOptionsCountryGe  CrawlRunParamsExtractOptionsCountry = "GE"
+	CrawlRunParamsExtractOptionsCountryGf  CrawlRunParamsExtractOptionsCountry = "GF"
+	CrawlRunParamsExtractOptionsCountryGg  CrawlRunParamsExtractOptionsCountry = "GG"
+	CrawlRunParamsExtractOptionsCountryGh  CrawlRunParamsExtractOptionsCountry = "GH"
+	CrawlRunParamsExtractOptionsCountryGi  CrawlRunParamsExtractOptionsCountry = "GI"
+	CrawlRunParamsExtractOptionsCountryGl  CrawlRunParamsExtractOptionsCountry = "GL"
+	CrawlRunParamsExtractOptionsCountryGm  CrawlRunParamsExtractOptionsCountry = "GM"
+	CrawlRunParamsExtractOptionsCountryGn  CrawlRunParamsExtractOptionsCountry = "GN"
+	CrawlRunParamsExtractOptionsCountryGp  CrawlRunParamsExtractOptionsCountry = "GP"
+	CrawlRunParamsExtractOptionsCountryGq  CrawlRunParamsExtractOptionsCountry = "GQ"
+	CrawlRunParamsExtractOptionsCountryGr  CrawlRunParamsExtractOptionsCountry = "GR"
+	CrawlRunParamsExtractOptionsCountryGs  CrawlRunParamsExtractOptionsCountry = "GS"
+	CrawlRunParamsExtractOptionsCountryGt  CrawlRunParamsExtractOptionsCountry = "GT"
+	CrawlRunParamsExtractOptionsCountryGu  CrawlRunParamsExtractOptionsCountry = "GU"
+	CrawlRunParamsExtractOptionsCountryGw  CrawlRunParamsExtractOptionsCountry = "GW"
+	CrawlRunParamsExtractOptionsCountryGy  CrawlRunParamsExtractOptionsCountry = "GY"
+	CrawlRunParamsExtractOptionsCountryHk  CrawlRunParamsExtractOptionsCountry = "HK"
+	CrawlRunParamsExtractOptionsCountryHm  CrawlRunParamsExtractOptionsCountry = "HM"
+	CrawlRunParamsExtractOptionsCountryHn  CrawlRunParamsExtractOptionsCountry = "HN"
+	CrawlRunParamsExtractOptionsCountryHr  CrawlRunParamsExtractOptionsCountry = "HR"
+	CrawlRunParamsExtractOptionsCountryHt  CrawlRunParamsExtractOptionsCountry = "HT"
+	CrawlRunParamsExtractOptionsCountryHu  CrawlRunParamsExtractOptionsCountry = "HU"
+	CrawlRunParamsExtractOptionsCountryID  CrawlRunParamsExtractOptionsCountry = "ID"
+	CrawlRunParamsExtractOptionsCountryIe  CrawlRunParamsExtractOptionsCountry = "IE"
+	CrawlRunParamsExtractOptionsCountryIl  CrawlRunParamsExtractOptionsCountry = "IL"
+	CrawlRunParamsExtractOptionsCountryIm  CrawlRunParamsExtractOptionsCountry = "IM"
+	CrawlRunParamsExtractOptionsCountryIn  CrawlRunParamsExtractOptionsCountry = "IN"
+	CrawlRunParamsExtractOptionsCountryIo  CrawlRunParamsExtractOptionsCountry = "IO"
+	CrawlRunParamsExtractOptionsCountryIq  CrawlRunParamsExtractOptionsCountry = "IQ"
+	CrawlRunParamsExtractOptionsCountryIr  CrawlRunParamsExtractOptionsCountry = "IR"
+	CrawlRunParamsExtractOptionsCountryIs  CrawlRunParamsExtractOptionsCountry = "IS"
+	CrawlRunParamsExtractOptionsCountryIt  CrawlRunParamsExtractOptionsCountry = "IT"
+	CrawlRunParamsExtractOptionsCountryJe  CrawlRunParamsExtractOptionsCountry = "JE"
+	CrawlRunParamsExtractOptionsCountryJm  CrawlRunParamsExtractOptionsCountry = "JM"
+	CrawlRunParamsExtractOptionsCountryJo  CrawlRunParamsExtractOptionsCountry = "JO"
+	CrawlRunParamsExtractOptionsCountryJp  CrawlRunParamsExtractOptionsCountry = "JP"
+	CrawlRunParamsExtractOptionsCountryKe  CrawlRunParamsExtractOptionsCountry = "KE"
+	CrawlRunParamsExtractOptionsCountryKg  CrawlRunParamsExtractOptionsCountry = "KG"
+	CrawlRunParamsExtractOptionsCountryKh  CrawlRunParamsExtractOptionsCountry = "KH"
+	CrawlRunParamsExtractOptionsCountryKi  CrawlRunParamsExtractOptionsCountry = "KI"
+	CrawlRunParamsExtractOptionsCountryKm  CrawlRunParamsExtractOptionsCountry = "KM"
+	CrawlRunParamsExtractOptionsCountryKn  CrawlRunParamsExtractOptionsCountry = "KN"
+	CrawlRunParamsExtractOptionsCountryKp  CrawlRunParamsExtractOptionsCountry = "KP"
+	CrawlRunParamsExtractOptionsCountryKr  CrawlRunParamsExtractOptionsCountry = "KR"
+	CrawlRunParamsExtractOptionsCountryKw  CrawlRunParamsExtractOptionsCountry = "KW"
+	CrawlRunParamsExtractOptionsCountryKy  CrawlRunParamsExtractOptionsCountry = "KY"
+	CrawlRunParamsExtractOptionsCountryKz  CrawlRunParamsExtractOptionsCountry = "KZ"
+	CrawlRunParamsExtractOptionsCountryLa  CrawlRunParamsExtractOptionsCountry = "LA"
+	CrawlRunParamsExtractOptionsCountryLb  CrawlRunParamsExtractOptionsCountry = "LB"
+	CrawlRunParamsExtractOptionsCountryLc  CrawlRunParamsExtractOptionsCountry = "LC"
+	CrawlRunParamsExtractOptionsCountryLi  CrawlRunParamsExtractOptionsCountry = "LI"
+	CrawlRunParamsExtractOptionsCountryLk  CrawlRunParamsExtractOptionsCountry = "LK"
+	CrawlRunParamsExtractOptionsCountryLr  CrawlRunParamsExtractOptionsCountry = "LR"
+	CrawlRunParamsExtractOptionsCountryLs  CrawlRunParamsExtractOptionsCountry = "LS"
+	CrawlRunParamsExtractOptionsCountryLt  CrawlRunParamsExtractOptionsCountry = "LT"
+	CrawlRunParamsExtractOptionsCountryLu  CrawlRunParamsExtractOptionsCountry = "LU"
+	CrawlRunParamsExtractOptionsCountryLv  CrawlRunParamsExtractOptionsCountry = "LV"
+	CrawlRunParamsExtractOptionsCountryLy  CrawlRunParamsExtractOptionsCountry = "LY"
+	CrawlRunParamsExtractOptionsCountryMa  CrawlRunParamsExtractOptionsCountry = "MA"
+	CrawlRunParamsExtractOptionsCountryMc  CrawlRunParamsExtractOptionsCountry = "MC"
+	CrawlRunParamsExtractOptionsCountryMd  CrawlRunParamsExtractOptionsCountry = "MD"
+	CrawlRunParamsExtractOptionsCountryMe  CrawlRunParamsExtractOptionsCountry = "ME"
+	CrawlRunParamsExtractOptionsCountryMf  CrawlRunParamsExtractOptionsCountry = "MF"
+	CrawlRunParamsExtractOptionsCountryMg  CrawlRunParamsExtractOptionsCountry = "MG"
+	CrawlRunParamsExtractOptionsCountryMh  CrawlRunParamsExtractOptionsCountry = "MH"
+	CrawlRunParamsExtractOptionsCountryMk  CrawlRunParamsExtractOptionsCountry = "MK"
+	CrawlRunParamsExtractOptionsCountryMl  CrawlRunParamsExtractOptionsCountry = "ML"
+	CrawlRunParamsExtractOptionsCountryMm  CrawlRunParamsExtractOptionsCountry = "MM"
+	CrawlRunParamsExtractOptionsCountryMn  CrawlRunParamsExtractOptionsCountry = "MN"
+	CrawlRunParamsExtractOptionsCountryMo  CrawlRunParamsExtractOptionsCountry = "MO"
+	CrawlRunParamsExtractOptionsCountryMp  CrawlRunParamsExtractOptionsCountry = "MP"
+	CrawlRunParamsExtractOptionsCountryMq  CrawlRunParamsExtractOptionsCountry = "MQ"
+	CrawlRunParamsExtractOptionsCountryMr  CrawlRunParamsExtractOptionsCountry = "MR"
+	CrawlRunParamsExtractOptionsCountryMs  CrawlRunParamsExtractOptionsCountry = "MS"
+	CrawlRunParamsExtractOptionsCountryMt  CrawlRunParamsExtractOptionsCountry = "MT"
+	CrawlRunParamsExtractOptionsCountryMu  CrawlRunParamsExtractOptionsCountry = "MU"
+	CrawlRunParamsExtractOptionsCountryMv  CrawlRunParamsExtractOptionsCountry = "MV"
+	CrawlRunParamsExtractOptionsCountryMw  CrawlRunParamsExtractOptionsCountry = "MW"
+	CrawlRunParamsExtractOptionsCountryMx  CrawlRunParamsExtractOptionsCountry = "MX"
+	CrawlRunParamsExtractOptionsCountryMy  CrawlRunParamsExtractOptionsCountry = "MY"
+	CrawlRunParamsExtractOptionsCountryMz  CrawlRunParamsExtractOptionsCountry = "MZ"
+	CrawlRunParamsExtractOptionsCountryNa  CrawlRunParamsExtractOptionsCountry = "NA"
+	CrawlRunParamsExtractOptionsCountryNc  CrawlRunParamsExtractOptionsCountry = "NC"
+	CrawlRunParamsExtractOptionsCountryNe  CrawlRunParamsExtractOptionsCountry = "NE"
+	CrawlRunParamsExtractOptionsCountryNf  CrawlRunParamsExtractOptionsCountry = "NF"
+	CrawlRunParamsExtractOptionsCountryNg  CrawlRunParamsExtractOptionsCountry = "NG"
+	CrawlRunParamsExtractOptionsCountryNi  CrawlRunParamsExtractOptionsCountry = "NI"
+	CrawlRunParamsExtractOptionsCountryNl  CrawlRunParamsExtractOptionsCountry = "NL"
+	CrawlRunParamsExtractOptionsCountryNo  CrawlRunParamsExtractOptionsCountry = "NO"
+	CrawlRunParamsExtractOptionsCountryNp  CrawlRunParamsExtractOptionsCountry = "NP"
+	CrawlRunParamsExtractOptionsCountryNr  CrawlRunParamsExtractOptionsCountry = "NR"
+	CrawlRunParamsExtractOptionsCountryNu  CrawlRunParamsExtractOptionsCountry = "NU"
+	CrawlRunParamsExtractOptionsCountryNz  CrawlRunParamsExtractOptionsCountry = "NZ"
+	CrawlRunParamsExtractOptionsCountryOm  CrawlRunParamsExtractOptionsCountry = "OM"
+	CrawlRunParamsExtractOptionsCountryPa  CrawlRunParamsExtractOptionsCountry = "PA"
+	CrawlRunParamsExtractOptionsCountryPe  CrawlRunParamsExtractOptionsCountry = "PE"
+	CrawlRunParamsExtractOptionsCountryPf  CrawlRunParamsExtractOptionsCountry = "PF"
+	CrawlRunParamsExtractOptionsCountryPg  CrawlRunParamsExtractOptionsCountry = "PG"
+	CrawlRunParamsExtractOptionsCountryPh  CrawlRunParamsExtractOptionsCountry = "PH"
+	CrawlRunParamsExtractOptionsCountryPk  CrawlRunParamsExtractOptionsCountry = "PK"
+	CrawlRunParamsExtractOptionsCountryPl  CrawlRunParamsExtractOptionsCountry = "PL"
+	CrawlRunParamsExtractOptionsCountryPm  CrawlRunParamsExtractOptionsCountry = "PM"
+	CrawlRunParamsExtractOptionsCountryPn  CrawlRunParamsExtractOptionsCountry = "PN"
+	CrawlRunParamsExtractOptionsCountryPr  CrawlRunParamsExtractOptionsCountry = "PR"
+	CrawlRunParamsExtractOptionsCountryPs  CrawlRunParamsExtractOptionsCountry = "PS"
+	CrawlRunParamsExtractOptionsCountryPt  CrawlRunParamsExtractOptionsCountry = "PT"
+	CrawlRunParamsExtractOptionsCountryPw  CrawlRunParamsExtractOptionsCountry = "PW"
+	CrawlRunParamsExtractOptionsCountryPy  CrawlRunParamsExtractOptionsCountry = "PY"
+	CrawlRunParamsExtractOptionsCountryQa  CrawlRunParamsExtractOptionsCountry = "QA"
+	CrawlRunParamsExtractOptionsCountryRe  CrawlRunParamsExtractOptionsCountry = "RE"
+	CrawlRunParamsExtractOptionsCountryRo  CrawlRunParamsExtractOptionsCountry = "RO"
+	CrawlRunParamsExtractOptionsCountryRs  CrawlRunParamsExtractOptionsCountry = "RS"
+	CrawlRunParamsExtractOptionsCountryRu  CrawlRunParamsExtractOptionsCountry = "RU"
+	CrawlRunParamsExtractOptionsCountryRw  CrawlRunParamsExtractOptionsCountry = "RW"
+	CrawlRunParamsExtractOptionsCountrySa  CrawlRunParamsExtractOptionsCountry = "SA"
+	CrawlRunParamsExtractOptionsCountrySb  CrawlRunParamsExtractOptionsCountry = "SB"
+	CrawlRunParamsExtractOptionsCountrySc  CrawlRunParamsExtractOptionsCountry = "SC"
+	CrawlRunParamsExtractOptionsCountrySd  CrawlRunParamsExtractOptionsCountry = "SD"
+	CrawlRunParamsExtractOptionsCountrySe  CrawlRunParamsExtractOptionsCountry = "SE"
+	CrawlRunParamsExtractOptionsCountrySg  CrawlRunParamsExtractOptionsCountry = "SG"
+	CrawlRunParamsExtractOptionsCountrySh  CrawlRunParamsExtractOptionsCountry = "SH"
+	CrawlRunParamsExtractOptionsCountrySi  CrawlRunParamsExtractOptionsCountry = "SI"
+	CrawlRunParamsExtractOptionsCountrySj  CrawlRunParamsExtractOptionsCountry = "SJ"
+	CrawlRunParamsExtractOptionsCountrySk  CrawlRunParamsExtractOptionsCountry = "SK"
+	CrawlRunParamsExtractOptionsCountrySl  CrawlRunParamsExtractOptionsCountry = "SL"
+	CrawlRunParamsExtractOptionsCountrySm  CrawlRunParamsExtractOptionsCountry = "SM"
+	CrawlRunParamsExtractOptionsCountrySn  CrawlRunParamsExtractOptionsCountry = "SN"
+	CrawlRunParamsExtractOptionsCountrySo  CrawlRunParamsExtractOptionsCountry = "SO"
+	CrawlRunParamsExtractOptionsCountrySr  CrawlRunParamsExtractOptionsCountry = "SR"
+	CrawlRunParamsExtractOptionsCountrySS  CrawlRunParamsExtractOptionsCountry = "SS"
+	CrawlRunParamsExtractOptionsCountrySt  CrawlRunParamsExtractOptionsCountry = "ST"
+	CrawlRunParamsExtractOptionsCountrySv  CrawlRunParamsExtractOptionsCountry = "SV"
+	CrawlRunParamsExtractOptionsCountrySx  CrawlRunParamsExtractOptionsCountry = "SX"
+	CrawlRunParamsExtractOptionsCountrySy  CrawlRunParamsExtractOptionsCountry = "SY"
+	CrawlRunParamsExtractOptionsCountrySz  CrawlRunParamsExtractOptionsCountry = "SZ"
+	CrawlRunParamsExtractOptionsCountryTc  CrawlRunParamsExtractOptionsCountry = "TC"
+	CrawlRunParamsExtractOptionsCountryTd  CrawlRunParamsExtractOptionsCountry = "TD"
+	CrawlRunParamsExtractOptionsCountryTf  CrawlRunParamsExtractOptionsCountry = "TF"
+	CrawlRunParamsExtractOptionsCountryTg  CrawlRunParamsExtractOptionsCountry = "TG"
+	CrawlRunParamsExtractOptionsCountryTh  CrawlRunParamsExtractOptionsCountry = "TH"
+	CrawlRunParamsExtractOptionsCountryTj  CrawlRunParamsExtractOptionsCountry = "TJ"
+	CrawlRunParamsExtractOptionsCountryTk  CrawlRunParamsExtractOptionsCountry = "TK"
+	CrawlRunParamsExtractOptionsCountryTl  CrawlRunParamsExtractOptionsCountry = "TL"
+	CrawlRunParamsExtractOptionsCountryTm  CrawlRunParamsExtractOptionsCountry = "TM"
+	CrawlRunParamsExtractOptionsCountryTn  CrawlRunParamsExtractOptionsCountry = "TN"
+	CrawlRunParamsExtractOptionsCountryTo  CrawlRunParamsExtractOptionsCountry = "TO"
+	CrawlRunParamsExtractOptionsCountryTr  CrawlRunParamsExtractOptionsCountry = "TR"
+	CrawlRunParamsExtractOptionsCountryTt  CrawlRunParamsExtractOptionsCountry = "TT"
+	CrawlRunParamsExtractOptionsCountryTv  CrawlRunParamsExtractOptionsCountry = "TV"
+	CrawlRunParamsExtractOptionsCountryTw  CrawlRunParamsExtractOptionsCountry = "TW"
+	CrawlRunParamsExtractOptionsCountryTz  CrawlRunParamsExtractOptionsCountry = "TZ"
+	CrawlRunParamsExtractOptionsCountryUa  CrawlRunParamsExtractOptionsCountry = "UA"
+	CrawlRunParamsExtractOptionsCountryUg  CrawlRunParamsExtractOptionsCountry = "UG"
+	CrawlRunParamsExtractOptionsCountryUm  CrawlRunParamsExtractOptionsCountry = "UM"
+	CrawlRunParamsExtractOptionsCountryUs  CrawlRunParamsExtractOptionsCountry = "US"
+	CrawlRunParamsExtractOptionsCountryUy  CrawlRunParamsExtractOptionsCountry = "UY"
+	CrawlRunParamsExtractOptionsCountryUz  CrawlRunParamsExtractOptionsCountry = "UZ"
+	CrawlRunParamsExtractOptionsCountryVa  CrawlRunParamsExtractOptionsCountry = "VA"
+	CrawlRunParamsExtractOptionsCountryVc  CrawlRunParamsExtractOptionsCountry = "VC"
+	CrawlRunParamsExtractOptionsCountryVe  CrawlRunParamsExtractOptionsCountry = "VE"
+	CrawlRunParamsExtractOptionsCountryVg  CrawlRunParamsExtractOptionsCountry = "VG"
+	CrawlRunParamsExtractOptionsCountryVi  CrawlRunParamsExtractOptionsCountry = "VI"
+	CrawlRunParamsExtractOptionsCountryVn  CrawlRunParamsExtractOptionsCountry = "VN"
+	CrawlRunParamsExtractOptionsCountryVu  CrawlRunParamsExtractOptionsCountry = "VU"
+	CrawlRunParamsExtractOptionsCountryWf  CrawlRunParamsExtractOptionsCountry = "WF"
+	CrawlRunParamsExtractOptionsCountryWs  CrawlRunParamsExtractOptionsCountry = "WS"
+	CrawlRunParamsExtractOptionsCountryXk  CrawlRunParamsExtractOptionsCountry = "XK"
+	CrawlRunParamsExtractOptionsCountryYe  CrawlRunParamsExtractOptionsCountry = "YE"
+	CrawlRunParamsExtractOptionsCountryYt  CrawlRunParamsExtractOptionsCountry = "YT"
+	CrawlRunParamsExtractOptionsCountryZa  CrawlRunParamsExtractOptionsCountry = "ZA"
+	CrawlRunParamsExtractOptionsCountryZm  CrawlRunParamsExtractOptionsCountry = "ZM"
+	CrawlRunParamsExtractOptionsCountryZw  CrawlRunParamsExtractOptionsCountry = "ZW"
+	CrawlRunParamsExtractOptionsCountryAll CrawlRunParamsExtractOptionsCountry = "ALL"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsHeaderUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsHeaderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsHeaderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsHeaderUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Locale for browser language and region settings
+type CrawlRunParamsExtractOptionsLocale string
+
+const (
+	CrawlRunParamsExtractOptionsLocaleAaDj      CrawlRunParamsExtractOptionsLocale = "aa-DJ"
+	CrawlRunParamsExtractOptionsLocaleAaEr      CrawlRunParamsExtractOptionsLocale = "aa-ER"
+	CrawlRunParamsExtractOptionsLocaleAaEt      CrawlRunParamsExtractOptionsLocale = "aa-ET"
+	CrawlRunParamsExtractOptionsLocaleAf        CrawlRunParamsExtractOptionsLocale = "af"
+	CrawlRunParamsExtractOptionsLocaleAfNa      CrawlRunParamsExtractOptionsLocale = "af-NA"
+	CrawlRunParamsExtractOptionsLocaleAfZa      CrawlRunParamsExtractOptionsLocale = "af-ZA"
+	CrawlRunParamsExtractOptionsLocaleAk        CrawlRunParamsExtractOptionsLocale = "ak"
+	CrawlRunParamsExtractOptionsLocaleAkGh      CrawlRunParamsExtractOptionsLocale = "ak-GH"
+	CrawlRunParamsExtractOptionsLocaleAm        CrawlRunParamsExtractOptionsLocale = "am"
+	CrawlRunParamsExtractOptionsLocaleAmEt      CrawlRunParamsExtractOptionsLocale = "am-ET"
+	CrawlRunParamsExtractOptionsLocaleAnEs      CrawlRunParamsExtractOptionsLocale = "an-ES"
+	CrawlRunParamsExtractOptionsLocaleAr        CrawlRunParamsExtractOptionsLocale = "ar"
+	CrawlRunParamsExtractOptionsLocaleArAe      CrawlRunParamsExtractOptionsLocale = "ar-AE"
+	CrawlRunParamsExtractOptionsLocaleArBh      CrawlRunParamsExtractOptionsLocale = "ar-BH"
+	CrawlRunParamsExtractOptionsLocaleArDz      CrawlRunParamsExtractOptionsLocale = "ar-DZ"
+	CrawlRunParamsExtractOptionsLocaleArEg      CrawlRunParamsExtractOptionsLocale = "ar-EG"
+	CrawlRunParamsExtractOptionsLocaleArIn      CrawlRunParamsExtractOptionsLocale = "ar-IN"
+	CrawlRunParamsExtractOptionsLocaleArIq      CrawlRunParamsExtractOptionsLocale = "ar-IQ"
+	CrawlRunParamsExtractOptionsLocaleArJo      CrawlRunParamsExtractOptionsLocale = "ar-JO"
+	CrawlRunParamsExtractOptionsLocaleArKw      CrawlRunParamsExtractOptionsLocale = "ar-KW"
+	CrawlRunParamsExtractOptionsLocaleArLb      CrawlRunParamsExtractOptionsLocale = "ar-LB"
+	CrawlRunParamsExtractOptionsLocaleArLy      CrawlRunParamsExtractOptionsLocale = "ar-LY"
+	CrawlRunParamsExtractOptionsLocaleArMa      CrawlRunParamsExtractOptionsLocale = "ar-MA"
+	CrawlRunParamsExtractOptionsLocaleArOm      CrawlRunParamsExtractOptionsLocale = "ar-OM"
+	CrawlRunParamsExtractOptionsLocaleArQa      CrawlRunParamsExtractOptionsLocale = "ar-QA"
+	CrawlRunParamsExtractOptionsLocaleArSa      CrawlRunParamsExtractOptionsLocale = "ar-SA"
+	CrawlRunParamsExtractOptionsLocaleArSd      CrawlRunParamsExtractOptionsLocale = "ar-SD"
+	CrawlRunParamsExtractOptionsLocaleArSy      CrawlRunParamsExtractOptionsLocale = "ar-SY"
+	CrawlRunParamsExtractOptionsLocaleArTn      CrawlRunParamsExtractOptionsLocale = "ar-TN"
+	CrawlRunParamsExtractOptionsLocaleArYe      CrawlRunParamsExtractOptionsLocale = "ar-YE"
+	CrawlRunParamsExtractOptionsLocaleAs        CrawlRunParamsExtractOptionsLocale = "as"
+	CrawlRunParamsExtractOptionsLocaleAsIn      CrawlRunParamsExtractOptionsLocale = "as-IN"
+	CrawlRunParamsExtractOptionsLocaleAsa       CrawlRunParamsExtractOptionsLocale = "asa"
+	CrawlRunParamsExtractOptionsLocaleAsaTz     CrawlRunParamsExtractOptionsLocale = "asa-TZ"
+	CrawlRunParamsExtractOptionsLocaleAstEs     CrawlRunParamsExtractOptionsLocale = "ast-ES"
+	CrawlRunParamsExtractOptionsLocaleAz        CrawlRunParamsExtractOptionsLocale = "az"
+	CrawlRunParamsExtractOptionsLocaleAzAz      CrawlRunParamsExtractOptionsLocale = "az-AZ"
+	CrawlRunParamsExtractOptionsLocaleAzCyrl    CrawlRunParamsExtractOptionsLocale = "az-Cyrl"
+	CrawlRunParamsExtractOptionsLocaleAzCyrlAz  CrawlRunParamsExtractOptionsLocale = "az-Cyrl-AZ"
+	CrawlRunParamsExtractOptionsLocaleAzLatn    CrawlRunParamsExtractOptionsLocale = "az-Latn"
+	CrawlRunParamsExtractOptionsLocaleAzLatnAz  CrawlRunParamsExtractOptionsLocale = "az-Latn-AZ"
+	CrawlRunParamsExtractOptionsLocaleBe        CrawlRunParamsExtractOptionsLocale = "be"
+	CrawlRunParamsExtractOptionsLocaleBeBy      CrawlRunParamsExtractOptionsLocale = "be-BY"
+	CrawlRunParamsExtractOptionsLocaleBem       CrawlRunParamsExtractOptionsLocale = "bem"
+	CrawlRunParamsExtractOptionsLocaleBemZm     CrawlRunParamsExtractOptionsLocale = "bem-ZM"
+	CrawlRunParamsExtractOptionsLocaleBerDz     CrawlRunParamsExtractOptionsLocale = "ber-DZ"
+	CrawlRunParamsExtractOptionsLocaleBerMa     CrawlRunParamsExtractOptionsLocale = "ber-MA"
+	CrawlRunParamsExtractOptionsLocaleBez       CrawlRunParamsExtractOptionsLocale = "bez"
+	CrawlRunParamsExtractOptionsLocaleBezTz     CrawlRunParamsExtractOptionsLocale = "bez-TZ"
+	CrawlRunParamsExtractOptionsLocaleBg        CrawlRunParamsExtractOptionsLocale = "bg"
+	CrawlRunParamsExtractOptionsLocaleBgBg      CrawlRunParamsExtractOptionsLocale = "bg-BG"
+	CrawlRunParamsExtractOptionsLocaleBhoIn     CrawlRunParamsExtractOptionsLocale = "bho-IN"
+	CrawlRunParamsExtractOptionsLocaleBm        CrawlRunParamsExtractOptionsLocale = "bm"
+	CrawlRunParamsExtractOptionsLocaleBmMl      CrawlRunParamsExtractOptionsLocale = "bm-ML"
+	CrawlRunParamsExtractOptionsLocaleBn        CrawlRunParamsExtractOptionsLocale = "bn"
+	CrawlRunParamsExtractOptionsLocaleBnBd      CrawlRunParamsExtractOptionsLocale = "bn-BD"
+	CrawlRunParamsExtractOptionsLocaleBnIn      CrawlRunParamsExtractOptionsLocale = "bn-IN"
+	CrawlRunParamsExtractOptionsLocaleBo        CrawlRunParamsExtractOptionsLocale = "bo"
+	CrawlRunParamsExtractOptionsLocaleBoCn      CrawlRunParamsExtractOptionsLocale = "bo-CN"
+	CrawlRunParamsExtractOptionsLocaleBoIn      CrawlRunParamsExtractOptionsLocale = "bo-IN"
+	CrawlRunParamsExtractOptionsLocaleBrFr      CrawlRunParamsExtractOptionsLocale = "br-FR"
+	CrawlRunParamsExtractOptionsLocaleBrxIn     CrawlRunParamsExtractOptionsLocale = "brx-IN"
+	CrawlRunParamsExtractOptionsLocaleBs        CrawlRunParamsExtractOptionsLocale = "bs"
+	CrawlRunParamsExtractOptionsLocaleBsBa      CrawlRunParamsExtractOptionsLocale = "bs-BA"
+	CrawlRunParamsExtractOptionsLocaleBynEr     CrawlRunParamsExtractOptionsLocale = "byn-ER"
+	CrawlRunParamsExtractOptionsLocaleCa        CrawlRunParamsExtractOptionsLocale = "ca"
+	CrawlRunParamsExtractOptionsLocaleCaAd      CrawlRunParamsExtractOptionsLocale = "ca-AD"
+	CrawlRunParamsExtractOptionsLocaleCaEs      CrawlRunParamsExtractOptionsLocale = "ca-ES"
+	CrawlRunParamsExtractOptionsLocaleCaFr      CrawlRunParamsExtractOptionsLocale = "ca-FR"
+	CrawlRunParamsExtractOptionsLocaleCaIt      CrawlRunParamsExtractOptionsLocale = "ca-IT"
+	CrawlRunParamsExtractOptionsLocaleCgg       CrawlRunParamsExtractOptionsLocale = "cgg"
+	CrawlRunParamsExtractOptionsLocaleCggUg     CrawlRunParamsExtractOptionsLocale = "cgg-UG"
+	CrawlRunParamsExtractOptionsLocaleChr       CrawlRunParamsExtractOptionsLocale = "chr"
+	CrawlRunParamsExtractOptionsLocaleChrUs     CrawlRunParamsExtractOptionsLocale = "chr-US"
+	CrawlRunParamsExtractOptionsLocaleCrhUa     CrawlRunParamsExtractOptionsLocale = "crh-UA"
+	CrawlRunParamsExtractOptionsLocaleCs        CrawlRunParamsExtractOptionsLocale = "cs"
+	CrawlRunParamsExtractOptionsLocaleCsCz      CrawlRunParamsExtractOptionsLocale = "cs-CZ"
+	CrawlRunParamsExtractOptionsLocaleCsbPl     CrawlRunParamsExtractOptionsLocale = "csb-PL"
+	CrawlRunParamsExtractOptionsLocaleCvRu      CrawlRunParamsExtractOptionsLocale = "cv-RU"
+	CrawlRunParamsExtractOptionsLocaleCy        CrawlRunParamsExtractOptionsLocale = "cy"
+	CrawlRunParamsExtractOptionsLocaleCyGB      CrawlRunParamsExtractOptionsLocale = "cy-GB"
+	CrawlRunParamsExtractOptionsLocaleDa        CrawlRunParamsExtractOptionsLocale = "da"
+	CrawlRunParamsExtractOptionsLocaleDaDk      CrawlRunParamsExtractOptionsLocale = "da-DK"
+	CrawlRunParamsExtractOptionsLocaleDav       CrawlRunParamsExtractOptionsLocale = "dav"
+	CrawlRunParamsExtractOptionsLocaleDavKe     CrawlRunParamsExtractOptionsLocale = "dav-KE"
+	CrawlRunParamsExtractOptionsLocaleDe        CrawlRunParamsExtractOptionsLocale = "de"
+	CrawlRunParamsExtractOptionsLocaleDeAt      CrawlRunParamsExtractOptionsLocale = "de-AT"
+	CrawlRunParamsExtractOptionsLocaleDeBe      CrawlRunParamsExtractOptionsLocale = "de-BE"
+	CrawlRunParamsExtractOptionsLocaleDeCh      CrawlRunParamsExtractOptionsLocale = "de-CH"
+	CrawlRunParamsExtractOptionsLocaleDeDe      CrawlRunParamsExtractOptionsLocale = "de-DE"
+	CrawlRunParamsExtractOptionsLocaleDeLi      CrawlRunParamsExtractOptionsLocale = "de-LI"
+	CrawlRunParamsExtractOptionsLocaleDeLu      CrawlRunParamsExtractOptionsLocale = "de-LU"
+	CrawlRunParamsExtractOptionsLocaleDvMv      CrawlRunParamsExtractOptionsLocale = "dv-MV"
+	CrawlRunParamsExtractOptionsLocaleDzBt      CrawlRunParamsExtractOptionsLocale = "dz-BT"
+	CrawlRunParamsExtractOptionsLocaleEbu       CrawlRunParamsExtractOptionsLocale = "ebu"
+	CrawlRunParamsExtractOptionsLocaleEbuKe     CrawlRunParamsExtractOptionsLocale = "ebu-KE"
+	CrawlRunParamsExtractOptionsLocaleEe        CrawlRunParamsExtractOptionsLocale = "ee"
+	CrawlRunParamsExtractOptionsLocaleEeGh      CrawlRunParamsExtractOptionsLocale = "ee-GH"
+	CrawlRunParamsExtractOptionsLocaleEeTg      CrawlRunParamsExtractOptionsLocale = "ee-TG"
+	CrawlRunParamsExtractOptionsLocaleEl        CrawlRunParamsExtractOptionsLocale = "el"
+	CrawlRunParamsExtractOptionsLocaleElCy      CrawlRunParamsExtractOptionsLocale = "el-CY"
+	CrawlRunParamsExtractOptionsLocaleElGr      CrawlRunParamsExtractOptionsLocale = "el-GR"
+	CrawlRunParamsExtractOptionsLocaleEn        CrawlRunParamsExtractOptionsLocale = "en"
+	CrawlRunParamsExtractOptionsLocaleEnAg      CrawlRunParamsExtractOptionsLocale = "en-AG"
+	CrawlRunParamsExtractOptionsLocaleEnAs      CrawlRunParamsExtractOptionsLocale = "en-AS"
+	CrawlRunParamsExtractOptionsLocaleEnAu      CrawlRunParamsExtractOptionsLocale = "en-AU"
+	CrawlRunParamsExtractOptionsLocaleEnBe      CrawlRunParamsExtractOptionsLocale = "en-BE"
+	CrawlRunParamsExtractOptionsLocaleEnBw      CrawlRunParamsExtractOptionsLocale = "en-BW"
+	CrawlRunParamsExtractOptionsLocaleEnBz      CrawlRunParamsExtractOptionsLocale = "en-BZ"
+	CrawlRunParamsExtractOptionsLocaleEnCa      CrawlRunParamsExtractOptionsLocale = "en-CA"
+	CrawlRunParamsExtractOptionsLocaleEnDk      CrawlRunParamsExtractOptionsLocale = "en-DK"
+	CrawlRunParamsExtractOptionsLocaleEnGB      CrawlRunParamsExtractOptionsLocale = "en-GB"
+	CrawlRunParamsExtractOptionsLocaleEnGu      CrawlRunParamsExtractOptionsLocale = "en-GU"
+	CrawlRunParamsExtractOptionsLocaleEnHk      CrawlRunParamsExtractOptionsLocale = "en-HK"
+	CrawlRunParamsExtractOptionsLocaleEnIe      CrawlRunParamsExtractOptionsLocale = "en-IE"
+	CrawlRunParamsExtractOptionsLocaleEnIn      CrawlRunParamsExtractOptionsLocale = "en-IN"
+	CrawlRunParamsExtractOptionsLocaleEnJm      CrawlRunParamsExtractOptionsLocale = "en-JM"
+	CrawlRunParamsExtractOptionsLocaleEnMh      CrawlRunParamsExtractOptionsLocale = "en-MH"
+	CrawlRunParamsExtractOptionsLocaleEnMp      CrawlRunParamsExtractOptionsLocale = "en-MP"
+	CrawlRunParamsExtractOptionsLocaleEnMt      CrawlRunParamsExtractOptionsLocale = "en-MT"
+	CrawlRunParamsExtractOptionsLocaleEnMu      CrawlRunParamsExtractOptionsLocale = "en-MU"
+	CrawlRunParamsExtractOptionsLocaleEnNa      CrawlRunParamsExtractOptionsLocale = "en-NA"
+	CrawlRunParamsExtractOptionsLocaleEnNg      CrawlRunParamsExtractOptionsLocale = "en-NG"
+	CrawlRunParamsExtractOptionsLocaleEnNz      CrawlRunParamsExtractOptionsLocale = "en-NZ"
+	CrawlRunParamsExtractOptionsLocaleEnPh      CrawlRunParamsExtractOptionsLocale = "en-PH"
+	CrawlRunParamsExtractOptionsLocaleEnPk      CrawlRunParamsExtractOptionsLocale = "en-PK"
+	CrawlRunParamsExtractOptionsLocaleEnSg      CrawlRunParamsExtractOptionsLocale = "en-SG"
+	CrawlRunParamsExtractOptionsLocaleEnTt      CrawlRunParamsExtractOptionsLocale = "en-TT"
+	CrawlRunParamsExtractOptionsLocaleEnUm      CrawlRunParamsExtractOptionsLocale = "en-UM"
+	CrawlRunParamsExtractOptionsLocaleEnUs      CrawlRunParamsExtractOptionsLocale = "en-US"
+	CrawlRunParamsExtractOptionsLocaleEnVi      CrawlRunParamsExtractOptionsLocale = "en-VI"
+	CrawlRunParamsExtractOptionsLocaleEnZa      CrawlRunParamsExtractOptionsLocale = "en-ZA"
+	CrawlRunParamsExtractOptionsLocaleEnZm      CrawlRunParamsExtractOptionsLocale = "en-ZM"
+	CrawlRunParamsExtractOptionsLocaleEnZw      CrawlRunParamsExtractOptionsLocale = "en-ZW"
+	CrawlRunParamsExtractOptionsLocaleEo        CrawlRunParamsExtractOptionsLocale = "eo"
+	CrawlRunParamsExtractOptionsLocaleEs        CrawlRunParamsExtractOptionsLocale = "es"
+	CrawlRunParamsExtractOptionsLocaleEs419     CrawlRunParamsExtractOptionsLocale = "es-419"
+	CrawlRunParamsExtractOptionsLocaleEsAr      CrawlRunParamsExtractOptionsLocale = "es-AR"
+	CrawlRunParamsExtractOptionsLocaleEsBo      CrawlRunParamsExtractOptionsLocale = "es-BO"
+	CrawlRunParamsExtractOptionsLocaleEsCl      CrawlRunParamsExtractOptionsLocale = "es-CL"
+	CrawlRunParamsExtractOptionsLocaleEsCo      CrawlRunParamsExtractOptionsLocale = "es-CO"
+	CrawlRunParamsExtractOptionsLocaleEsCr      CrawlRunParamsExtractOptionsLocale = "es-CR"
+	CrawlRunParamsExtractOptionsLocaleEsCu      CrawlRunParamsExtractOptionsLocale = "es-CU"
+	CrawlRunParamsExtractOptionsLocaleEsDo      CrawlRunParamsExtractOptionsLocale = "es-DO"
+	CrawlRunParamsExtractOptionsLocaleEsEc      CrawlRunParamsExtractOptionsLocale = "es-EC"
+	CrawlRunParamsExtractOptionsLocaleEsEs      CrawlRunParamsExtractOptionsLocale = "es-ES"
+	CrawlRunParamsExtractOptionsLocaleEsGq      CrawlRunParamsExtractOptionsLocale = "es-GQ"
+	CrawlRunParamsExtractOptionsLocaleEsGt      CrawlRunParamsExtractOptionsLocale = "es-GT"
+	CrawlRunParamsExtractOptionsLocaleEsHn      CrawlRunParamsExtractOptionsLocale = "es-HN"
+	CrawlRunParamsExtractOptionsLocaleEsMx      CrawlRunParamsExtractOptionsLocale = "es-MX"
+	CrawlRunParamsExtractOptionsLocaleEsNi      CrawlRunParamsExtractOptionsLocale = "es-NI"
+	CrawlRunParamsExtractOptionsLocaleEsPa      CrawlRunParamsExtractOptionsLocale = "es-PA"
+	CrawlRunParamsExtractOptionsLocaleEsPe      CrawlRunParamsExtractOptionsLocale = "es-PE"
+	CrawlRunParamsExtractOptionsLocaleEsPr      CrawlRunParamsExtractOptionsLocale = "es-PR"
+	CrawlRunParamsExtractOptionsLocaleEsPy      CrawlRunParamsExtractOptionsLocale = "es-PY"
+	CrawlRunParamsExtractOptionsLocaleEsSv      CrawlRunParamsExtractOptionsLocale = "es-SV"
+	CrawlRunParamsExtractOptionsLocaleEsUs      CrawlRunParamsExtractOptionsLocale = "es-US"
+	CrawlRunParamsExtractOptionsLocaleEsUy      CrawlRunParamsExtractOptionsLocale = "es-UY"
+	CrawlRunParamsExtractOptionsLocaleEsVe      CrawlRunParamsExtractOptionsLocale = "es-VE"
+	CrawlRunParamsExtractOptionsLocaleEt        CrawlRunParamsExtractOptionsLocale = "et"
+	CrawlRunParamsExtractOptionsLocaleEtEe      CrawlRunParamsExtractOptionsLocale = "et-EE"
+	CrawlRunParamsExtractOptionsLocaleEu        CrawlRunParamsExtractOptionsLocale = "eu"
+	CrawlRunParamsExtractOptionsLocaleEuEs      CrawlRunParamsExtractOptionsLocale = "eu-ES"
+	CrawlRunParamsExtractOptionsLocaleFa        CrawlRunParamsExtractOptionsLocale = "fa"
+	CrawlRunParamsExtractOptionsLocaleFaAf      CrawlRunParamsExtractOptionsLocale = "fa-AF"
+	CrawlRunParamsExtractOptionsLocaleFaIr      CrawlRunParamsExtractOptionsLocale = "fa-IR"
+	CrawlRunParamsExtractOptionsLocaleFf        CrawlRunParamsExtractOptionsLocale = "ff"
+	CrawlRunParamsExtractOptionsLocaleFfSn      CrawlRunParamsExtractOptionsLocale = "ff-SN"
+	CrawlRunParamsExtractOptionsLocaleFi        CrawlRunParamsExtractOptionsLocale = "fi"
+	CrawlRunParamsExtractOptionsLocaleFiFi      CrawlRunParamsExtractOptionsLocale = "fi-FI"
+	CrawlRunParamsExtractOptionsLocaleFil       CrawlRunParamsExtractOptionsLocale = "fil"
+	CrawlRunParamsExtractOptionsLocaleFilPh     CrawlRunParamsExtractOptionsLocale = "fil-PH"
+	CrawlRunParamsExtractOptionsLocaleFo        CrawlRunParamsExtractOptionsLocale = "fo"
+	CrawlRunParamsExtractOptionsLocaleFoFo      CrawlRunParamsExtractOptionsLocale = "fo-FO"
+	CrawlRunParamsExtractOptionsLocaleFr        CrawlRunParamsExtractOptionsLocale = "fr"
+	CrawlRunParamsExtractOptionsLocaleFrBe      CrawlRunParamsExtractOptionsLocale = "fr-BE"
+	CrawlRunParamsExtractOptionsLocaleFrBf      CrawlRunParamsExtractOptionsLocale = "fr-BF"
+	CrawlRunParamsExtractOptionsLocaleFrBi      CrawlRunParamsExtractOptionsLocale = "fr-BI"
+	CrawlRunParamsExtractOptionsLocaleFrBj      CrawlRunParamsExtractOptionsLocale = "fr-BJ"
+	CrawlRunParamsExtractOptionsLocaleFrBl      CrawlRunParamsExtractOptionsLocale = "fr-BL"
+	CrawlRunParamsExtractOptionsLocaleFrCa      CrawlRunParamsExtractOptionsLocale = "fr-CA"
+	CrawlRunParamsExtractOptionsLocaleFrCd      CrawlRunParamsExtractOptionsLocale = "fr-CD"
+	CrawlRunParamsExtractOptionsLocaleFrCf      CrawlRunParamsExtractOptionsLocale = "fr-CF"
+	CrawlRunParamsExtractOptionsLocaleFrCg      CrawlRunParamsExtractOptionsLocale = "fr-CG"
+	CrawlRunParamsExtractOptionsLocaleFrCh      CrawlRunParamsExtractOptionsLocale = "fr-CH"
+	CrawlRunParamsExtractOptionsLocaleFrCi      CrawlRunParamsExtractOptionsLocale = "fr-CI"
+	CrawlRunParamsExtractOptionsLocaleFrCm      CrawlRunParamsExtractOptionsLocale = "fr-CM"
+	CrawlRunParamsExtractOptionsLocaleFrDj      CrawlRunParamsExtractOptionsLocale = "fr-DJ"
+	CrawlRunParamsExtractOptionsLocaleFrFr      CrawlRunParamsExtractOptionsLocale = "fr-FR"
+	CrawlRunParamsExtractOptionsLocaleFrGa      CrawlRunParamsExtractOptionsLocale = "fr-GA"
+	CrawlRunParamsExtractOptionsLocaleFrGn      CrawlRunParamsExtractOptionsLocale = "fr-GN"
+	CrawlRunParamsExtractOptionsLocaleFrGp      CrawlRunParamsExtractOptionsLocale = "fr-GP"
+	CrawlRunParamsExtractOptionsLocaleFrGq      CrawlRunParamsExtractOptionsLocale = "fr-GQ"
+	CrawlRunParamsExtractOptionsLocaleFrKm      CrawlRunParamsExtractOptionsLocale = "fr-KM"
+	CrawlRunParamsExtractOptionsLocaleFrLu      CrawlRunParamsExtractOptionsLocale = "fr-LU"
+	CrawlRunParamsExtractOptionsLocaleFrMc      CrawlRunParamsExtractOptionsLocale = "fr-MC"
+	CrawlRunParamsExtractOptionsLocaleFrMf      CrawlRunParamsExtractOptionsLocale = "fr-MF"
+	CrawlRunParamsExtractOptionsLocaleFrMg      CrawlRunParamsExtractOptionsLocale = "fr-MG"
+	CrawlRunParamsExtractOptionsLocaleFrMl      CrawlRunParamsExtractOptionsLocale = "fr-ML"
+	CrawlRunParamsExtractOptionsLocaleFrMq      CrawlRunParamsExtractOptionsLocale = "fr-MQ"
+	CrawlRunParamsExtractOptionsLocaleFrNe      CrawlRunParamsExtractOptionsLocale = "fr-NE"
+	CrawlRunParamsExtractOptionsLocaleFrRe      CrawlRunParamsExtractOptionsLocale = "fr-RE"
+	CrawlRunParamsExtractOptionsLocaleFrRw      CrawlRunParamsExtractOptionsLocale = "fr-RW"
+	CrawlRunParamsExtractOptionsLocaleFrSn      CrawlRunParamsExtractOptionsLocale = "fr-SN"
+	CrawlRunParamsExtractOptionsLocaleFrTd      CrawlRunParamsExtractOptionsLocale = "fr-TD"
+	CrawlRunParamsExtractOptionsLocaleFrTg      CrawlRunParamsExtractOptionsLocale = "fr-TG"
+	CrawlRunParamsExtractOptionsLocaleFurIt     CrawlRunParamsExtractOptionsLocale = "fur-IT"
+	CrawlRunParamsExtractOptionsLocaleFyDe      CrawlRunParamsExtractOptionsLocale = "fy-DE"
+	CrawlRunParamsExtractOptionsLocaleFyNl      CrawlRunParamsExtractOptionsLocale = "fy-NL"
+	CrawlRunParamsExtractOptionsLocaleGa        CrawlRunParamsExtractOptionsLocale = "ga"
+	CrawlRunParamsExtractOptionsLocaleGaIe      CrawlRunParamsExtractOptionsLocale = "ga-IE"
+	CrawlRunParamsExtractOptionsLocaleGdGB      CrawlRunParamsExtractOptionsLocale = "gd-GB"
+	CrawlRunParamsExtractOptionsLocaleGezEr     CrawlRunParamsExtractOptionsLocale = "gez-ER"
+	CrawlRunParamsExtractOptionsLocaleGezEt     CrawlRunParamsExtractOptionsLocale = "gez-ET"
+	CrawlRunParamsExtractOptionsLocaleGl        CrawlRunParamsExtractOptionsLocale = "gl"
+	CrawlRunParamsExtractOptionsLocaleGlEs      CrawlRunParamsExtractOptionsLocale = "gl-ES"
+	CrawlRunParamsExtractOptionsLocaleGsw       CrawlRunParamsExtractOptionsLocale = "gsw"
+	CrawlRunParamsExtractOptionsLocaleGswCh     CrawlRunParamsExtractOptionsLocale = "gsw-CH"
+	CrawlRunParamsExtractOptionsLocaleGu        CrawlRunParamsExtractOptionsLocale = "gu"
+	CrawlRunParamsExtractOptionsLocaleGuIn      CrawlRunParamsExtractOptionsLocale = "gu-IN"
+	CrawlRunParamsExtractOptionsLocaleGuz       CrawlRunParamsExtractOptionsLocale = "guz"
+	CrawlRunParamsExtractOptionsLocaleGuzKe     CrawlRunParamsExtractOptionsLocale = "guz-KE"
+	CrawlRunParamsExtractOptionsLocaleGv        CrawlRunParamsExtractOptionsLocale = "gv"
+	CrawlRunParamsExtractOptionsLocaleGvGB      CrawlRunParamsExtractOptionsLocale = "gv-GB"
+	CrawlRunParamsExtractOptionsLocaleHa        CrawlRunParamsExtractOptionsLocale = "ha"
+	CrawlRunParamsExtractOptionsLocaleHaLatn    CrawlRunParamsExtractOptionsLocale = "ha-Latn"
+	CrawlRunParamsExtractOptionsLocaleHaLatnGh  CrawlRunParamsExtractOptionsLocale = "ha-Latn-GH"
+	CrawlRunParamsExtractOptionsLocaleHaLatnNe  CrawlRunParamsExtractOptionsLocale = "ha-Latn-NE"
+	CrawlRunParamsExtractOptionsLocaleHaLatnNg  CrawlRunParamsExtractOptionsLocale = "ha-Latn-NG"
+	CrawlRunParamsExtractOptionsLocaleHaNg      CrawlRunParamsExtractOptionsLocale = "ha-NG"
+	CrawlRunParamsExtractOptionsLocaleHaw       CrawlRunParamsExtractOptionsLocale = "haw"
+	CrawlRunParamsExtractOptionsLocaleHawUs     CrawlRunParamsExtractOptionsLocale = "haw-US"
+	CrawlRunParamsExtractOptionsLocaleHe        CrawlRunParamsExtractOptionsLocale = "he"
+	CrawlRunParamsExtractOptionsLocaleHeIl      CrawlRunParamsExtractOptionsLocale = "he-IL"
+	CrawlRunParamsExtractOptionsLocaleHi        CrawlRunParamsExtractOptionsLocale = "hi"
+	CrawlRunParamsExtractOptionsLocaleHiIn      CrawlRunParamsExtractOptionsLocale = "hi-IN"
+	CrawlRunParamsExtractOptionsLocaleHneIn     CrawlRunParamsExtractOptionsLocale = "hne-IN"
+	CrawlRunParamsExtractOptionsLocaleHr        CrawlRunParamsExtractOptionsLocale = "hr"
+	CrawlRunParamsExtractOptionsLocaleHrHr      CrawlRunParamsExtractOptionsLocale = "hr-HR"
+	CrawlRunParamsExtractOptionsLocaleHsbDe     CrawlRunParamsExtractOptionsLocale = "hsb-DE"
+	CrawlRunParamsExtractOptionsLocaleHtHt      CrawlRunParamsExtractOptionsLocale = "ht-HT"
+	CrawlRunParamsExtractOptionsLocaleHu        CrawlRunParamsExtractOptionsLocale = "hu"
+	CrawlRunParamsExtractOptionsLocaleHuHu      CrawlRunParamsExtractOptionsLocale = "hu-HU"
+	CrawlRunParamsExtractOptionsLocaleHy        CrawlRunParamsExtractOptionsLocale = "hy"
+	CrawlRunParamsExtractOptionsLocaleHyAm      CrawlRunParamsExtractOptionsLocale = "hy-AM"
+	CrawlRunParamsExtractOptionsLocaleID        CrawlRunParamsExtractOptionsLocale = "id"
+	CrawlRunParamsExtractOptionsLocaleIDID      CrawlRunParamsExtractOptionsLocale = "id-ID"
+	CrawlRunParamsExtractOptionsLocaleIg        CrawlRunParamsExtractOptionsLocale = "ig"
+	CrawlRunParamsExtractOptionsLocaleIgNg      CrawlRunParamsExtractOptionsLocale = "ig-NG"
+	CrawlRunParamsExtractOptionsLocaleIi        CrawlRunParamsExtractOptionsLocale = "ii"
+	CrawlRunParamsExtractOptionsLocaleIiCn      CrawlRunParamsExtractOptionsLocale = "ii-CN"
+	CrawlRunParamsExtractOptionsLocaleIkCa      CrawlRunParamsExtractOptionsLocale = "ik-CA"
+	CrawlRunParamsExtractOptionsLocaleIs        CrawlRunParamsExtractOptionsLocale = "is"
+	CrawlRunParamsExtractOptionsLocaleIsIs      CrawlRunParamsExtractOptionsLocale = "is-IS"
+	CrawlRunParamsExtractOptionsLocaleIt        CrawlRunParamsExtractOptionsLocale = "it"
+	CrawlRunParamsExtractOptionsLocaleItCh      CrawlRunParamsExtractOptionsLocale = "it-CH"
+	CrawlRunParamsExtractOptionsLocaleItIt      CrawlRunParamsExtractOptionsLocale = "it-IT"
+	CrawlRunParamsExtractOptionsLocaleIuCa      CrawlRunParamsExtractOptionsLocale = "iu-CA"
+	CrawlRunParamsExtractOptionsLocaleIwIl      CrawlRunParamsExtractOptionsLocale = "iw-IL"
+	CrawlRunParamsExtractOptionsLocaleJa        CrawlRunParamsExtractOptionsLocale = "ja"
+	CrawlRunParamsExtractOptionsLocaleJaJp      CrawlRunParamsExtractOptionsLocale = "ja-JP"
+	CrawlRunParamsExtractOptionsLocaleJmc       CrawlRunParamsExtractOptionsLocale = "jmc"
+	CrawlRunParamsExtractOptionsLocaleJmcTz     CrawlRunParamsExtractOptionsLocale = "jmc-TZ"
+	CrawlRunParamsExtractOptionsLocaleKa        CrawlRunParamsExtractOptionsLocale = "ka"
+	CrawlRunParamsExtractOptionsLocaleKaGe      CrawlRunParamsExtractOptionsLocale = "ka-GE"
+	CrawlRunParamsExtractOptionsLocaleKab       CrawlRunParamsExtractOptionsLocale = "kab"
+	CrawlRunParamsExtractOptionsLocaleKabDz     CrawlRunParamsExtractOptionsLocale = "kab-DZ"
+	CrawlRunParamsExtractOptionsLocaleKam       CrawlRunParamsExtractOptionsLocale = "kam"
+	CrawlRunParamsExtractOptionsLocaleKamKe     CrawlRunParamsExtractOptionsLocale = "kam-KE"
+	CrawlRunParamsExtractOptionsLocaleKde       CrawlRunParamsExtractOptionsLocale = "kde"
+	CrawlRunParamsExtractOptionsLocaleKdeTz     CrawlRunParamsExtractOptionsLocale = "kde-TZ"
+	CrawlRunParamsExtractOptionsLocaleKea       CrawlRunParamsExtractOptionsLocale = "kea"
+	CrawlRunParamsExtractOptionsLocaleKeaCv     CrawlRunParamsExtractOptionsLocale = "kea-CV"
+	CrawlRunParamsExtractOptionsLocaleKhq       CrawlRunParamsExtractOptionsLocale = "khq"
+	CrawlRunParamsExtractOptionsLocaleKhqMl     CrawlRunParamsExtractOptionsLocale = "khq-ML"
+	CrawlRunParamsExtractOptionsLocaleKi        CrawlRunParamsExtractOptionsLocale = "ki"
+	CrawlRunParamsExtractOptionsLocaleKiKe      CrawlRunParamsExtractOptionsLocale = "ki-KE"
+	CrawlRunParamsExtractOptionsLocaleKk        CrawlRunParamsExtractOptionsLocale = "kk"
+	CrawlRunParamsExtractOptionsLocaleKkCyrl    CrawlRunParamsExtractOptionsLocale = "kk-Cyrl"
+	CrawlRunParamsExtractOptionsLocaleKkCyrlKz  CrawlRunParamsExtractOptionsLocale = "kk-Cyrl-KZ"
+	CrawlRunParamsExtractOptionsLocaleKkKz      CrawlRunParamsExtractOptionsLocale = "kk-KZ"
+	CrawlRunParamsExtractOptionsLocaleKl        CrawlRunParamsExtractOptionsLocale = "kl"
+	CrawlRunParamsExtractOptionsLocaleKlGl      CrawlRunParamsExtractOptionsLocale = "kl-GL"
+	CrawlRunParamsExtractOptionsLocaleKln       CrawlRunParamsExtractOptionsLocale = "kln"
+	CrawlRunParamsExtractOptionsLocaleKlnKe     CrawlRunParamsExtractOptionsLocale = "kln-KE"
+	CrawlRunParamsExtractOptionsLocaleKm        CrawlRunParamsExtractOptionsLocale = "km"
+	CrawlRunParamsExtractOptionsLocaleKmKh      CrawlRunParamsExtractOptionsLocale = "km-KH"
+	CrawlRunParamsExtractOptionsLocaleKn        CrawlRunParamsExtractOptionsLocale = "kn"
+	CrawlRunParamsExtractOptionsLocaleKnIn      CrawlRunParamsExtractOptionsLocale = "kn-IN"
+	CrawlRunParamsExtractOptionsLocaleKo        CrawlRunParamsExtractOptionsLocale = "ko"
+	CrawlRunParamsExtractOptionsLocaleKoKr      CrawlRunParamsExtractOptionsLocale = "ko-KR"
+	CrawlRunParamsExtractOptionsLocaleKok       CrawlRunParamsExtractOptionsLocale = "kok"
+	CrawlRunParamsExtractOptionsLocaleKokIn     CrawlRunParamsExtractOptionsLocale = "kok-IN"
+	CrawlRunParamsExtractOptionsLocaleKsIn      CrawlRunParamsExtractOptionsLocale = "ks-IN"
+	CrawlRunParamsExtractOptionsLocaleKuTr      CrawlRunParamsExtractOptionsLocale = "ku-TR"
+	CrawlRunParamsExtractOptionsLocaleKw        CrawlRunParamsExtractOptionsLocale = "kw"
+	CrawlRunParamsExtractOptionsLocaleKwGB      CrawlRunParamsExtractOptionsLocale = "kw-GB"
+	CrawlRunParamsExtractOptionsLocaleKyKg      CrawlRunParamsExtractOptionsLocale = "ky-KG"
+	CrawlRunParamsExtractOptionsLocaleLag       CrawlRunParamsExtractOptionsLocale = "lag"
+	CrawlRunParamsExtractOptionsLocaleLagTz     CrawlRunParamsExtractOptionsLocale = "lag-TZ"
+	CrawlRunParamsExtractOptionsLocaleLbLu      CrawlRunParamsExtractOptionsLocale = "lb-LU"
+	CrawlRunParamsExtractOptionsLocaleLg        CrawlRunParamsExtractOptionsLocale = "lg"
+	CrawlRunParamsExtractOptionsLocaleLgUg      CrawlRunParamsExtractOptionsLocale = "lg-UG"
+	CrawlRunParamsExtractOptionsLocaleLiBe      CrawlRunParamsExtractOptionsLocale = "li-BE"
+	CrawlRunParamsExtractOptionsLocaleLiNl      CrawlRunParamsExtractOptionsLocale = "li-NL"
+	CrawlRunParamsExtractOptionsLocaleLijIt     CrawlRunParamsExtractOptionsLocale = "lij-IT"
+	CrawlRunParamsExtractOptionsLocaleLoLa      CrawlRunParamsExtractOptionsLocale = "lo-LA"
+	CrawlRunParamsExtractOptionsLocaleLt        CrawlRunParamsExtractOptionsLocale = "lt"
+	CrawlRunParamsExtractOptionsLocaleLtLt      CrawlRunParamsExtractOptionsLocale = "lt-LT"
+	CrawlRunParamsExtractOptionsLocaleLuo       CrawlRunParamsExtractOptionsLocale = "luo"
+	CrawlRunParamsExtractOptionsLocaleLuoKe     CrawlRunParamsExtractOptionsLocale = "luo-KE"
+	CrawlRunParamsExtractOptionsLocaleLuy       CrawlRunParamsExtractOptionsLocale = "luy"
+	CrawlRunParamsExtractOptionsLocaleLuyKe     CrawlRunParamsExtractOptionsLocale = "luy-KE"
+	CrawlRunParamsExtractOptionsLocaleLv        CrawlRunParamsExtractOptionsLocale = "lv"
+	CrawlRunParamsExtractOptionsLocaleLvLv      CrawlRunParamsExtractOptionsLocale = "lv-LV"
+	CrawlRunParamsExtractOptionsLocaleMagIn     CrawlRunParamsExtractOptionsLocale = "mag-IN"
+	CrawlRunParamsExtractOptionsLocaleMaiIn     CrawlRunParamsExtractOptionsLocale = "mai-IN"
+	CrawlRunParamsExtractOptionsLocaleMas       CrawlRunParamsExtractOptionsLocale = "mas"
+	CrawlRunParamsExtractOptionsLocaleMasKe     CrawlRunParamsExtractOptionsLocale = "mas-KE"
+	CrawlRunParamsExtractOptionsLocaleMasTz     CrawlRunParamsExtractOptionsLocale = "mas-TZ"
+	CrawlRunParamsExtractOptionsLocaleMer       CrawlRunParamsExtractOptionsLocale = "mer"
+	CrawlRunParamsExtractOptionsLocaleMerKe     CrawlRunParamsExtractOptionsLocale = "mer-KE"
+	CrawlRunParamsExtractOptionsLocaleMfe       CrawlRunParamsExtractOptionsLocale = "mfe"
+	CrawlRunParamsExtractOptionsLocaleMfeMu     CrawlRunParamsExtractOptionsLocale = "mfe-MU"
+	CrawlRunParamsExtractOptionsLocaleMg        CrawlRunParamsExtractOptionsLocale = "mg"
+	CrawlRunParamsExtractOptionsLocaleMgMg      CrawlRunParamsExtractOptionsLocale = "mg-MG"
+	CrawlRunParamsExtractOptionsLocaleMhrRu     CrawlRunParamsExtractOptionsLocale = "mhr-RU"
+	CrawlRunParamsExtractOptionsLocaleMiNz      CrawlRunParamsExtractOptionsLocale = "mi-NZ"
+	CrawlRunParamsExtractOptionsLocaleMk        CrawlRunParamsExtractOptionsLocale = "mk"
+	CrawlRunParamsExtractOptionsLocaleMkMk      CrawlRunParamsExtractOptionsLocale = "mk-MK"
+	CrawlRunParamsExtractOptionsLocaleMl        CrawlRunParamsExtractOptionsLocale = "ml"
+	CrawlRunParamsExtractOptionsLocaleMlIn      CrawlRunParamsExtractOptionsLocale = "ml-IN"
+	CrawlRunParamsExtractOptionsLocaleMnMn      CrawlRunParamsExtractOptionsLocale = "mn-MN"
+	CrawlRunParamsExtractOptionsLocaleMr        CrawlRunParamsExtractOptionsLocale = "mr"
+	CrawlRunParamsExtractOptionsLocaleMrIn      CrawlRunParamsExtractOptionsLocale = "mr-IN"
+	CrawlRunParamsExtractOptionsLocaleMs        CrawlRunParamsExtractOptionsLocale = "ms"
+	CrawlRunParamsExtractOptionsLocaleMsBn      CrawlRunParamsExtractOptionsLocale = "ms-BN"
+	CrawlRunParamsExtractOptionsLocaleMsMy      CrawlRunParamsExtractOptionsLocale = "ms-MY"
+	CrawlRunParamsExtractOptionsLocaleMt        CrawlRunParamsExtractOptionsLocale = "mt"
+	CrawlRunParamsExtractOptionsLocaleMtMt      CrawlRunParamsExtractOptionsLocale = "mt-MT"
+	CrawlRunParamsExtractOptionsLocaleMy        CrawlRunParamsExtractOptionsLocale = "my"
+	CrawlRunParamsExtractOptionsLocaleMyMm      CrawlRunParamsExtractOptionsLocale = "my-MM"
+	CrawlRunParamsExtractOptionsLocaleNanTw     CrawlRunParamsExtractOptionsLocale = "nan-TW"
+	CrawlRunParamsExtractOptionsLocaleNaq       CrawlRunParamsExtractOptionsLocale = "naq"
+	CrawlRunParamsExtractOptionsLocaleNaqNa     CrawlRunParamsExtractOptionsLocale = "naq-NA"
+	CrawlRunParamsExtractOptionsLocaleNb        CrawlRunParamsExtractOptionsLocale = "nb"
+	CrawlRunParamsExtractOptionsLocaleNbNo      CrawlRunParamsExtractOptionsLocale = "nb-NO"
+	CrawlRunParamsExtractOptionsLocaleNd        CrawlRunParamsExtractOptionsLocale = "nd"
+	CrawlRunParamsExtractOptionsLocaleNdZw      CrawlRunParamsExtractOptionsLocale = "nd-ZW"
+	CrawlRunParamsExtractOptionsLocaleNdsDe     CrawlRunParamsExtractOptionsLocale = "nds-DE"
+	CrawlRunParamsExtractOptionsLocaleNdsNl     CrawlRunParamsExtractOptionsLocale = "nds-NL"
+	CrawlRunParamsExtractOptionsLocaleNe        CrawlRunParamsExtractOptionsLocale = "ne"
+	CrawlRunParamsExtractOptionsLocaleNeIn      CrawlRunParamsExtractOptionsLocale = "ne-IN"
+	CrawlRunParamsExtractOptionsLocaleNeNp      CrawlRunParamsExtractOptionsLocale = "ne-NP"
+	CrawlRunParamsExtractOptionsLocaleNl        CrawlRunParamsExtractOptionsLocale = "nl"
+	CrawlRunParamsExtractOptionsLocaleNlAw      CrawlRunParamsExtractOptionsLocale = "nl-AW"
+	CrawlRunParamsExtractOptionsLocaleNlBe      CrawlRunParamsExtractOptionsLocale = "nl-BE"
+	CrawlRunParamsExtractOptionsLocaleNlNl      CrawlRunParamsExtractOptionsLocale = "nl-NL"
+	CrawlRunParamsExtractOptionsLocaleNn        CrawlRunParamsExtractOptionsLocale = "nn"
+	CrawlRunParamsExtractOptionsLocaleNnNo      CrawlRunParamsExtractOptionsLocale = "nn-NO"
+	CrawlRunParamsExtractOptionsLocaleNrZa      CrawlRunParamsExtractOptionsLocale = "nr-ZA"
+	CrawlRunParamsExtractOptionsLocaleNsoZa     CrawlRunParamsExtractOptionsLocale = "nso-ZA"
+	CrawlRunParamsExtractOptionsLocaleNyn       CrawlRunParamsExtractOptionsLocale = "nyn"
+	CrawlRunParamsExtractOptionsLocaleNynUg     CrawlRunParamsExtractOptionsLocale = "nyn-UG"
+	CrawlRunParamsExtractOptionsLocaleOcFr      CrawlRunParamsExtractOptionsLocale = "oc-FR"
+	CrawlRunParamsExtractOptionsLocaleOm        CrawlRunParamsExtractOptionsLocale = "om"
+	CrawlRunParamsExtractOptionsLocaleOmEt      CrawlRunParamsExtractOptionsLocale = "om-ET"
+	CrawlRunParamsExtractOptionsLocaleOmKe      CrawlRunParamsExtractOptionsLocale = "om-KE"
+	CrawlRunParamsExtractOptionsLocaleOr        CrawlRunParamsExtractOptionsLocale = "or"
+	CrawlRunParamsExtractOptionsLocaleOrIn      CrawlRunParamsExtractOptionsLocale = "or-IN"
+	CrawlRunParamsExtractOptionsLocaleOsRu      CrawlRunParamsExtractOptionsLocale = "os-RU"
+	CrawlRunParamsExtractOptionsLocalePa        CrawlRunParamsExtractOptionsLocale = "pa"
+	CrawlRunParamsExtractOptionsLocalePaArab    CrawlRunParamsExtractOptionsLocale = "pa-Arab"
+	CrawlRunParamsExtractOptionsLocalePaArabPk  CrawlRunParamsExtractOptionsLocale = "pa-Arab-PK"
+	CrawlRunParamsExtractOptionsLocalePaGuru    CrawlRunParamsExtractOptionsLocale = "pa-Guru"
+	CrawlRunParamsExtractOptionsLocalePaGuruIn  CrawlRunParamsExtractOptionsLocale = "pa-Guru-IN"
+	CrawlRunParamsExtractOptionsLocalePaIn      CrawlRunParamsExtractOptionsLocale = "pa-IN"
+	CrawlRunParamsExtractOptionsLocalePaPk      CrawlRunParamsExtractOptionsLocale = "pa-PK"
+	CrawlRunParamsExtractOptionsLocalePapAn     CrawlRunParamsExtractOptionsLocale = "pap-AN"
+	CrawlRunParamsExtractOptionsLocalePl        CrawlRunParamsExtractOptionsLocale = "pl"
+	CrawlRunParamsExtractOptionsLocalePlPl      CrawlRunParamsExtractOptionsLocale = "pl-PL"
+	CrawlRunParamsExtractOptionsLocalePs        CrawlRunParamsExtractOptionsLocale = "ps"
+	CrawlRunParamsExtractOptionsLocalePsAf      CrawlRunParamsExtractOptionsLocale = "ps-AF"
+	CrawlRunParamsExtractOptionsLocalePt        CrawlRunParamsExtractOptionsLocale = "pt"
+	CrawlRunParamsExtractOptionsLocalePtBr      CrawlRunParamsExtractOptionsLocale = "pt-BR"
+	CrawlRunParamsExtractOptionsLocalePtGw      CrawlRunParamsExtractOptionsLocale = "pt-GW"
+	CrawlRunParamsExtractOptionsLocalePtMz      CrawlRunParamsExtractOptionsLocale = "pt-MZ"
+	CrawlRunParamsExtractOptionsLocalePtPt      CrawlRunParamsExtractOptionsLocale = "pt-PT"
+	CrawlRunParamsExtractOptionsLocaleRm        CrawlRunParamsExtractOptionsLocale = "rm"
+	CrawlRunParamsExtractOptionsLocaleRmCh      CrawlRunParamsExtractOptionsLocale = "rm-CH"
+	CrawlRunParamsExtractOptionsLocaleRo        CrawlRunParamsExtractOptionsLocale = "ro"
+	CrawlRunParamsExtractOptionsLocaleRoMd      CrawlRunParamsExtractOptionsLocale = "ro-MD"
+	CrawlRunParamsExtractOptionsLocaleRoRo      CrawlRunParamsExtractOptionsLocale = "ro-RO"
+	CrawlRunParamsExtractOptionsLocaleRof       CrawlRunParamsExtractOptionsLocale = "rof"
+	CrawlRunParamsExtractOptionsLocaleRofTz     CrawlRunParamsExtractOptionsLocale = "rof-TZ"
+	CrawlRunParamsExtractOptionsLocaleRu        CrawlRunParamsExtractOptionsLocale = "ru"
+	CrawlRunParamsExtractOptionsLocaleRuMd      CrawlRunParamsExtractOptionsLocale = "ru-MD"
+	CrawlRunParamsExtractOptionsLocaleRuRu      CrawlRunParamsExtractOptionsLocale = "ru-RU"
+	CrawlRunParamsExtractOptionsLocaleRuUa      CrawlRunParamsExtractOptionsLocale = "ru-UA"
+	CrawlRunParamsExtractOptionsLocaleRw        CrawlRunParamsExtractOptionsLocale = "rw"
+	CrawlRunParamsExtractOptionsLocaleRwRw      CrawlRunParamsExtractOptionsLocale = "rw-RW"
+	CrawlRunParamsExtractOptionsLocaleRwk       CrawlRunParamsExtractOptionsLocale = "rwk"
+	CrawlRunParamsExtractOptionsLocaleRwkTz     CrawlRunParamsExtractOptionsLocale = "rwk-TZ"
+	CrawlRunParamsExtractOptionsLocaleSaIn      CrawlRunParamsExtractOptionsLocale = "sa-IN"
+	CrawlRunParamsExtractOptionsLocaleSaq       CrawlRunParamsExtractOptionsLocale = "saq"
+	CrawlRunParamsExtractOptionsLocaleSaqKe     CrawlRunParamsExtractOptionsLocale = "saq-KE"
+	CrawlRunParamsExtractOptionsLocaleScIt      CrawlRunParamsExtractOptionsLocale = "sc-IT"
+	CrawlRunParamsExtractOptionsLocaleSdIn      CrawlRunParamsExtractOptionsLocale = "sd-IN"
+	CrawlRunParamsExtractOptionsLocaleSeNo      CrawlRunParamsExtractOptionsLocale = "se-NO"
+	CrawlRunParamsExtractOptionsLocaleSeh       CrawlRunParamsExtractOptionsLocale = "seh"
+	CrawlRunParamsExtractOptionsLocaleSehMz     CrawlRunParamsExtractOptionsLocale = "seh-MZ"
+	CrawlRunParamsExtractOptionsLocaleSes       CrawlRunParamsExtractOptionsLocale = "ses"
+	CrawlRunParamsExtractOptionsLocaleSesMl     CrawlRunParamsExtractOptionsLocale = "ses-ML"
+	CrawlRunParamsExtractOptionsLocaleSg        CrawlRunParamsExtractOptionsLocale = "sg"
+	CrawlRunParamsExtractOptionsLocaleSgCf      CrawlRunParamsExtractOptionsLocale = "sg-CF"
+	CrawlRunParamsExtractOptionsLocaleShi       CrawlRunParamsExtractOptionsLocale = "shi"
+	CrawlRunParamsExtractOptionsLocaleShiLatn   CrawlRunParamsExtractOptionsLocale = "shi-Latn"
+	CrawlRunParamsExtractOptionsLocaleShiLatnMa CrawlRunParamsExtractOptionsLocale = "shi-Latn-MA"
+	CrawlRunParamsExtractOptionsLocaleShiTfng   CrawlRunParamsExtractOptionsLocale = "shi-Tfng"
+	CrawlRunParamsExtractOptionsLocaleShiTfngMa CrawlRunParamsExtractOptionsLocale = "shi-Tfng-MA"
+	CrawlRunParamsExtractOptionsLocaleShsCa     CrawlRunParamsExtractOptionsLocale = "shs-CA"
+	CrawlRunParamsExtractOptionsLocaleSi        CrawlRunParamsExtractOptionsLocale = "si"
+	CrawlRunParamsExtractOptionsLocaleSiLk      CrawlRunParamsExtractOptionsLocale = "si-LK"
+	CrawlRunParamsExtractOptionsLocaleSidEt     CrawlRunParamsExtractOptionsLocale = "sid-ET"
+	CrawlRunParamsExtractOptionsLocaleSk        CrawlRunParamsExtractOptionsLocale = "sk"
+	CrawlRunParamsExtractOptionsLocaleSkSk      CrawlRunParamsExtractOptionsLocale = "sk-SK"
+	CrawlRunParamsExtractOptionsLocaleSl        CrawlRunParamsExtractOptionsLocale = "sl"
+	CrawlRunParamsExtractOptionsLocaleSlSi      CrawlRunParamsExtractOptionsLocale = "sl-SI"
+	CrawlRunParamsExtractOptionsLocaleSn        CrawlRunParamsExtractOptionsLocale = "sn"
+	CrawlRunParamsExtractOptionsLocaleSnZw      CrawlRunParamsExtractOptionsLocale = "sn-ZW"
+	CrawlRunParamsExtractOptionsLocaleSo        CrawlRunParamsExtractOptionsLocale = "so"
+	CrawlRunParamsExtractOptionsLocaleSoDj      CrawlRunParamsExtractOptionsLocale = "so-DJ"
+	CrawlRunParamsExtractOptionsLocaleSoEt      CrawlRunParamsExtractOptionsLocale = "so-ET"
+	CrawlRunParamsExtractOptionsLocaleSoKe      CrawlRunParamsExtractOptionsLocale = "so-KE"
+	CrawlRunParamsExtractOptionsLocaleSoSo      CrawlRunParamsExtractOptionsLocale = "so-SO"
+	CrawlRunParamsExtractOptionsLocaleSq        CrawlRunParamsExtractOptionsLocale = "sq"
+	CrawlRunParamsExtractOptionsLocaleSqAl      CrawlRunParamsExtractOptionsLocale = "sq-AL"
+	CrawlRunParamsExtractOptionsLocaleSqMk      CrawlRunParamsExtractOptionsLocale = "sq-MK"
+	CrawlRunParamsExtractOptionsLocaleSr        CrawlRunParamsExtractOptionsLocale = "sr"
+	CrawlRunParamsExtractOptionsLocaleSrCyrl    CrawlRunParamsExtractOptionsLocale = "sr-Cyrl"
+	CrawlRunParamsExtractOptionsLocaleSrCyrlBa  CrawlRunParamsExtractOptionsLocale = "sr-Cyrl-BA"
+	CrawlRunParamsExtractOptionsLocaleSrCyrlMe  CrawlRunParamsExtractOptionsLocale = "sr-Cyrl-ME"
+	CrawlRunParamsExtractOptionsLocaleSrCyrlRs  CrawlRunParamsExtractOptionsLocale = "sr-Cyrl-RS"
+	CrawlRunParamsExtractOptionsLocaleSrLatn    CrawlRunParamsExtractOptionsLocale = "sr-Latn"
+	CrawlRunParamsExtractOptionsLocaleSrLatnBa  CrawlRunParamsExtractOptionsLocale = "sr-Latn-BA"
+	CrawlRunParamsExtractOptionsLocaleSrLatnMe  CrawlRunParamsExtractOptionsLocale = "sr-Latn-ME"
+	CrawlRunParamsExtractOptionsLocaleSrLatnRs  CrawlRunParamsExtractOptionsLocale = "sr-Latn-RS"
+	CrawlRunParamsExtractOptionsLocaleSrMe      CrawlRunParamsExtractOptionsLocale = "sr-ME"
+	CrawlRunParamsExtractOptionsLocaleSrRs      CrawlRunParamsExtractOptionsLocale = "sr-RS"
+	CrawlRunParamsExtractOptionsLocaleSSZa      CrawlRunParamsExtractOptionsLocale = "ss-ZA"
+	CrawlRunParamsExtractOptionsLocaleStZa      CrawlRunParamsExtractOptionsLocale = "st-ZA"
+	CrawlRunParamsExtractOptionsLocaleSv        CrawlRunParamsExtractOptionsLocale = "sv"
+	CrawlRunParamsExtractOptionsLocaleSvFi      CrawlRunParamsExtractOptionsLocale = "sv-FI"
+	CrawlRunParamsExtractOptionsLocaleSvSe      CrawlRunParamsExtractOptionsLocale = "sv-SE"
+	CrawlRunParamsExtractOptionsLocaleSw        CrawlRunParamsExtractOptionsLocale = "sw"
+	CrawlRunParamsExtractOptionsLocaleSwKe      CrawlRunParamsExtractOptionsLocale = "sw-KE"
+	CrawlRunParamsExtractOptionsLocaleSwTz      CrawlRunParamsExtractOptionsLocale = "sw-TZ"
+	CrawlRunParamsExtractOptionsLocaleTa        CrawlRunParamsExtractOptionsLocale = "ta"
+	CrawlRunParamsExtractOptionsLocaleTaIn      CrawlRunParamsExtractOptionsLocale = "ta-IN"
+	CrawlRunParamsExtractOptionsLocaleTaLk      CrawlRunParamsExtractOptionsLocale = "ta-LK"
+	CrawlRunParamsExtractOptionsLocaleTe        CrawlRunParamsExtractOptionsLocale = "te"
+	CrawlRunParamsExtractOptionsLocaleTeIn      CrawlRunParamsExtractOptionsLocale = "te-IN"
+	CrawlRunParamsExtractOptionsLocaleTeo       CrawlRunParamsExtractOptionsLocale = "teo"
+	CrawlRunParamsExtractOptionsLocaleTeoKe     CrawlRunParamsExtractOptionsLocale = "teo-KE"
+	CrawlRunParamsExtractOptionsLocaleTeoUg     CrawlRunParamsExtractOptionsLocale = "teo-UG"
+	CrawlRunParamsExtractOptionsLocaleTgTj      CrawlRunParamsExtractOptionsLocale = "tg-TJ"
+	CrawlRunParamsExtractOptionsLocaleTh        CrawlRunParamsExtractOptionsLocale = "th"
+	CrawlRunParamsExtractOptionsLocaleThTh      CrawlRunParamsExtractOptionsLocale = "th-TH"
+	CrawlRunParamsExtractOptionsLocaleTi        CrawlRunParamsExtractOptionsLocale = "ti"
+	CrawlRunParamsExtractOptionsLocaleTiEr      CrawlRunParamsExtractOptionsLocale = "ti-ER"
+	CrawlRunParamsExtractOptionsLocaleTiEt      CrawlRunParamsExtractOptionsLocale = "ti-ET"
+	CrawlRunParamsExtractOptionsLocaleTigEr     CrawlRunParamsExtractOptionsLocale = "tig-ER"
+	CrawlRunParamsExtractOptionsLocaleTkTm      CrawlRunParamsExtractOptionsLocale = "tk-TM"
+	CrawlRunParamsExtractOptionsLocaleTlPh      CrawlRunParamsExtractOptionsLocale = "tl-PH"
+	CrawlRunParamsExtractOptionsLocaleTnZa      CrawlRunParamsExtractOptionsLocale = "tn-ZA"
+	CrawlRunParamsExtractOptionsLocaleTo        CrawlRunParamsExtractOptionsLocale = "to"
+	CrawlRunParamsExtractOptionsLocaleToTo      CrawlRunParamsExtractOptionsLocale = "to-TO"
+	CrawlRunParamsExtractOptionsLocaleTr        CrawlRunParamsExtractOptionsLocale = "tr"
+	CrawlRunParamsExtractOptionsLocaleTrCy      CrawlRunParamsExtractOptionsLocale = "tr-CY"
+	CrawlRunParamsExtractOptionsLocaleTrTr      CrawlRunParamsExtractOptionsLocale = "tr-TR"
+	CrawlRunParamsExtractOptionsLocaleTsZa      CrawlRunParamsExtractOptionsLocale = "ts-ZA"
+	CrawlRunParamsExtractOptionsLocaleTtRu      CrawlRunParamsExtractOptionsLocale = "tt-RU"
+	CrawlRunParamsExtractOptionsLocaleTzm       CrawlRunParamsExtractOptionsLocale = "tzm"
+	CrawlRunParamsExtractOptionsLocaleTzmLatn   CrawlRunParamsExtractOptionsLocale = "tzm-Latn"
+	CrawlRunParamsExtractOptionsLocaleTzmLatnMa CrawlRunParamsExtractOptionsLocale = "tzm-Latn-MA"
+	CrawlRunParamsExtractOptionsLocaleUgCn      CrawlRunParamsExtractOptionsLocale = "ug-CN"
+	CrawlRunParamsExtractOptionsLocaleUk        CrawlRunParamsExtractOptionsLocale = "uk"
+	CrawlRunParamsExtractOptionsLocaleUkUa      CrawlRunParamsExtractOptionsLocale = "uk-UA"
+	CrawlRunParamsExtractOptionsLocaleUnmUs     CrawlRunParamsExtractOptionsLocale = "unm-US"
+	CrawlRunParamsExtractOptionsLocaleUr        CrawlRunParamsExtractOptionsLocale = "ur"
+	CrawlRunParamsExtractOptionsLocaleUrIn      CrawlRunParamsExtractOptionsLocale = "ur-IN"
+	CrawlRunParamsExtractOptionsLocaleUrPk      CrawlRunParamsExtractOptionsLocale = "ur-PK"
+	CrawlRunParamsExtractOptionsLocaleUz        CrawlRunParamsExtractOptionsLocale = "uz"
+	CrawlRunParamsExtractOptionsLocaleUzArab    CrawlRunParamsExtractOptionsLocale = "uz-Arab"
+	CrawlRunParamsExtractOptionsLocaleUzArabAf  CrawlRunParamsExtractOptionsLocale = "uz-Arab-AF"
+	CrawlRunParamsExtractOptionsLocaleUzCyrl    CrawlRunParamsExtractOptionsLocale = "uz-Cyrl"
+	CrawlRunParamsExtractOptionsLocaleUzCyrlUz  CrawlRunParamsExtractOptionsLocale = "uz-Cyrl-UZ"
+	CrawlRunParamsExtractOptionsLocaleUzLatn    CrawlRunParamsExtractOptionsLocale = "uz-Latn"
+	CrawlRunParamsExtractOptionsLocaleUzLatnUz  CrawlRunParamsExtractOptionsLocale = "uz-Latn-UZ"
+	CrawlRunParamsExtractOptionsLocaleUzUz      CrawlRunParamsExtractOptionsLocale = "uz-UZ"
+	CrawlRunParamsExtractOptionsLocaleVeZa      CrawlRunParamsExtractOptionsLocale = "ve-ZA"
+	CrawlRunParamsExtractOptionsLocaleVi        CrawlRunParamsExtractOptionsLocale = "vi"
+	CrawlRunParamsExtractOptionsLocaleViVn      CrawlRunParamsExtractOptionsLocale = "vi-VN"
+	CrawlRunParamsExtractOptionsLocaleVun       CrawlRunParamsExtractOptionsLocale = "vun"
+	CrawlRunParamsExtractOptionsLocaleVunTz     CrawlRunParamsExtractOptionsLocale = "vun-TZ"
+	CrawlRunParamsExtractOptionsLocaleWaBe      CrawlRunParamsExtractOptionsLocale = "wa-BE"
+	CrawlRunParamsExtractOptionsLocaleWaeCh     CrawlRunParamsExtractOptionsLocale = "wae-CH"
+	CrawlRunParamsExtractOptionsLocaleWalEt     CrawlRunParamsExtractOptionsLocale = "wal-ET"
+	CrawlRunParamsExtractOptionsLocaleWoSn      CrawlRunParamsExtractOptionsLocale = "wo-SN"
+	CrawlRunParamsExtractOptionsLocaleXhZa      CrawlRunParamsExtractOptionsLocale = "xh-ZA"
+	CrawlRunParamsExtractOptionsLocaleXog       CrawlRunParamsExtractOptionsLocale = "xog"
+	CrawlRunParamsExtractOptionsLocaleXogUg     CrawlRunParamsExtractOptionsLocale = "xog-UG"
+	CrawlRunParamsExtractOptionsLocaleYiUs      CrawlRunParamsExtractOptionsLocale = "yi-US"
+	CrawlRunParamsExtractOptionsLocaleYo        CrawlRunParamsExtractOptionsLocale = "yo"
+	CrawlRunParamsExtractOptionsLocaleYoNg      CrawlRunParamsExtractOptionsLocale = "yo-NG"
+	CrawlRunParamsExtractOptionsLocaleYueHk     CrawlRunParamsExtractOptionsLocale = "yue-HK"
+	CrawlRunParamsExtractOptionsLocaleZh        CrawlRunParamsExtractOptionsLocale = "zh"
+	CrawlRunParamsExtractOptionsLocaleZhCn      CrawlRunParamsExtractOptionsLocale = "zh-CN"
+	CrawlRunParamsExtractOptionsLocaleZhHk      CrawlRunParamsExtractOptionsLocale = "zh-HK"
+	CrawlRunParamsExtractOptionsLocaleZhHans    CrawlRunParamsExtractOptionsLocale = "zh-Hans"
+	CrawlRunParamsExtractOptionsLocaleZhHansCn  CrawlRunParamsExtractOptionsLocale = "zh-Hans-CN"
+	CrawlRunParamsExtractOptionsLocaleZhHansHk  CrawlRunParamsExtractOptionsLocale = "zh-Hans-HK"
+	CrawlRunParamsExtractOptionsLocaleZhHansMo  CrawlRunParamsExtractOptionsLocale = "zh-Hans-MO"
+	CrawlRunParamsExtractOptionsLocaleZhHansSg  CrawlRunParamsExtractOptionsLocale = "zh-Hans-SG"
+	CrawlRunParamsExtractOptionsLocaleZhHant    CrawlRunParamsExtractOptionsLocale = "zh-Hant"
+	CrawlRunParamsExtractOptionsLocaleZhHantHk  CrawlRunParamsExtractOptionsLocale = "zh-Hant-HK"
+	CrawlRunParamsExtractOptionsLocaleZhHantMo  CrawlRunParamsExtractOptionsLocale = "zh-Hant-MO"
+	CrawlRunParamsExtractOptionsLocaleZhHantTw  CrawlRunParamsExtractOptionsLocale = "zh-Hant-TW"
+	CrawlRunParamsExtractOptionsLocaleZhSg      CrawlRunParamsExtractOptionsLocale = "zh-SG"
+	CrawlRunParamsExtractOptionsLocaleZhTw      CrawlRunParamsExtractOptionsLocale = "zh-TW"
+	CrawlRunParamsExtractOptionsLocaleZu        CrawlRunParamsExtractOptionsLocale = "zu"
+	CrawlRunParamsExtractOptionsLocaleZuZa      CrawlRunParamsExtractOptionsLocale = "zu-ZA"
+	CrawlRunParamsExtractOptionsLocaleAuto      CrawlRunParamsExtractOptionsLocale = "auto"
+)
+
+// Structured metadata about the request execution context
+type CrawlRunParamsExtractOptionsMetadata struct {
+	AccountName         param.Opt[string]  `json:"account_name,omitzero"`
+	APIType             param.Opt[string]  `json:"api_type,omitzero"`
+	CrawlDepth          param.Opt[int64]   `json:"crawl_depth,omitzero"`
+	CrawlID             param.Opt[string]  `json:"crawl_id,omitzero"`
+	DefinitionID        param.Opt[int64]   `json:"definition_id,omitzero"`
+	DefinitionName      param.Opt[string]  `json:"definition_name,omitzero"`
+	Endpoint            param.Opt[string]  `json:"endpoint,omitzero"`
+	ExecutionID         param.Opt[string]  `json:"execution_id,omitzero"`
+	FlowitTaskID        param.Opt[string]  `json:"flowit_task_id,omitzero"`
+	InputID             param.Opt[string]  `json:"input_id,omitzero"`
+	IsPublicWsa         param.Opt[bool]    `json:"is_public_wsa,omitzero"`
+	IsSitemap           param.Opt[bool]    `json:"is_sitemap,omitzero"`
+	IsWsa               param.Opt[bool]    `json:"is_wsa,omitzero"`
+	ParserID            param.Opt[string]  `json:"parser_id,omitzero"`
+	PipelineExecutionID param.Opt[int64]   `json:"pipeline_execution_id,omitzero"`
+	QueryTemplateID     param.Opt[string]  `json:"query_template_id,omitzero"`
+	Source              param.Opt[string]  `json:"source,omitzero"`
+	TemplateID          param.Opt[int64]   `json:"template_id,omitzero"`
+	TemplateName        param.Opt[string]  `json:"template_name,omitzero"`
+	WsaID               param.Opt[string]  `json:"wsa_id,omitzero"`
+	WsaName             param.Opt[string]  `json:"wsa_name,omitzero"`
+	WsaVersion          param.Opt[float64] `json:"wsa_version,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsMetadata) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsMetadata
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunParamsExtractOptionsNetworkCapture struct {
+	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
+	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
+	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Resource type for network capture filtering
+	ResourceType CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion `json:"resource_type,omitzero"`
+	StatusCode   CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion   `json:"status_code,omitzero"`
+	URL          CrawlRunParamsExtractOptionsNetworkCaptureURL               `json:"url,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsNetworkCapture) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsNetworkCapture
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsNetworkCapture](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion struct {
+	OfFloat      param.Opt[float64] `json:",omitzero,inline"`
+	OfFloatArray []float64          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfFloatArray)
+}
+func (u *CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfFloatArray) {
+		return &u.OfFloatArray
+	}
+	return nil
+}
+
+// The property Value is required.
+type CrawlRunParamsExtractOptionsNetworkCaptureURL struct {
+	Value string `json:"value,required"`
+	// Any of "exact", "contains".
+	Type string `json:"type,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsNetworkCaptureURL) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsNetworkCaptureURL
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsNetworkCaptureURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsNetworkCaptureURL](
+		"type", "exact", "contains",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsParserUnion struct {
+	OfAnyMap map[string]any    `json:",omitzero,inline"`
+	OfString param.Opt[string] `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsParserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAnyMap, u.OfString)
+}
+func (u *CrawlRunParamsExtractOptionsParserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsParserUnion) asAny() any {
+	if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Proxy provider to use for the request
+type CrawlRunParamsExtractOptionsProxyProvider string
+
+const (
+	CrawlRunParamsExtractOptionsProxyProviderBrightdata      CrawlRunParamsExtractOptionsProxyProvider = "brightdata"
+	CrawlRunParamsExtractOptionsProxyProviderOxylabs         CrawlRunParamsExtractOptionsProxyProvider = "oxylabs"
+	CrawlRunParamsExtractOptionsProxyProviderSmartproxy      CrawlRunParamsExtractOptionsProxyProvider = "smartproxy"
+	CrawlRunParamsExtractOptionsProxyProviderProxit          CrawlRunParamsExtractOptionsProxyProvider = "proxit"
+	CrawlRunParamsExtractOptionsProxyProviderProxitPreprod   CrawlRunParamsExtractOptionsProxyProvider = "proxit_preprod"
+	CrawlRunParamsExtractOptionsProxyProviderLocal           CrawlRunParamsExtractOptionsProxyProvider = "local"
+	CrawlRunParamsExtractOptionsProxyProviderRayobyte        CrawlRunParamsExtractOptionsProxyProvider = "rayobyte"
+	CrawlRunParamsExtractOptionsProxyProviderAlways          CrawlRunParamsExtractOptionsProxyProvider = "always"
+	CrawlRunParamsExtractOptionsProxyProviderOculusproxies   CrawlRunParamsExtractOptionsProxyProvider = "oculusproxies"
+	CrawlRunParamsExtractOptionsProxyProviderFroxy           CrawlRunParamsExtractOptionsProxyProvider = "froxy"
+	CrawlRunParamsExtractOptionsProxyProviderPacketstream    CrawlRunParamsExtractOptionsProxyProvider = "packetstream"
+	CrawlRunParamsExtractOptionsProxyProvider911proxy        CrawlRunParamsExtractOptionsProxyProvider = "911proxy"
+	CrawlRunParamsExtractOptionsProxyProviderDirect911proxy  CrawlRunParamsExtractOptionsProxyProvider = "direct911proxy"
+	CrawlRunParamsExtractOptionsProxyProviderThesocialproxy  CrawlRunParamsExtractOptionsProxyProvider = "thesocialproxy"
+	CrawlRunParamsExtractOptionsProxyProviderThesocialproxy2 CrawlRunParamsExtractOptionsProxyProvider = "thesocialproxy2"
+	CrawlRunParamsExtractOptionsProxyProviderNimbleIsp       CrawlRunParamsExtractOptionsProxyProvider = "nimble-isp"
+	CrawlRunParamsExtractOptionsProxyProviderNimbleIspMobile CrawlRunParamsExtractOptionsProxyProvider = "nimble-isp-mobile"
+	CrawlRunParamsExtractOptionsProxyProviderProxitLinux     CrawlRunParamsExtractOptionsProxyProvider = "proxit-linux"
+	CrawlRunParamsExtractOptionsProxyProviderProxitMacos     CrawlRunParamsExtractOptionsProxyProvider = "proxit-macos"
+	CrawlRunParamsExtractOptionsProxyProviderProxitWindows   CrawlRunParamsExtractOptionsProxyProvider = "proxit-windows"
+	CrawlRunParamsExtractOptionsProxyProviderProxitRental    CrawlRunParamsExtractOptionsProxyProvider = "proxit-rental"
+	CrawlRunParamsExtractOptionsProxyProviderIpfoxy          CrawlRunParamsExtractOptionsProxyProvider = "ipfoxy"
+	CrawlRunParamsExtractOptionsProxyProviderBrightup        CrawlRunParamsExtractOptionsProxyProvider = "brightup"
+	CrawlRunParamsExtractOptionsProxyProviderResearch        CrawlRunParamsExtractOptionsProxyProvider = "research"
+)
+
+// Query template configuration for structured data extraction
+//
+// The property ID is required.
+type CrawlRunParamsExtractOptionsQueryTemplate struct {
+	ID string `json:"id,required" format:"uuid"`
+	// Any of "WEB", "SERP", "SOCIAL".
+	APIType     string                                                   `json:"api_type,omitzero"`
+	Pagination  CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion `json:"pagination,omitzero"`
+	Params      map[string]any                                           `json:"params,omitzero"`
+	ExtraFields map[string]any                                           `json:"-"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsQueryTemplate) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsQueryTemplate
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *CrawlRunParamsExtractOptionsQueryTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsQueryTemplate](
+		"api_type", "WEB", "SERP", "SOCIAL",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion struct {
+	OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams *CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams `json:",omitzero,inline"`
+	OfCrawlRunsExtractOptionsQueryTemplatePaginationArray          []CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem     `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams, u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray)
+}
+func (u *CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams) {
+		return u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams
+	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray) {
+		return &u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray
+	}
+	return nil
+}
+
+// The property NextPageParams is required.
+type CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property NextPageParams is required.
+type CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Referrer policy for the request
+type CrawlRunParamsExtractOptionsReferrerType string
+
+const (
+	CrawlRunParamsExtractOptionsReferrerTypeRandom     CrawlRunParamsExtractOptionsReferrerType = "random"
+	CrawlRunParamsExtractOptionsReferrerTypeNoReferer  CrawlRunParamsExtractOptionsReferrerType = "no-referer"
+	CrawlRunParamsExtractOptionsReferrerTypeSameOrigin CrawlRunParamsExtractOptionsReferrerType = "same-origin"
+	CrawlRunParamsExtractOptionsReferrerTypeGoogle     CrawlRunParamsExtractOptionsReferrerType = "google"
+	CrawlRunParamsExtractOptionsReferrerTypeBing       CrawlRunParamsExtractOptionsReferrerType = "bing"
+	CrawlRunParamsExtractOptionsReferrerTypeFacebook   CrawlRunParamsExtractOptionsReferrerType = "facebook"
+	CrawlRunParamsExtractOptionsReferrerTypeTwitter    CrawlRunParamsExtractOptionsReferrerType = "twitter"
+	CrawlRunParamsExtractOptionsReferrerTypeInstagram  CrawlRunParamsExtractOptionsReferrerType = "instagram"
+)
+
+type CrawlRunParamsExtractOptionsRenderOptions struct {
+	// Whether to enable ad blocking
+	Adblock param.Opt[bool] `json:"adblock,omitzero"`
+	// Whether to enable browser caching
+	Cache param.Opt[bool] `json:"cache,omitzero"`
+	// Whether to use 2Captcha service for solving captchas
+	Enable2captcha param.Opt[bool] `json:"enable_2captcha,omitzero"`
+	// Fingerprint identifier for browser customization
+	FingerprintID param.Opt[string] `json:"fingerprint_id,omitzero"`
+	// Whether to run browser in headless mode
+	Headless param.Opt[bool] `json:"headless,omitzero"`
+	// Whether to include iframe content in the result
+	IncludeIframes param.Opt[bool] `json:"include_iframes,omitzero"`
+	// Whether to load previously stored localStorage data
+	LoadLocalStorage param.Opt[bool] `json:"load_local_storage,omitzero"`
+	// Disable content encoding to avoid cached responses
+	NoAcceptEncoding param.Opt[bool] `json:"no_accept_encoding,omitzero"`
+	// Whether to override default browser permissions
+	OverridePermissions param.Opt[bool] `json:"override_permissions,omitzero"`
+	// Whether to randomize HTTP header order
+	RandomHeaderOrder param.Opt[bool] `json:"random_header_order,omitzero"`
+	// Whether to store localStorage data for future sessions
+	StoreLocalStorage param.Opt[bool] `json:"store_local_storage,omitzero"`
+	// Maximum time in milliseconds to wait for page render
+	Timeout param.Opt[float64] `json:"timeout,omitzero"`
+	// Interval in milliseconds between key presses
+	TypingInterval param.Opt[float64] `json:"typing_interval,omitzero"`
+	// Whether to use a persistent browser session
+	Userbrowser param.Opt[bool] `json:"userbrowser,omitzero"`
+	// Whether to collect performance metrics during rendering
+	WithPerformanceMetrics param.Opt[bool] `json:"with_performance_metrics,omitzero"`
+	// Domains to block from loading
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Browser engine to use, or weighted distribution of engines
+	BrowserEngine CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion `json:"browser_engine,omitzero"`
+	// Type of browser connector to use
+	//
+	// Any of "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp",
+	// "playwright".
+	ConnectorType string `json:"connector_type,omitzero"`
+	// Types of resources to block from loading
+	//
+	// Any of "other", "document", "stylesheet", "image", "media", "font", "script",
+	// "texttrack", "xhr", "fetch", "eventsource", "websocket", "manifest",
+	// "signedexchange", "ping", "cspviolationreport", "prefetch", "preflight",
+	// "fedcm".
+	DisabledResources []string `json:"disabled_resources,omitzero"`
+	// Browser extensions to load
+	Extensions []string `json:"extensions,omitzero"`
+	// Configuration for Hackium browser modifications
+	HackiumConfiguration CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration `json:"hackium_configuration,omitzero"`
+	// Specific localStorage keys to load
+	LocalStorageKeysToLoad []string `json:"local_storage_keys_to_load,omitzero"`
+	// Strategy for simulating mouse movements
+	//
+	// Any of "linear", "ghost-cursor", "windmouse".
+	MouseStrategy string `json:"mouse_strategy,omitzero"`
+	// Type of render completion to wait for
+	//
+	// Any of "domcontentloaded", "load", "idle0", "networkidle0", "idle2",
+	// "networkidle2", "navigate".
+	RenderType string `json:"render_type,omitzero"`
+	// Strategy for simulating keyboard typing
+	//
+	// Any of "simple", "distribution".
+	TypingStrategy string `json:"typing_strategy,omitzero"`
+	// Browser event to wait for before considering page loaded
+	//
+	// Any of "load", "domcontentloaded", "idle0", "idle2", "networkidle0",
+	// "networkidle2", "navigate".
+	WaitUntil string `json:"wait_until,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsRenderOptions) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsRenderOptions
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsRenderOptions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
+		"connector_type", "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp", "playwright",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
+		"mouse_strategy", "linear", "ghost-cursor", "windmouse",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
+		"render_type", "domcontentloaded", "load", "idle0", "networkidle0", "idle2", "networkidle2", "navigate",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
+		"typing_strategy", "simple", "distribution",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
+		"wait_until", "load", "domcontentloaded", "idle0", "idle2", "networkidle0", "networkidle2", "navigate",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString)
+	OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString param.Opt[string]  `json:",omitzero,inline"`
+	OfFloatMap                                                map[string]float64 `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString, u.OfFloatMap)
+}
+func (u *CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) asAny() any {
+	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString) {
+		return &u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString
+	} else if !param.IsOmitted(u.OfFloatMap) {
+		return &u.OfFloatMap
+	}
+	return nil
+}
+
+type CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString string
+
+const (
+	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringChrome  CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "chrome"
+	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringHackium CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "hackium"
+	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringFirefox CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "firefox"
+	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringHackfox CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "hackfox"
+)
+
+// Configuration for Hackium browser modifications
+type CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration struct {
+	CollectLogs                 param.Opt[bool] `json:"collect_logs,omitzero"`
+	DoNotFixMathSalt            param.Opt[bool] `json:"do_not_fix_math_salt,omitzero"`
+	EnableDocumentElementSpoof  param.Opt[bool] `json:"enable_document_element_spoof,omitzero"`
+	EnableDocumentHasFocus      param.Opt[bool] `json:"enable_document_has_focus,omitzero"`
+	EnableFakeNavigationHistory param.Opt[bool] `json:"enable_fake_navigation_history,omitzero"`
+	EnableKeyOrdering           param.Opt[bool] `json:"enable_key_ordering,omitzero"`
+	EnableSniffer               param.Opt[bool] `json:"enable_sniffer,omitzero"`
+	EnableVerboseLogs           param.Opt[bool] `json:"enable_verbose_logs,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CrawlRunParamsExtractOptionsSession struct {
+	ID                  param.Opt[string]  `json:"id,omitzero"`
+	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	Retry               param.Opt[bool]    `json:"retry,omitzero"`
+	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsSession) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsSession
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsSession) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsSkillUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsSkillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *CrawlRunParamsExtractOptionsSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsSkillUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Userbrowser creation template configuration
+//
+// The property Name is required.
+type CrawlRunParamsExtractOptionsTemplate struct {
+	Name   string         `json:"name,required"`
+	Params map[string]any `json:"params,omitzero"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsTemplate) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsTemplate
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsTemplate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Pre-rendered userbrowser creation template configuration
+//
+// The properties ID, AllowedParameterNames, RenderFlowRendered are required.
+type CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered struct {
+	ID                    string           `json:"id,required"`
+	AllowedParameterNames []string         `json:"allowed_parameter_names,omitzero,required"`
+	RenderFlowRendered    []map[string]any `json:"render_flow_rendered,omitzero,required"`
+	paramObj
+}
+
+func (r CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered) MarshalJSON() (data []byte, err error) {
+	type shadow CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Sitemap and other methods will be used together to find URLs.
+type CrawlRunParamsSitemap string
+
+const (
+	CrawlRunParamsSitemapSkip    CrawlRunParamsSitemap = "skip"
+	CrawlRunParamsSitemapInclude CrawlRunParamsSitemap = "include"
+	CrawlRunParamsSitemapOnly    CrawlRunParamsSitemap = "only"
 )
