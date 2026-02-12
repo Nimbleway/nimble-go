@@ -118,14 +118,6 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
 }
 
-// Execute WSA Realtime Endpoint
-func (r *Client) Agent(ctx context.Context, body AgentParams, opts ...option.RequestOption) (res *AgentResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/agent"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
-}
-
 // Extract
 func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
