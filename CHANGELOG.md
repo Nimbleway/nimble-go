@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 (2026-02-15)
+
+Full Changelog: [v0.1.0...v0.2.0](https://github.com/Nimbleway/nimble-go/compare/v0.1.0...v0.2.0)
+
+### Features
+
+* **api:** manual updates ([a65365d](https://github.com/Nimbleway/nimble-go/commit/a65365df26b5a3eefb3afa0094bbe4fd27e7397c))
+
+
+### Chores
+
+* remove custom code ([153538f](https://github.com/Nimbleway/nimble-go/commit/153538f718574a4fa3ccdc65a7b4d201d3e58391))
+
 ## 0.1.0 (2026-02-15)
 
 Full Changelog: [v0.0.1...v0.1.0](https://github.com/Nimbleway/nimble-go/compare/v0.0.1...v0.1.0)
