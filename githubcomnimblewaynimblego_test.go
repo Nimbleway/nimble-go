@@ -241,3 +241,45 @@ func TestMapWithOptionalParams(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
+
+func TestSearchWithOptionalParams(t *testing.T) {
+	t.Skip("Prism tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Search(context.TODO(), githubcomnimblewaynimblego.SearchParams{
+		Query:          "x",
+		ContentType:    []string{"string"},
+		Country:        githubcomnimblewaynimblego.String("country"),
+		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
+		EndDate:        githubcomnimblewaynimblego.String("end_date"),
+		ExcludeDomains: []string{"string"},
+		IncludeAnswer:  githubcomnimblewaynimblego.Bool(true),
+		IncludeDomains: []string{"string"},
+		Locale:         githubcomnimblewaynimblego.String("locale"),
+		MaxSubagents:   githubcomnimblewaynimblego.Int(1),
+		NumResults:     githubcomnimblewaynimblego.Int(1),
+		ParsingType:    githubcomnimblewaynimblego.SearchParamsParsingTypePlainText,
+		SearchEngine:   githubcomnimblewaynimblego.SearchParamsSearchEngineGoogleSearch,
+		StartDate:      githubcomnimblewaynimblego.String("start_date"),
+		TimeRange:      githubcomnimblewaynimblego.SearchParamsTimeRangeHour,
+		Topic: githubcomnimblewaynimblego.SearchParamsTopicUnion{
+			OfString: githubcomnimblewaynimblego.String("string"),
+		},
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
