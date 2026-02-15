@@ -133,3 +133,11 @@ func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.Request
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
+
+// Search
+func (r *Client) Search(ctx context.Context, body SearchParams, opts ...option.RequestOption) (res *SearchResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/search"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
