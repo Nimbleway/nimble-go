@@ -1005,14 +1005,14 @@ const (
 )
 
 type CrawlListParams struct {
-	// Filter crawls by their status.
-	//
-	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status CrawlListParamsStatus `query:"status,omitzero,required" json:"-"`
 	// Cursor for pagination.
 	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// Number of crawls to return per page.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Filter crawls by their status.
+	//
+	// Any of "queued", "running", "succeeded", "failed", "canceled", "all".
+	Status CrawlListParamsStatus `query:"status,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1033,6 +1033,7 @@ const (
 	CrawlListParamsStatusSucceeded CrawlListParamsStatus = "succeeded"
 	CrawlListParamsStatusFailed    CrawlListParamsStatus = "failed"
 	CrawlListParamsStatusCanceled  CrawlListParamsStatus = "canceled"
+	CrawlListParamsStatusAll       CrawlListParamsStatus = "all"
 )
 
 type CrawlRunParams struct {
@@ -1121,36 +1122,20 @@ func (r *CrawlRunParamsCallbackObject) UnmarshalJSON(data []byte) error {
 type CrawlRunParamsExtractOptions struct {
 	// City for geolocation
 	City param.Opt[string] `json:"city,omitzero"`
-	// Client-side timeout in milliseconds
-	ClientTimeout param.Opt[float64] `json:"client_timeout,omitzero"`
 	// Whether to automatically handle cookie consent headers
 	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
-	// Whether to disable IP address validation
-	DisableIPCheck param.Opt[bool] `json:"disable_ip_check,omitzero"`
 	// Whether to use HTTP/2 protocol
 	Http2 param.Opt[bool] `json:"http2,omitzero"`
-	// Whether to use IPv6 for the request
-	Ip6 param.Opt[bool] `json:"ip6,omitzero"`
 	// Whether to emulate XMLHttpRequest behavior
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
-	// Whether to disable browser-based rendering
-	NoUserbrowser param.Opt[bool] `json:"no_userbrowser,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to return raw HTTP headers in response
-	RawHeaders param.Opt[bool] `json:"raw_headers,omitzero"`
 	// Whether to render JavaScript content using a browser
 	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
-	// Whether to save the userbrowser session for reuse
-	SaveUserbrowser param.Opt[bool] `json:"save_userbrowser,omitzero"`
-	// Whether to skip userbrowser creation template processing
-	SkipUbct param.Opt[bool] `json:"skip_ubct,omitzero"`
 	// User-defined tag for request identification
 	Tag param.Opt[string] `json:"tag,omitzero"`
-	// Type of query or scraping template
-	Type param.Opt[string] `json:"type,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
 	// Browser type to emulate
@@ -1262,16 +1247,10 @@ type CrawlRunParamsExtractOptions struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale CrawlRunParamsExtractOptionsLocale `json:"locale,omitzero"`
-	// Structured metadata about the request execution context
-	Metadata CrawlRunParamsExtractOptionsMetadata `json:"metadata,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
 	Method string `json:"method,omitzero"`
-	// Native execution mode
-	//
-	// Any of "requester", "apm", "direct".
-	NativeMode string `json:"native_mode,omitzero"`
 	// Filters for capturing network traffic
 	NetworkCapture []CrawlRunParamsExtractOptionsNetworkCapture `json:"network_capture,omitzero"`
 	// Operating system to emulate
@@ -1280,27 +1259,12 @@ type CrawlRunParamsExtractOptions struct {
 	Os string `json:"os,omitzero"`
 	// Custom parser configuration as a key-value map
 	Parser CrawlRunParamsExtractOptionsParserUnion `json:"parser,omitzero"`
-	// Proxy provider to use for the request
-	//
-	// Any of "brightdata", "oxylabs", "smartproxy", "proxit", "proxit_preprod",
-	// "local", "rayobyte", "always", "oculusproxies", "froxy", "packetstream",
-	// "911proxy", "direct911proxy", "thesocialproxy", "thesocialproxy2", "nimble-isp",
-	// "nimble-isp-mobile", "proxit-linux", "proxit-macos", "proxit-windows",
-	// "proxit-rental", "ipfoxy", "brightup", "research".
-	ProxyProvider CrawlRunParamsExtractOptionsProxyProvider `json:"proxy_provider,omitzero"`
-	// Weighted distribution of proxy providers
-	ProxyProviders map[string]float64 `json:"proxy_providers,omitzero"`
-	// Query template configuration for structured data extraction
-	QueryTemplate CrawlRunParamsExtractOptionsQueryTemplate `json:"query_template,omitzero"`
 	// Referrer policy for the request
 	//
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType CrawlRunParamsExtractOptionsReferrerType `json:"referrer_type,omitzero"`
-	// Array of actions to perform during browser rendering
-	RenderFlow    []map[string]any                          `json:"render_flow,omitzero"`
-	RenderOptions CrawlRunParamsExtractOptionsRenderOptions `json:"render_options,omitzero"`
-	Session       CrawlRunParamsExtractOptionsSession       `json:"session,omitzero"`
+	Session      CrawlRunParamsExtractOptionsSession      `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill CrawlRunParamsExtractOptionsSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -1311,10 +1275,6 @@ type CrawlRunParamsExtractOptions struct {
 	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
 	// "VI", "WA", "WV", "WI", "WY".
 	State string `json:"state,omitzero"`
-	// Userbrowser creation template configuration
-	Template CrawlRunParamsExtractOptionsTemplate `json:"template,omitzero"`
-	// Pre-rendered userbrowser creation template configuration
-	UserbrowserCreationTemplateRendered CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered `json:"userbrowser_creation_template_rendered,omitzero"`
 	paramObj
 }
 
@@ -1335,9 +1295,6 @@ func init() {
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
-	)
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
-		"native_mode", "requester", "apm", "direct",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"os", "windows", "mac os", "linux", "android", "ios",
@@ -5043,41 +5000,6 @@ const (
 	CrawlRunParamsExtractOptionsLocaleAuto      CrawlRunParamsExtractOptionsLocale = "auto"
 )
 
-// Structured metadata about the request execution context
-type CrawlRunParamsExtractOptionsMetadata struct {
-	AccountName         param.Opt[string]  `json:"account_name,omitzero"`
-	APIType             param.Opt[string]  `json:"api_type,omitzero"`
-	CrawlDepth          param.Opt[int64]   `json:"crawl_depth,omitzero"`
-	CrawlID             param.Opt[string]  `json:"crawl_id,omitzero"`
-	DefinitionID        param.Opt[int64]   `json:"definition_id,omitzero"`
-	DefinitionName      param.Opt[string]  `json:"definition_name,omitzero"`
-	Endpoint            param.Opt[string]  `json:"endpoint,omitzero"`
-	ExecutionID         param.Opt[string]  `json:"execution_id,omitzero"`
-	FlowitTaskID        param.Opt[string]  `json:"flowit_task_id,omitzero"`
-	InputID             param.Opt[string]  `json:"input_id,omitzero"`
-	IsPublicWsa         param.Opt[bool]    `json:"is_public_wsa,omitzero"`
-	IsSitemap           param.Opt[bool]    `json:"is_sitemap,omitzero"`
-	IsWsa               param.Opt[bool]    `json:"is_wsa,omitzero"`
-	ParserID            param.Opt[string]  `json:"parser_id,omitzero"`
-	PipelineExecutionID param.Opt[int64]   `json:"pipeline_execution_id,omitzero"`
-	QueryTemplateID     param.Opt[string]  `json:"query_template_id,omitzero"`
-	Source              param.Opt[string]  `json:"source,omitzero"`
-	TemplateID          param.Opt[int64]   `json:"template_id,omitzero"`
-	TemplateName        param.Opt[string]  `json:"template_name,omitzero"`
-	WsaID               param.Opt[string]  `json:"wsa_id,omitzero"`
-	WsaName             param.Opt[string]  `json:"wsa_name,omitzero"`
-	WsaVersion          param.Opt[float64] `json:"wsa_version,omitzero"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsMetadata) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsMetadata
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsMetadata) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type CrawlRunParamsExtractOptionsNetworkCapture struct {
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
@@ -5203,116 +5125,6 @@ func (u *CrawlRunParamsExtractOptionsParserUnion) asAny() any {
 	return nil
 }
 
-// Proxy provider to use for the request
-type CrawlRunParamsExtractOptionsProxyProvider string
-
-const (
-	CrawlRunParamsExtractOptionsProxyProviderBrightdata      CrawlRunParamsExtractOptionsProxyProvider = "brightdata"
-	CrawlRunParamsExtractOptionsProxyProviderOxylabs         CrawlRunParamsExtractOptionsProxyProvider = "oxylabs"
-	CrawlRunParamsExtractOptionsProxyProviderSmartproxy      CrawlRunParamsExtractOptionsProxyProvider = "smartproxy"
-	CrawlRunParamsExtractOptionsProxyProviderProxit          CrawlRunParamsExtractOptionsProxyProvider = "proxit"
-	CrawlRunParamsExtractOptionsProxyProviderProxitPreprod   CrawlRunParamsExtractOptionsProxyProvider = "proxit_preprod"
-	CrawlRunParamsExtractOptionsProxyProviderLocal           CrawlRunParamsExtractOptionsProxyProvider = "local"
-	CrawlRunParamsExtractOptionsProxyProviderRayobyte        CrawlRunParamsExtractOptionsProxyProvider = "rayobyte"
-	CrawlRunParamsExtractOptionsProxyProviderAlways          CrawlRunParamsExtractOptionsProxyProvider = "always"
-	CrawlRunParamsExtractOptionsProxyProviderOculusproxies   CrawlRunParamsExtractOptionsProxyProvider = "oculusproxies"
-	CrawlRunParamsExtractOptionsProxyProviderFroxy           CrawlRunParamsExtractOptionsProxyProvider = "froxy"
-	CrawlRunParamsExtractOptionsProxyProviderPacketstream    CrawlRunParamsExtractOptionsProxyProvider = "packetstream"
-	CrawlRunParamsExtractOptionsProxyProvider911proxy        CrawlRunParamsExtractOptionsProxyProvider = "911proxy"
-	CrawlRunParamsExtractOptionsProxyProviderDirect911proxy  CrawlRunParamsExtractOptionsProxyProvider = "direct911proxy"
-	CrawlRunParamsExtractOptionsProxyProviderThesocialproxy  CrawlRunParamsExtractOptionsProxyProvider = "thesocialproxy"
-	CrawlRunParamsExtractOptionsProxyProviderThesocialproxy2 CrawlRunParamsExtractOptionsProxyProvider = "thesocialproxy2"
-	CrawlRunParamsExtractOptionsProxyProviderNimbleIsp       CrawlRunParamsExtractOptionsProxyProvider = "nimble-isp"
-	CrawlRunParamsExtractOptionsProxyProviderNimbleIspMobile CrawlRunParamsExtractOptionsProxyProvider = "nimble-isp-mobile"
-	CrawlRunParamsExtractOptionsProxyProviderProxitLinux     CrawlRunParamsExtractOptionsProxyProvider = "proxit-linux"
-	CrawlRunParamsExtractOptionsProxyProviderProxitMacos     CrawlRunParamsExtractOptionsProxyProvider = "proxit-macos"
-	CrawlRunParamsExtractOptionsProxyProviderProxitWindows   CrawlRunParamsExtractOptionsProxyProvider = "proxit-windows"
-	CrawlRunParamsExtractOptionsProxyProviderProxitRental    CrawlRunParamsExtractOptionsProxyProvider = "proxit-rental"
-	CrawlRunParamsExtractOptionsProxyProviderIpfoxy          CrawlRunParamsExtractOptionsProxyProvider = "ipfoxy"
-	CrawlRunParamsExtractOptionsProxyProviderBrightup        CrawlRunParamsExtractOptionsProxyProvider = "brightup"
-	CrawlRunParamsExtractOptionsProxyProviderResearch        CrawlRunParamsExtractOptionsProxyProvider = "research"
-)
-
-// Query template configuration for structured data extraction
-//
-// The property ID is required.
-type CrawlRunParamsExtractOptionsQueryTemplate struct {
-	ID string `json:"id,required" format:"uuid"`
-	// Any of "WEB", "SERP", "SOCIAL".
-	APIType     string                                                   `json:"api_type,omitzero"`
-	Pagination  CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion `json:"pagination,omitzero"`
-	Params      map[string]any                                           `json:"params,omitzero"`
-	ExtraFields map[string]any                                           `json:"-"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsQueryTemplate) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsQueryTemplate
-	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
-}
-func (r *CrawlRunParamsExtractOptionsQueryTemplate) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func init() {
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsQueryTemplate](
-		"api_type", "WEB", "SERP", "SOCIAL",
-	)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion struct {
-	OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams *CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams `json:",omitzero,inline"`
-	OfCrawlRunsExtractOptionsQueryTemplatePaginationArray          []CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem     `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams, u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray)
-}
-func (u *CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *CrawlRunParamsExtractOptionsQueryTemplatePaginationUnion) asAny() any {
-	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams) {
-		return u.OfCrawlRunsExtractOptionsQueryTemplatePaginationNextPageParams
-	} else if !param.IsOmitted(u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray) {
-		return &u.OfCrawlRunsExtractOptionsQueryTemplatePaginationArray
-	}
-	return nil
-}
-
-// The property NextPageParams is required.
-type CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams struct {
-	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsQueryTemplatePaginationNextPageParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The property NextPageParams is required.
-type CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem struct {
-	NextPageParams map[string]any `json:"next_page_params,omitzero,required"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsQueryTemplatePaginationArrayItem) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // Referrer policy for the request
 type CrawlRunParamsExtractOptionsReferrerType string
 
@@ -5326,163 +5138,6 @@ const (
 	CrawlRunParamsExtractOptionsReferrerTypeTwitter    CrawlRunParamsExtractOptionsReferrerType = "twitter"
 	CrawlRunParamsExtractOptionsReferrerTypeInstagram  CrawlRunParamsExtractOptionsReferrerType = "instagram"
 )
-
-type CrawlRunParamsExtractOptionsRenderOptions struct {
-	// Whether to enable ad blocking
-	Adblock param.Opt[bool] `json:"adblock,omitzero"`
-	// Whether to enable browser caching
-	Cache param.Opt[bool] `json:"cache,omitzero"`
-	// Whether to use 2Captcha service for solving captchas
-	Enable2captcha param.Opt[bool] `json:"enable_2captcha,omitzero"`
-	// Fingerprint identifier for browser customization
-	FingerprintID param.Opt[string] `json:"fingerprint_id,omitzero"`
-	// Whether to run browser in headless mode
-	Headless param.Opt[bool] `json:"headless,omitzero"`
-	// Whether to include iframe content in the result
-	IncludeIframes param.Opt[bool] `json:"include_iframes,omitzero"`
-	// Whether to load previously stored localStorage data
-	LoadLocalStorage param.Opt[bool] `json:"load_local_storage,omitzero"`
-	// Disable content encoding to avoid cached responses
-	NoAcceptEncoding param.Opt[bool] `json:"no_accept_encoding,omitzero"`
-	// Whether to override default browser permissions
-	OverridePermissions param.Opt[bool] `json:"override_permissions,omitzero"`
-	// Whether to randomize HTTP header order
-	RandomHeaderOrder param.Opt[bool] `json:"random_header_order,omitzero"`
-	// Whether to store localStorage data for future sessions
-	StoreLocalStorage param.Opt[bool] `json:"store_local_storage,omitzero"`
-	// Maximum time in milliseconds to wait for page render
-	Timeout param.Opt[float64] `json:"timeout,omitzero"`
-	// Interval in milliseconds between key presses
-	TypingInterval param.Opt[float64] `json:"typing_interval,omitzero"`
-	// Whether to use a persistent browser session
-	Userbrowser param.Opt[bool] `json:"userbrowser,omitzero"`
-	// Whether to collect performance metrics during rendering
-	WithPerformanceMetrics param.Opt[bool] `json:"with_performance_metrics,omitzero"`
-	// Domains to block from loading
-	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Browser engine to use, or weighted distribution of engines
-	BrowserEngine CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion `json:"browser_engine,omitzero"`
-	// Type of browser connector to use
-	//
-	// Any of "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp",
-	// "playwright".
-	ConnectorType string `json:"connector_type,omitzero"`
-	// Types of resources to block from loading
-	//
-	// Any of "other", "document", "stylesheet", "image", "media", "font", "script",
-	// "texttrack", "xhr", "fetch", "eventsource", "websocket", "manifest",
-	// "signedexchange", "ping", "cspviolationreport", "prefetch", "preflight",
-	// "fedcm".
-	DisabledResources []string `json:"disabled_resources,omitzero"`
-	// Browser extensions to load
-	Extensions []string `json:"extensions,omitzero"`
-	// Configuration for Hackium browser modifications
-	HackiumConfiguration CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration `json:"hackium_configuration,omitzero"`
-	// Specific localStorage keys to load
-	LocalStorageKeysToLoad []string `json:"local_storage_keys_to_load,omitzero"`
-	// Strategy for simulating mouse movements
-	//
-	// Any of "linear", "ghost-cursor", "windmouse".
-	MouseStrategy string `json:"mouse_strategy,omitzero"`
-	// Type of render completion to wait for
-	//
-	// Any of "domcontentloaded", "load", "idle0", "networkidle0", "idle2",
-	// "networkidle2", "navigate".
-	RenderType string `json:"render_type,omitzero"`
-	// Strategy for simulating keyboard typing
-	//
-	// Any of "simple", "distribution".
-	TypingStrategy string `json:"typing_strategy,omitzero"`
-	// Browser event to wait for before considering page loaded
-	//
-	// Any of "load", "domcontentloaded", "idle0", "idle2", "networkidle0",
-	// "networkidle2", "navigate".
-	WaitUntil string `json:"wait_until,omitzero"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsRenderOptions) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsRenderOptions
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsRenderOptions) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func init() {
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
-		"connector_type", "puppeteer", "puppeteer-cdp", "puppeteer-bidi", "webit-cdp", "playwright",
-	)
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
-		"mouse_strategy", "linear", "ghost-cursor", "windmouse",
-	)
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
-		"render_type", "domcontentloaded", "load", "idle0", "networkidle0", "idle2", "networkidle2", "navigate",
-	)
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
-		"typing_strategy", "simple", "distribution",
-	)
-	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptionsRenderOptions](
-		"wait_until", "load", "domcontentloaded", "idle0", "idle2", "networkidle0", "networkidle2", "navigate",
-	)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion struct {
-	// Check if union is this variant with
-	// !param.IsOmitted(union.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString)
-	OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString param.Opt[string]  `json:",omitzero,inline"`
-	OfFloatMap                                                map[string]float64 `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString, u.OfFloatMap)
-}
-func (u *CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineUnion) asAny() any {
-	if !param.IsOmitted(u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString) {
-		return &u.OfCrawlRunsExtractOptionsRenderOptionsBrowserEngineString
-	} else if !param.IsOmitted(u.OfFloatMap) {
-		return &u.OfFloatMap
-	}
-	return nil
-}
-
-type CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString string
-
-const (
-	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringChrome  CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "chrome"
-	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringHackium CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "hackium"
-	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringFirefox CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "firefox"
-	CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineStringHackfox CrawlRunParamsExtractOptionsRenderOptionsBrowserEngineString = "hackfox"
-)
-
-// Configuration for Hackium browser modifications
-type CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration struct {
-	CollectLogs                 param.Opt[bool] `json:"collect_logs,omitzero"`
-	DoNotFixMathSalt            param.Opt[bool] `json:"do_not_fix_math_salt,omitzero"`
-	EnableDocumentElementSpoof  param.Opt[bool] `json:"enable_document_element_spoof,omitzero"`
-	EnableDocumentHasFocus      param.Opt[bool] `json:"enable_document_has_focus,omitzero"`
-	EnableFakeNavigationHistory param.Opt[bool] `json:"enable_fake_navigation_history,omitzero"`
-	EnableKeyOrdering           param.Opt[bool] `json:"enable_key_ordering,omitzero"`
-	EnableSniffer               param.Opt[bool] `json:"enable_sniffer,omitzero"`
-	EnableVerboseLogs           param.Opt[bool] `json:"enable_verbose_logs,omitzero"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsRenderOptionsHackiumConfiguration) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
 
 type CrawlRunParamsExtractOptionsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
@@ -5523,41 +5178,6 @@ func (u *CrawlRunParamsExtractOptionsSkillUnion) asAny() any {
 		return &u.OfStringArray
 	}
 	return nil
-}
-
-// Userbrowser creation template configuration
-//
-// The property Name is required.
-type CrawlRunParamsExtractOptionsTemplate struct {
-	Name   string         `json:"name,required"`
-	Params map[string]any `json:"params,omitzero"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsTemplate) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsTemplate
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsTemplate) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Pre-rendered userbrowser creation template configuration
-//
-// The properties ID, AllowedParameterNames, RenderFlowRendered are required.
-type CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered struct {
-	ID                    string           `json:"id,required"`
-	AllowedParameterNames []string         `json:"allowed_parameter_names,omitzero,required"`
-	RenderFlowRendered    []map[string]any `json:"render_flow_rendered,omitzero,required"`
-	paramObj
-}
-
-func (r CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered) MarshalJSON() (data []byte, err error) {
-	type shadow CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *CrawlRunParamsExtractOptionsUserbrowserCreationTemplateRendered) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // Sitemap and other methods will be used together to find URLs.
