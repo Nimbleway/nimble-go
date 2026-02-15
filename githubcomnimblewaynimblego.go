@@ -680,6 +680,179 @@ func (r *MapResponseLink) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response model from SearchService with results and optional LLM answer.
+//
+// Note: request_id is always a valid UUID generated internally by the middleware,
+// so no validation is needed.
+type SearchResponse struct {
+	// Unique identifier for this request (UUID)
+	RequestID string                 `json:"request_id,required"`
+	Results   []SearchResponseResult `json:"results,required"`
+	// Number of results returned
+	TotalResults int64  `json:"total_results,required"`
+	Answer       string `json:"answer,nullable"`
+	// Citations mapping citation markers to result indices
+	AnswerCitations []SearchResponseAnswerCitation `json:"answer_citations,nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		RequestID       respjson.Field
+		Results         respjson.Field
+		TotalResults    respjson.Field
+		Answer          respjson.Field
+		AnswerCitations respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponse) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Unified result model for all search types (SERP and WSA).
+//
+// This model provides a consistent structure for search results, with
+// platform-specific data in additional_data and typed metadata.
+type SearchResponseResult struct {
+	Content     string `json:"content,required"`
+	Description string `json:"description,required"`
+	// Metadata for SERP-based search results (general, news, location).
+	Metadata SearchResponseResultMetadataUnion `json:"metadata,required"`
+	Title    string                            `json:"title,required"`
+	URL      string                            `json:"url,required"`
+	// Platform-specific fields (e.g., price, rating, publish_date). Omitted from
+	// response when no extra data.
+	AdditionalData map[string]any `json:"additional_data,nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content        respjson.Field
+		Description    respjson.Field
+		Metadata       respjson.Field
+		Title          respjson.Field
+		URL            respjson.Field
+		AdditionalData respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponseResult) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponseResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// SearchResponseResultMetadataUnion contains all possible properties and values
+// from [SearchResponseResultMetadataSerpMetadata],
+// [SearchResponseResultMetadataWsaMetadata].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type SearchResponseResultMetadataUnion struct {
+	// This field is from variant [SearchResponseResultMetadataSerpMetadata].
+	Country string `json:"country"`
+	// This field is from variant [SearchResponseResultMetadataSerpMetadata].
+	EntityType string `json:"entity_type"`
+	// This field is from variant [SearchResponseResultMetadataSerpMetadata].
+	Locale string `json:"locale"`
+	// This field is from variant [SearchResponseResultMetadataSerpMetadata].
+	Position int64 `json:"position"`
+	// This field is from variant [SearchResponseResultMetadataSerpMetadata].
+	Driver string `json:"driver"`
+	// This field is from variant [SearchResponseResultMetadataWsaMetadata].
+	AgentName string `json:"agent_name"`
+	JSON      struct {
+		Country    respjson.Field
+		EntityType respjson.Field
+		Locale     respjson.Field
+		Position   respjson.Field
+		Driver     respjson.Field
+		AgentName  respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+func (u SearchResponseResultMetadataUnion) AsSerpMetadata() (v SearchResponseResultMetadataSerpMetadata) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u SearchResponseResultMetadataUnion) AsWsaMetadata() (v SearchResponseResultMetadataWsaMetadata) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u SearchResponseResultMetadataUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *SearchResponseResultMetadataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Metadata for SERP-based search results (general, news, location).
+type SearchResponseResultMetadataSerpMetadata struct {
+	Country    string `json:"country,required"`
+	EntityType string `json:"entity_type,required"`
+	Locale     string `json:"locale,required"`
+	Position   int64  `json:"position,required"`
+	Driver     string `json:"driver,nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Country     respjson.Field
+		EntityType  respjson.Field
+		Locale      respjson.Field
+		Position    respjson.Field
+		Driver      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponseResultMetadataSerpMetadata) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponseResultMetadataSerpMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Metadata for WSA-based search results.
+type SearchResponseResultMetadataWsaMetadata struct {
+	AgentName string `json:"agent_name,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AgentName   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponseResultMetadataWsaMetadata) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponseResultMetadataWsaMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Citation model that maps citation markers to result indices.
+type SearchResponseAnswerCitation struct {
+	// Citation marker number (e.g., 1 for [1])
+	Marker int64 `json:"marker,required"`
+	// Zero-based index into the results array
+	ResultIndex int64 `json:"result_index,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Marker      respjson.Field
+		ResultIndex respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SearchResponseAnswerCitation) RawJSON() string { return r.JSON.raw }
+func (r *SearchResponseAnswerCitation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ExtractParams struct {
 	// Target URL to scrape
 	URL string `json:"url,required"`
@@ -5748,3 +5921,116 @@ const (
 	MapParamsSitemapInclude MapParamsSitemap = "include"
 	MapParamsSitemapOnly    MapParamsSitemap = "only"
 )
+
+type SearchParams struct {
+	// Search query string
+	Query string `json:"query,required"`
+	// Filter results before this date (format: YYYY-MM-DD or YYYY)
+	EndDate param.Opt[string] `json:"end_date,omitzero"`
+	// Filter results after this date (format: YYYY-MM-DD or YYYY)
+	StartDate param.Opt[string] `json:"start_date,omitzero"`
+	Country   param.Opt[string] `json:"country,omitzero"`
+	// If True, fetches and extracts full page content for each search result. If
+	// False, returns only metadata (title, snippet, URL)
+	DeepSearch param.Opt[bool] `json:"deep_search,omitzero"`
+	// Generate LLM answer summary based on search result snippets (works with both
+	// deep_search=True and False)
+	IncludeAnswer param.Opt[bool]   `json:"include_answer,omitzero"`
+	Locale        param.Opt[string] `json:"locale,omitzero"`
+	// Maximum number of subagents to execute in parallel for WSA focus modes
+	// (shopping, social, geo). Ignored for traditional SERP focus modes. Default: 3,
+	// Range: 1-10.
+	MaxSubagents param.Opt[int64] `json:"max_subagents,omitzero"`
+	// Maximum number of results to return (actual count may be less)
+	NumResults param.Opt[int64] `json:"num_results,omitzero"`
+	// Filter by content type (only supported with focus=general). Supports semantic
+	// groups ('documents', 'spreadsheets', 'presentations') and specific formats
+	// ('pdf', 'docx', 'xlsx', etc.)
+	ContentType []string `json:"content_type,omitzero"`
+	// List of domains to exclude from search results. Maximum 50 domains.
+	ExcludeDomains []string `json:"exclude_domains,omitzero"`
+	// List of domains to include in search results. Maximum 50 domains.
+	IncludeDomains []string `json:"include_domains,omitzero"`
+	// Enum representing the search engines supported by Nimble ⚠️ DEPRECATED: This
+	// parameter is ignored. Use 'focus' parameter instead.
+	//
+	// Any of "google_search", "google_sge", "bing_search", "yandex_search".
+	SearchEngine SearchParamsSearchEngine `json:"search_engine,omitzero"`
+	// Time range filters passed to Webit SERP API as 'time' parameter.
+	//
+	// Any of "hour", "day", "week", "month", "year".
+	TimeRange SearchParamsTimeRange `json:"time_range,omitzero"`
+	// Output format: plain_text, markdown, or simplified_html
+	//
+	// Any of "plain_text", "markdown", "simplified_html".
+	ParsingType SearchParamsParsingType `json:"parsing_type,omitzero"`
+	// Search focus/specialization. Can be a single focus mode (e.g., 'shopping',
+	// 'social') or a list of explicit subagent names (e.g., ['amazon_serp',
+	// 'target_serp'])
+	Topic SearchParamsTopicUnion `json:"topic,omitzero"`
+	paramObj
+}
+
+func (r SearchParams) MarshalJSON() (data []byte, err error) {
+	type shadow SearchParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SearchParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Output format: plain_text, markdown, or simplified_html
+type SearchParamsParsingType string
+
+const (
+	SearchParamsParsingTypePlainText      SearchParamsParsingType = "plain_text"
+	SearchParamsParsingTypeMarkdown       SearchParamsParsingType = "markdown"
+	SearchParamsParsingTypeSimplifiedHTML SearchParamsParsingType = "simplified_html"
+)
+
+// Enum representing the search engines supported by Nimble ⚠️ DEPRECATED: This
+// parameter is ignored. Use 'focus' parameter instead.
+type SearchParamsSearchEngine string
+
+const (
+	SearchParamsSearchEngineGoogleSearch SearchParamsSearchEngine = "google_search"
+	SearchParamsSearchEngineGoogleSge    SearchParamsSearchEngine = "google_sge"
+	SearchParamsSearchEngineBingSearch   SearchParamsSearchEngine = "bing_search"
+	SearchParamsSearchEngineYandexSearch SearchParamsSearchEngine = "yandex_search"
+)
+
+// Time range filters passed to Webit SERP API as 'time' parameter.
+type SearchParamsTimeRange string
+
+const (
+	SearchParamsTimeRangeHour  SearchParamsTimeRange = "hour"
+	SearchParamsTimeRangeDay   SearchParamsTimeRange = "day"
+	SearchParamsTimeRangeWeek  SearchParamsTimeRange = "week"
+	SearchParamsTimeRangeMonth SearchParamsTimeRange = "month"
+	SearchParamsTimeRangeYear  SearchParamsTimeRange = "year"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SearchParamsTopicUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SearchParamsTopicUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *SearchParamsTopicUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *SearchParamsTopicUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
