@@ -17,6 +17,7 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
+	Extract ExtractService
 	Agents  AgentService
 	Crawl   CrawlService
 }
@@ -43,6 +44,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
+	r.Extract = NewExtractService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 
@@ -122,14 +124,6 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 func (r *Client) Agent(ctx context.Context, body AgentParams, opts ...option.RequestOption) (res *AgentResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agent"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
-}
-
-// Extract
-func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
