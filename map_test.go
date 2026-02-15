@@ -13,7 +13,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestMapWithOptionalParams(t *testing.T) {
+func TestMapRunWithOptionalParams(t *testing.T) {
 	t.Skip("Prism tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,13 +26,13 @@ func TestMapWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Map(context.TODO(), githubcomnimblewaynimblego.MapParams{
+	_, err := client.Map.Run(context.TODO(), githubcomnimblewaynimblego.MapRunParams{
 		URL:          "url",
-		Country:      githubcomnimblewaynimblego.MapParamsCountryUs,
-		DomainFilter: githubcomnimblewaynimblego.MapParamsDomainFilterAll,
+		Country:      githubcomnimblewaynimblego.MapRunParamsCountryUs,
+		DomainFilter: githubcomnimblewaynimblego.MapRunParamsDomainFilterAll,
 		Limit:        githubcomnimblewaynimblego.Int(1000),
-		Locale:       githubcomnimblewaynimblego.MapParamsLocaleEnUs,
-		Sitemap:      githubcomnimblewaynimblego.MapParamsSitemapInclude,
+		Locale:       githubcomnimblewaynimblego.MapRunParamsLocaleEnUs,
+		Sitemap:      githubcomnimblewaynimblego.MapRunParamsSitemapInclude,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
