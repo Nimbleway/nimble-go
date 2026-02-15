@@ -25,7 +25,7 @@ func TestUsage(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	t.Skip("Prism tests are disabled")
-	response, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
+	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
 	})
 	if err != nil {

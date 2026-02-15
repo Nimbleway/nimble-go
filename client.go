@@ -17,8 +17,6 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
-	Map     MapService
-	Extract ExtractService
 	Agents  AgentService
 	Crawl   CrawlService
 }
@@ -45,8 +43,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Map = NewMapService(opts...)
-	r.Extract = NewExtractService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 
@@ -120,4 +116,20 @@ func (r *Client) Patch(ctx context.Context, path string, params any, res any, op
 // response.
 func (r *Client) Delete(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
+}
+
+// Extract
+func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/extract"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
+// Create map task
+func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.RequestOption) (res *MapResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/map"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
 }
