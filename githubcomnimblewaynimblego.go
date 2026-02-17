@@ -74,7 +74,8 @@ type ExtractResponseData struct {
 	Parsing ExtractResponseDataParsingUnion `json:"parsing"`
 	// The list of redirects that occurred during the task.
 	Redirects []ExtractResponseDataRedirect `json:"redirects"`
-	// The screenshots from browser actions taken during the task.
+	// Screenshots taken during the task, from browser actions, or the screenshot
+	// format.
 	Screenshots []any `json:"screenshots"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -913,7 +914,7 @@ type ExtractParams struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown".
+	// Any of "html", "markdown", "screenshot".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractParamsHeaderUnion `json:"headers,omitzero"`
