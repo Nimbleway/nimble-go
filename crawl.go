@@ -1179,7 +1179,7 @@ type CrawlRunParamsExtractOptions struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown".
+	// Any of "html", "markdown", "screenshot".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]CrawlRunParamsExtractOptionsHeaderUnion `json:"headers,omitzero"`
