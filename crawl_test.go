@@ -14,7 +14,7 @@ import (
 )
 
 func TestCrawlListWithOptionalParams(t *testing.T) {
-	t.Skip("Prism tests are disabled")
+	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -41,7 +41,7 @@ func TestCrawlListWithOptionalParams(t *testing.T) {
 }
 
 func TestCrawlRunWithOptionalParams(t *testing.T) {
-	t.Skip("Prism tests are disabled")
+	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -265,7 +265,7 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 }
 
 func TestCrawlStatus(t *testing.T) {
-	t.Skip("Prism tests are disabled")
+	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -288,7 +288,7 @@ func TestCrawlStatus(t *testing.T) {
 }
 
 func TestCrawlTerminate(t *testing.T) {
-	t.Skip("Prism tests are disabled")
+	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
