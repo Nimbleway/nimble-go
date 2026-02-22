@@ -27,9 +27,10 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
-		Limit:   githubcomnimblewaynimblego.Int(1),
-		Offset:  githubcomnimblewaynimblego.Int(0),
-		Privacy: githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
+		Limit:     githubcomnimblewaynimblego.Int(1),
+		ManagedBy: githubcomnimblewaynimblego.AgentListParamsManagedByNimble,
+		Offset:    githubcomnimblewaynimblego.Int(0),
+		Privacy:   githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
