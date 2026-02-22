@@ -11,6 +11,7 @@ import (
 	"github.com/Nimbleway/nimble-go"
 	"github.com/Nimbleway/nimble-go/internal/testutil"
 	"github.com/Nimbleway/nimble-go/option"
+	"github.com/Nimbleway/nimble-go/shared"
 )
 
 func TestExtractAsyncWithOptionalParams(t *testing.T) {
@@ -32,40 +33,40 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 			OfExtractAsyncsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 		},
 		BrowserActions: []githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionUnion{{
-			OfExtractAsyncsBrowserActionGotoAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionGotoAction{
-				Goto: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionGotoActionGotoUnion{
+			OfGotoAction: &shared.GotoActionParam{
+				Goto: shared.GotoActionGotoUnionParam{
 					OfString: githubcomnimblewaynimblego.String("https://example.com/login"),
 				},
 			},
 		}, {
-			OfExtractAsyncsBrowserActionWaitForElementAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionWaitForElementAction{
-				WaitForElement: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionWaitForElementActionWaitForElementUnion{
+			OfWaitForElementAction: &shared.WaitForElementActionParam{
+				WaitForElement: shared.WaitForElementActionWaitForElementUnionParam{
 					OfString: githubcomnimblewaynimblego.String("#login-form"),
 				},
 			},
 		}, {
-			OfExtractAsyncsBrowserActionFillAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillAction{
-				Fill: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillUnion{
-					OfType: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillType{
-						Selector: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSelectorUnion{
+			OfFillAction: &shared.FillActionParam{
+				Fill: shared.FillActionFillUnionParam{
+					OfType: &shared.FillActionFillTypeParam{
+						Selector: shared.FillActionFillTypeSelectorUnionParam{
 							OfString: githubcomnimblewaynimblego.String("#username"),
 						},
 						Value:          "user@example.com",
 						ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-						Delay: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeDelayUnion{
+						Delay: shared.FillActionFillTypeDelayUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						Mode:                  "type",
 						MouseMovementStrategy: "linear",
-						Required: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeRequiredUnion{
-							OfExtractAsyncsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeRequiredStringTrue),
+						Required: shared.FillActionFillTypeRequiredUnionParam{
+							OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
 						},
 						Scroll: githubcomnimblewaynimblego.Bool(true),
-						Skip: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSkipUnion{
-							OfExtractAsyncsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSkipStringTrue),
+						Skip: shared.FillActionFillTypeSkipUnionParam{
+							OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
 						},
 						Timeout: githubcomnimblewaynimblego.Float(0),
-						TypingInterval: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeTypingIntervalUnion{
+						TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						TypingStrategy: "simple",
@@ -74,28 +75,28 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 				},
 			},
 		}, {
-			OfExtractAsyncsBrowserActionFillAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillAction{
-				Fill: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillUnion{
-					OfType: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillType{
-						Selector: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSelectorUnion{
+			OfFillAction: &shared.FillActionParam{
+				Fill: shared.FillActionFillUnionParam{
+					OfType: &shared.FillActionFillTypeParam{
+						Selector: shared.FillActionFillTypeSelectorUnionParam{
 							OfString: githubcomnimblewaynimblego.String("#password"),
 						},
 						Value:          "password123",
 						ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-						Delay: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeDelayUnion{
+						Delay: shared.FillActionFillTypeDelayUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						Mode:                  "type",
 						MouseMovementStrategy: "linear",
-						Required: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeRequiredUnion{
-							OfExtractAsyncsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeRequiredStringTrue),
+						Required: shared.FillActionFillTypeRequiredUnionParam{
+							OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
 						},
 						Scroll: githubcomnimblewaynimblego.Bool(true),
-						Skip: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSkipUnion{
-							OfExtractAsyncsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeSkipStringTrue),
+						Skip: shared.FillActionFillTypeSkipUnionParam{
+							OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
 						},
 						Timeout: githubcomnimblewaynimblego.Float(0),
-						TypingInterval: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionFillActionFillTypeTypingIntervalUnion{
+						TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						TypingStrategy: "simple",
@@ -104,23 +105,23 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 				},
 			},
 		}, {
-			OfExtractAsyncsBrowserActionClickAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionClickAction{
-				Click: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionClickActionClickUnion{
+			OfClickAction: &shared.ClickActionParam{
+				Click: shared.ClickActionClickUnionParam{
 					OfString: githubcomnimblewaynimblego.String("#submit"),
 				},
 			},
 		}, {
-			OfExtractAsyncsBrowserActionScreenshotAction: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotAction{
-				Screenshot: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotUnion{
-					OfExtractAsyncsBrowserActionScreenshotActionScreenshotObject: &githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotObject{
+			OfScreenshotAction: &shared.ScreenshotActionParam{
+				Screenshot: shared.ScreenshotActionScreenshotUnionParam{
+					OfScreenshotActionScreenshotObject: &shared.ScreenshotActionScreenshotObjectParam{
 						Format:   "png",
 						FullPage: githubcomnimblewaynimblego.Bool(true),
 						Quality:  githubcomnimblewaynimblego.Float(0),
-						Required: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion{
-							OfExtractAsyncsBrowserActionScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue),
+						Required: shared.ScreenshotActionScreenshotObjectRequiredUnionParam{
+							OfScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectRequiredStringTrue),
 						},
-						Skip: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion{
-							OfExtractAsyncsBrowserActionScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractAsyncParamsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue),
+						Skip: shared.ScreenshotActionScreenshotObjectSkipUnionParam{
+							OfScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectSkipStringTrue),
 						},
 					},
 				},
@@ -236,40 +237,40 @@ func TestExtractRunWithOptionalParams(t *testing.T) {
 			OfExtractRunsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 		},
 		BrowserActions: []githubcomnimblewaynimblego.ExtractRunParamsBrowserActionUnion{{
-			OfExtractRunsBrowserActionGotoAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionGotoAction{
-				Goto: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionGotoActionGotoUnion{
+			OfGotoAction: &shared.GotoActionParam{
+				Goto: shared.GotoActionGotoUnionParam{
 					OfString: githubcomnimblewaynimblego.String("https://example.com/login"),
 				},
 			},
 		}, {
-			OfExtractRunsBrowserActionWaitForElementAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionWaitForElementAction{
-				WaitForElement: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionWaitForElementActionWaitForElementUnion{
+			OfWaitForElementAction: &shared.WaitForElementActionParam{
+				WaitForElement: shared.WaitForElementActionWaitForElementUnionParam{
 					OfString: githubcomnimblewaynimblego.String("#login-form"),
 				},
 			},
 		}, {
-			OfExtractRunsBrowserActionFillAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillAction{
-				Fill: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillUnion{
-					OfType: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillType{
-						Selector: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSelectorUnion{
+			OfFillAction: &shared.FillActionParam{
+				Fill: shared.FillActionFillUnionParam{
+					OfType: &shared.FillActionFillTypeParam{
+						Selector: shared.FillActionFillTypeSelectorUnionParam{
 							OfString: githubcomnimblewaynimblego.String("#username"),
 						},
 						Value:          "user@example.com",
 						ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-						Delay: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeDelayUnion{
+						Delay: shared.FillActionFillTypeDelayUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						Mode:                  "type",
 						MouseMovementStrategy: "linear",
-						Required: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeRequiredUnion{
-							OfExtractRunsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeRequiredStringTrue),
+						Required: shared.FillActionFillTypeRequiredUnionParam{
+							OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
 						},
 						Scroll: githubcomnimblewaynimblego.Bool(true),
-						Skip: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSkipUnion{
-							OfExtractRunsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSkipStringTrue),
+						Skip: shared.FillActionFillTypeSkipUnionParam{
+							OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
 						},
 						Timeout: githubcomnimblewaynimblego.Float(0),
-						TypingInterval: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeTypingIntervalUnion{
+						TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						TypingStrategy: "simple",
@@ -278,28 +279,28 @@ func TestExtractRunWithOptionalParams(t *testing.T) {
 				},
 			},
 		}, {
-			OfExtractRunsBrowserActionFillAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillAction{
-				Fill: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillUnion{
-					OfType: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillType{
-						Selector: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSelectorUnion{
+			OfFillAction: &shared.FillActionParam{
+				Fill: shared.FillActionFillUnionParam{
+					OfType: &shared.FillActionFillTypeParam{
+						Selector: shared.FillActionFillTypeSelectorUnionParam{
 							OfString: githubcomnimblewaynimblego.String("#password"),
 						},
 						Value:          "password123",
 						ClickOnElement: githubcomnimblewaynimblego.Bool(true),
-						Delay: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeDelayUnion{
+						Delay: shared.FillActionFillTypeDelayUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						Mode:                  "type",
 						MouseMovementStrategy: "linear",
-						Required: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeRequiredUnion{
-							OfExtractRunsBrowserActionFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeRequiredStringTrue),
+						Required: shared.FillActionFillTypeRequiredUnionParam{
+							OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
 						},
 						Scroll: githubcomnimblewaynimblego.Bool(true),
-						Skip: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSkipUnion{
-							OfExtractRunsBrowserActionFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeSkipStringTrue),
+						Skip: shared.FillActionFillTypeSkipUnionParam{
+							OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
 						},
 						Timeout: githubcomnimblewaynimblego.Float(0),
-						TypingInterval: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionFillActionFillTypeTypingIntervalUnion{
+						TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
 							OfFloat: githubcomnimblewaynimblego.Float(1000),
 						},
 						TypingStrategy: "simple",
@@ -308,23 +309,23 @@ func TestExtractRunWithOptionalParams(t *testing.T) {
 				},
 			},
 		}, {
-			OfExtractRunsBrowserActionClickAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionClickAction{
-				Click: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionClickActionClickUnion{
+			OfClickAction: &shared.ClickActionParam{
+				Click: shared.ClickActionClickUnionParam{
 					OfString: githubcomnimblewaynimblego.String("#submit"),
 				},
 			},
 		}, {
-			OfExtractRunsBrowserActionScreenshotAction: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotAction{
-				Screenshot: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotUnion{
-					OfExtractRunsBrowserActionScreenshotActionScreenshotObject: &githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotObject{
+			OfScreenshotAction: &shared.ScreenshotActionParam{
+				Screenshot: shared.ScreenshotActionScreenshotUnionParam{
+					OfScreenshotActionScreenshotObject: &shared.ScreenshotActionScreenshotObjectParam{
 						Format:   "png",
 						FullPage: githubcomnimblewaynimblego.Bool(true),
 						Quality:  githubcomnimblewaynimblego.Float(0),
-						Required: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotObjectRequiredUnion{
-							OfExtractRunsBrowserActionScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotObjectRequiredStringTrue),
+						Required: shared.ScreenshotActionScreenshotObjectRequiredUnionParam{
+							OfScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectRequiredStringTrue),
 						},
-						Skip: githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotObjectSkipUnion{
-							OfExtractRunsBrowserActionScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractRunParamsBrowserActionScreenshotActionScreenshotObjectSkipStringTrue),
+						Skip: shared.ScreenshotActionScreenshotObjectSkipUnionParam{
+							OfScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectSkipStringTrue),
 						},
 					},
 				},
