@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.6.0 (2026-02-22)
+
+Full Changelog: [v0.5.0...v0.6.0](https://github.com/Nimbleway/nimble-go/compare/v0.5.0...v0.6.0)
+
+### Features
+
+* **api:** add shared ([d4711c8](https://github.com/Nimbleway/nimble-go/commit/d4711c8a617aa12809dde63dcb438ead64827ce1))
+* **api:** align `extract_async` ([1a22783](https://github.com/Nimbleway/nimble-go/commit/1a227830e6453774942aab0901b2c1be6cdb2d90))
+* **api:** Align new endpoints ([be4f570](https://github.com/Nimbleway/nimble-go/commit/be4f570f65da17f31df1e799f183711d7892884c))
+* **api:** api update ([1c231a9](https://github.com/Nimbleway/nimble-go/commit/1c231a97b2a6ca1f5a7cd9b327b0b51df020acdf))
+* **api:** api update ([994ac59](https://github.com/Nimbleway/nimble-go/commit/994ac59b84fd05637aa9be86387e462b2e54fe4a))
+* **api:** manual updates ([3a62a3c](https://github.com/Nimbleway/nimble-go/commit/3a62a3c3c1e5fb7c51bc7d1e934b520689cd4a9a))
+* **api:** Move /agent to /agents/run ([4c73582](https://github.com/Nimbleway/nimble-go/commit/4c7358200ed84bb877c1a55a2f79a0c51fe80fe4))
+* **api:** re-add extract ([6916bd2](https://github.com/Nimbleway/nimble-go/commit/6916bd2cade5d91955234c367670a7ec744c5715))
+
+
+### Bug Fixes
+
+* allow canceling a request while it is waiting to retry ([363e15b](https://github.com/Nimbleway/nimble-go/commit/363e15b0167bc88794233821d45991df8c926176))
+
+
+### Chores
+
+* **internal:** remove mock server code ([919dd2c](https://github.com/Nimbleway/nimble-go/commit/919dd2c35ad9e8dfc5a7eb2c42e3959dbdded631))
+* update mock server docs ([e22d713](https://github.com/Nimbleway/nimble-go/commit/e22d7137d736a1dcfd352f80d24814a147dad9cb))
+
 ## 0.5.0 (2026-02-15)
 
 Full Changelog: [v0.4.0...v0.5.0](https://github.com/Nimbleway/nimble-go/compare/v0.4.0...v0.5.0)
