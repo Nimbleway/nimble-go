@@ -82,6 +82,7 @@ type AgentListResponse struct {
 	Description string `json:"description,nullable"`
 	Domain      string `json:"domain,nullable"`
 	EntityType  string `json:"entity_type,nullable"`
+	ManagedBy   string `json:"managed_by,nullable"`
 	Vertical    string `json:"vertical,nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -91,6 +92,7 @@ type AgentListResponse struct {
 		Description respjson.Field
 		Domain      respjson.Field
 		EntityType  respjson.Field
+		ManagedBy   respjson.Field
 		Vertical    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -130,6 +132,7 @@ type AgentGetResponse struct {
 	EntityType      string                          `json:"entity_type,nullable"`
 	FeatureFlags    AgentGetResponseFeatureFlags    `json:"feature_flags"`
 	InputProperties []AgentGetResponseInputProperty `json:"input_properties,nullable"`
+	ManagedBy       string                          `json:"managed_by,nullable"`
 	OutputSchema    map[string]any                  `json:"output_schema,nullable"`
 	Vertical        string                          `json:"vertical,nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -142,6 +145,7 @@ type AgentGetResponse struct {
 		EntityType      respjson.Field
 		FeatureFlags    respjson.Field
 		InputProperties respjson.Field
+		ManagedBy       respjson.Field
 		OutputSchema    respjson.Field
 		Vertical        respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -174,24 +178,26 @@ func (r *AgentGetResponseFeatureFlags) UnmarshalJSON(data []byte) error {
 }
 
 type AgentGetResponseInputProperty struct {
-	Default     string   `json:"default,nullable"`
-	Description string   `json:"description,nullable"`
-	Examples    []string `json:"examples,nullable"`
-	Name        string   `json:"name"`
-	Required    bool     `json:"required"`
-	Rules       []string `json:"rules,nullable"`
-	Type        string   `json:"type"`
+	Default             string   `json:"default,nullable"`
+	Description         string   `json:"description,nullable"`
+	Examples            []string `json:"examples,nullable"`
+	IsLocalizationParam bool     `json:"is_localization_param"`
+	Name                string   `json:"name"`
+	Required            bool     `json:"required"`
+	Rules               []string `json:"rules,nullable"`
+	Type                string   `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Default     respjson.Field
-		Description respjson.Field
-		Examples    respjson.Field
-		Name        respjson.Field
-		Required    respjson.Field
-		Rules       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Default             respjson.Field
+		Description         respjson.Field
+		Examples            respjson.Field
+		IsLocalizationParam respjson.Field
+		Name                respjson.Field
+		Required            respjson.Field
+		Rules               respjson.Field
+		Type                respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -834,6 +840,10 @@ type AgentListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Pagination offset
 	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
+	// Filter public templates by attribution
+	//
+	// Any of "nimble", "community".
+	ManagedBy AgentListParamsManagedBy `query:"managed_by,omitzero" json:"-"`
 	// Filter by privacy level
 	//
 	// Any of "public", "private", "all".
@@ -848,6 +858,14 @@ func (r AgentListParams) URLQuery() (v url.Values, err error) {
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
+
+// Filter public templates by attribution
+type AgentListParamsManagedBy string
+
+const (
+	AgentListParamsManagedByNimble    AgentListParamsManagedBy = "nimble"
+	AgentListParamsManagedByCommunity AgentListParamsManagedBy = "community"
+)
 
 // Filter by privacy level
 type AgentListParamsPrivacy string
