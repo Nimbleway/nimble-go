@@ -8,7 +8,635 @@ import (
 	"github.com/Nimbleway/nimble-go/internal/apijson"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/shared"
+	"github.com/Nimbleway/nimble-go/shared/constant"
 )
+
+type ExtractResponse struct {
+	Data     ExtractResponseData     `json:"data,required"`
+	Metadata ExtractResponseMetadata `json:"metadata,required"`
+	// The status of the task.
+	//
+	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
+	// "rejected", "blocked".
+	Status ExtractResponseStatus `json:"status,required"`
+	// Unique identifier for the task.
+	TaskID string `json:"task_id,required"`
+	// The final URL.
+	URL   string               `json:"url,required"`
+	Debug ExtractResponseDebug `json:"debug"`
+	// Pagination information if applicable.
+	Pagination ExtractResponsePaginationUnion `json:"pagination"`
+	// The HTTP status code of the task.
+	StatusCode float64 `json:"status_code"`
+	// List of warnings generated during the task.
+	Warnings []string `json:"warnings"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Metadata    respjson.Field
+		Status      respjson.Field
+		TaskID      respjson.Field
+		URL         respjson.Field
+		Debug       respjson.Field
+		Pagination  respjson.Field
+		StatusCode  respjson.Field
+		Warnings    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponse) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseData struct {
+	// Browser actions execution results. Present only when browser_actions were
+	// specified in the request.
+	BrowserActions ExtractResponseDataBrowserActions `json:"browser_actions"`
+	// The cookies collected from browser actions during the task.
+	Cookies []any `json:"cookies"`
+	// The evaluation results from browser actions during the task.
+	Eval []any `json:"eval"`
+	// The http requests from browser actions made during the task.
+	Fetch []any `json:"fetch"`
+	// The headers received during the task.
+	Headers map[string]string `json:"headers"`
+	// The HTML content of the page.
+	HTML string `json:"html"`
+	// The Markdown version of the HTML content.
+	Markdown string `json:"markdown"`
+	// The network capture data collected during the task.
+	NetworkCapture []ExtractResponseDataNetworkCapture `json:"network_capture"`
+	// The parsing results extracted from the HTML & network content.
+	Parsing ExtractResponseDataParsingUnion `json:"parsing"`
+	// The list of redirects that occurred during the task.
+	Redirects []ExtractResponseDataRedirect `json:"redirects"`
+	// Screenshots taken during the task, from browser actions, or the screenshot
+	// format.
+	Screenshots []any `json:"screenshots"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BrowserActions respjson.Field
+		Cookies        respjson.Field
+		Eval           respjson.Field
+		Fetch          respjson.Field
+		Headers        respjson.Field
+		HTML           respjson.Field
+		Markdown       respjson.Field
+		NetworkCapture respjson.Field
+		Parsing        respjson.Field
+		Redirects      respjson.Field
+		Screenshots    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseData) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Browser actions execution results. Present only when browser_actions were
+// specified in the request.
+type ExtractResponseDataBrowserActions struct {
+	Results       []ExtractResponseDataBrowserActionsResult `json:"results,required"`
+	Success       bool                                      `json:"success,required"`
+	TotalDuration float64                                   `json:"total_duration,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Results       respjson.Field
+		Success       respjson.Field
+		TotalDuration respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataBrowserActions) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataBrowserActionsResult struct {
+	Duration float64 `json:"duration,required"`
+	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
+	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
+	// "fetch".
+	Name string `json:"name,required"`
+	// Any of "no-run", "in-progress", "done", "error", "skipped".
+	Status string `json:"status,required"`
+	Error  string `json:"error"`
+	Result any    `json:"result"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Duration    respjson.Field
+		Name        respjson.Field
+		Status      respjson.Field
+		Error       respjson.Field
+		Result      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataBrowserActionsResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCapture struct {
+	Filter       ExtractResponseDataNetworkCaptureFilter   `json:"filter,required"`
+	Results      []ExtractResponseDataNetworkCaptureResult `json:"results,required"`
+	ErrorMessage string                                    `json:"errorMessage"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Filter       respjson.Field
+		Results      respjson.Field
+		ErrorMessage respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCapture) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureFilter struct {
+	Validation           bool    `json:"validation,required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method"`
+	// Resource type for network capture filtering
+	ResourceType                ExtractResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
+	StatusCode                  ExtractResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
+	URL                         ExtractResponseDataNetworkCaptureFilterURL               `json:"url"`
+	WaitForRequestsCountTimeout float64                                                  `json:"wait_for_requests_count_timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Validation                  respjson.Field
+		WaitForRequestsCount        respjson.Field
+		Method                      respjson.Field
+		ResourceType                respjson.Field
+		StatusCode                  respjson.Field
+		URL                         respjson.Field
+		WaitForRequestsCountTimeout respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureFilter) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureFilter) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponseDataNetworkCaptureFilterResourceTypeUnion contains all possible
+// properties and values from [string], [[]string].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponseDataNetworkCaptureFilterResourceTypeString
+// OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray]
+type ExtractResponseDataNetworkCaptureFilterResourceTypeUnion struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfExtractResponseDataNetworkCaptureFilterResourceTypeString string `json:",inline"`
+	// This field will be present if the value is a [[]string] instead of an object.
+	OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray []string `json:",inline"`
+	JSON                                                                struct {
+		OfExtractResponseDataNetworkCaptureFilterResourceTypeString         respjson.Field
+		OfExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray respjson.Field
+		raw                                                                 string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) AsExtractResponseDataNetworkCaptureFilterResourceTypeString() (v string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) AsExtractResponseDataNetworkCaptureFilterResourceTypeArrayItemArray() (v []string) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataNetworkCaptureFilterResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resource type for network capture filtering
+type ExtractResponseDataNetworkCaptureFilterResourceTypeString string
+
+const (
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringDocument           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "document"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringStylesheet         ExtractResponseDataNetworkCaptureFilterResourceTypeString = "stylesheet"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringImage              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "image"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringMedia              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "media"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFont               ExtractResponseDataNetworkCaptureFilterResourceTypeString = "font"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringScript             ExtractResponseDataNetworkCaptureFilterResourceTypeString = "script"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringTexttrack          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "texttrack"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringXhr                ExtractResponseDataNetworkCaptureFilterResourceTypeString = "xhr"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFetch              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "fetch"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPrefetch           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "prefetch"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringEventsource        ExtractResponseDataNetworkCaptureFilterResourceTypeString = "eventsource"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringWebsocket          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "websocket"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringManifest           ExtractResponseDataNetworkCaptureFilterResourceTypeString = "manifest"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringSignedexchange     ExtractResponseDataNetworkCaptureFilterResourceTypeString = "signedexchange"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPing               ExtractResponseDataNetworkCaptureFilterResourceTypeString = "ping"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringCspviolationreport ExtractResponseDataNetworkCaptureFilterResourceTypeString = "cspviolationreport"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringPreflight          ExtractResponseDataNetworkCaptureFilterResourceTypeString = "preflight"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringOther              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "other"
+	ExtractResponseDataNetworkCaptureFilterResourceTypeStringFedcm              ExtractResponseDataNetworkCaptureFilterResourceTypeString = "fedcm"
+)
+
+// ExtractResponseDataNetworkCaptureFilterStatusCodeUnion contains all possible
+// properties and values from [float64], [[]float64].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfFloat OfFloatArray]
+type ExtractResponseDataNetworkCaptureFilterStatusCodeUnion struct {
+	// This field will be present if the value is a [float64] instead of an object.
+	OfFloat float64 `json:",inline"`
+	// This field will be present if the value is a [[]float64] instead of an object.
+	OfFloatArray []float64 `json:",inline"`
+	JSON         struct {
+		OfFloat      respjson.Field
+		OfFloatArray respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloat() (v float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloatArray() (v []float64) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureFilterURL struct {
+	// Any of "exact", "contains".
+	Type  string `json:"type,required"`
+	Value string `json:"value,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureFilterURL) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResult struct {
+	Request  ExtractResponseDataNetworkCaptureResultRequest  `json:"request,required"`
+	Response ExtractResponseDataNetworkCaptureResultResponse `json:"response,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Request     respjson.Field
+		Response    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResultRequest struct {
+	Headers map[string]string `json:"headers,required"`
+	Method  string            `json:"method,required"`
+	// Resource type for network capture filtering
+	//
+	// Any of "document", "stylesheet", "image", "media", "font", "script",
+	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
+	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
+	ResourceType string `json:"resource_type,required"`
+	URL          string `json:"url,required"`
+	Body         string `json:"body"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Headers      respjson.Field
+		Method       respjson.Field
+		ResourceType respjson.Field
+		URL          respjson.Field
+		Body         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResultRequest) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataNetworkCaptureResultResponse struct {
+	Body    string            `json:"body,required"`
+	Headers map[string]string `json:"headers,required"`
+	// Any of "none", "base64".
+	Serialization string  `json:"serialization,required"`
+	Status        float64 `json:"status,required"`
+	StatusText    string  `json:"status_text,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Body          respjson.Field
+		Headers       respjson.Field
+		Serialization respjson.Field
+		Status        respjson.Field
+		StatusText    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataNetworkCaptureResultResponse) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataNetworkCaptureResultResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponseDataParsingUnion contains all possible properties and values from
+// [ExtractResponseDataParsingParsingSuccessResult],
+// [ExtractResponseDataParsingParsingErrorResult], [map[string]any].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponseDataParsingMapItem]
+type ExtractResponseDataParsingUnion struct {
+	// This field will be present if the value is a [any] instead of an object.
+	OfExtractResponseDataParsingMapItem any `json:",inline"`
+	// This field is from variant [ExtractResponseDataParsingParsingSuccessResult].
+	Entities map[string]any `json:"entities"`
+	Status   string         `json:"status"`
+	// This field is from variant [ExtractResponseDataParsingParsingErrorResult].
+	Error string `json:"error"`
+	JSON  struct {
+		OfExtractResponseDataParsingMapItem respjson.Field
+		Entities                            respjson.Field
+		Status                              respjson.Field
+		Error                               respjson.Field
+		raw                                 string
+	} `json:"-"`
+}
+
+func (u ExtractResponseDataParsingUnion) AsExtractResponseDataParsingParsingSuccessResult() (v ExtractResponseDataParsingParsingSuccessResult) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataParsingUnion) AsExtractResponseDataParsingParsingErrorResult() (v ExtractResponseDataParsingParsingErrorResult) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponseDataParsingUnion) AsAnyMap() (v map[string]any) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponseDataParsingUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataParsingParsingSuccessResult struct {
+	Entities map[string]any   `json:"entities,required"`
+	Status   constant.Success `json:"status,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Entities    respjson.Field
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataParsingParsingSuccessResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataParsingParsingErrorResult struct {
+	Error  string         `json:"error,required"`
+	Status constant.Error `json:"status,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Error       respjson.Field
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataParsingParsingErrorResult) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataParsingParsingErrorResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseDataRedirect struct {
+	StatusCode float64 `json:"status_code,required"`
+	URL        string  `json:"url,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		StatusCode  respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDataRedirect) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDataRedirect) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponseMetadata struct {
+	// The name of the agent used for the query.
+	Agent string `json:"agent"`
+	// The driver used for the task.
+	Driver string `json:"driver"`
+	// The localization identifier for the query.
+	LocalizationID string `json:"localization_id"`
+	// The duration in milliseconds of the query processing.
+	QueryDuration float64 `json:"query_duration"`
+	// The time when the query was received.
+	QueryTime string `json:"query_time"`
+	// Additional response parameters.
+	ResponseParameters any `json:"response_parameters"`
+	// A tag associated with the query.
+	Tag string `json:"tag"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agent              respjson.Field
+		Driver             respjson.Field
+		LocalizationID     respjson.Field
+		QueryDuration      respjson.Field
+		QueryTime          respjson.Field
+		ResponseParameters respjson.Field
+		Tag                respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseMetadata) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The status of the task.
+type ExtractResponseStatus string
+
+const (
+	ExtractResponseStatusSuccess   ExtractResponseStatus = "success"
+	ExtractResponseStatusSkipped   ExtractResponseStatus = "skipped"
+	ExtractResponseStatusFatal     ExtractResponseStatus = "fatal"
+	ExtractResponseStatusError     ExtractResponseStatus = "error"
+	ExtractResponseStatusPostponed ExtractResponseStatus = "postponed"
+	ExtractResponseStatusIgnored   ExtractResponseStatus = "ignored"
+	ExtractResponseStatusRejected  ExtractResponseStatus = "rejected"
+	ExtractResponseStatusBlocked   ExtractResponseStatus = "blocked"
+)
+
+type ExtractResponseDebug struct {
+	// Performance metrics collected during the task.
+	PerformanceMetrics map[string]float64 `json:"performance_metrics"`
+	// Total bytes used by the proxy during the task.
+	ProxyTotalBytesUsage float64 `json:"proxy_total_bytes_usage"`
+	// The transformed output after applying any transformations.
+	TransformedOutput any `json:"transformed_output"`
+	// The userbrowser instance using during the task.
+	Userbrowser any `json:"userbrowser"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PerformanceMetrics   respjson.Field
+		ProxyTotalBytesUsage respjson.Field
+		TransformedOutput    respjson.Field
+		Userbrowser          respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponseDebug) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponseDebug) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ExtractResponsePaginationUnion contains all possible properties and values from
+// [ExtractResponsePaginationNextPageParams],
+// [[]ExtractResponsePaginationArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfExtractResponsePaginationArray]
+type ExtractResponsePaginationUnion struct {
+	// This field will be present if the value is a
+	// [[]ExtractResponsePaginationArrayItem] instead of an object.
+	OfExtractResponsePaginationArray []ExtractResponsePaginationArrayItem `json:",inline"`
+	// This field is from variant [ExtractResponsePaginationNextPageParams].
+	NextPageParams map[string]any `json:"next_page_params"`
+	JSON           struct {
+		OfExtractResponsePaginationArray respjson.Field
+		NextPageParams                   respjson.Field
+		raw                              string
+	} `json:"-"`
+}
+
+func (u ExtractResponsePaginationUnion) AsExtractResponsePaginationNextPageParams() (v ExtractResponsePaginationNextPageParams) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ExtractResponsePaginationUnion) AsExtractResponsePaginationArray() (v []ExtractResponsePaginationArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ExtractResponsePaginationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ExtractResponsePaginationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponsePaginationNextPageParams struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponsePaginationNextPageParams) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponsePaginationNextPageParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractResponsePaginationArrayItem struct {
+	NextPageParams map[string]any `json:"next_page_params,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextPageParams respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractResponsePaginationArrayItem) RawJSON() string { return r.JSON.raw }
+func (r *ExtractResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Response schema for map requests.
 type MapResponse struct {
@@ -226,6 +854,1501 @@ func (r SearchResponseAnswerCitation) RawJSON() string { return r.JSON.raw }
 func (r *SearchResponseAnswerCitation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type ExtractParams struct {
+	// Target URL to scrape
+	URL string `json:"url,required"`
+	// City for geolocation
+	City param.Opt[string] `json:"city,omitzero"`
+	// Whether to automatically handle cookie consent headers
+	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
+	// Whether to use HTTP/2 protocol
+	Http2 param.Opt[bool] `json:"http2,omitzero"`
+	// Whether to emulate XMLHttpRequest behavior
+	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
+	// Whether to parse the response content
+	Parse param.Opt[bool] `json:"parse,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render param.Opt[bool] `json:"render,omitzero"`
+	// Request timeout in milliseconds
+	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
+	// User-defined tag for request identification
+	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Browser type to emulate
+	Browser ExtractParamsBrowserUnion `json:"browser,omitzero"`
+	// Array of browser automation actions to execute sequentially
+	BrowserActions []ExtractParamsBrowserActionUnion `json:"browser_actions,omitzero"`
+	// Browser cookies as array of cookie objects
+	Cookies ExtractParamsCookiesUnion `json:"cookies,omitzero"`
+	// Country code for geolocation and proxy selection
+	//
+	// Any of "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT",
+	// "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ",
+	// "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA",
+	// "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU",
+	// "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE",
+	// "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB",
+	// "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+	// "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL",
+	// "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG",
+	// "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+	// "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG",
+	// "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV",
+	// "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP",
+	// "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN",
+	// "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB",
+	// "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR",
+	// "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+	// "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US",
+	// "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE",
+	// "YT", "ZA", "ZM", "ZW", "ALL".
+	Country ExtractParamsCountry `json:"country,omitzero"`
+	// Device type for browser emulation
+	//
+	// Any of "desktop", "mobile", "tablet".
+	Device ExtractParamsDevice `json:"device,omitzero"`
+	// Browser driver to use
+	//
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	Driver ExtractParamsDriver `json:"driver,omitzero"`
+	// Expected HTTP status codes for successful requests
+	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
+	// List of acceptable response formats in order of preference
+	//
+	// Any of "html", "markdown", "screenshot".
+	Formats []string `json:"formats,omitzero"`
+	// Custom HTTP headers to include in the request
+	Headers map[string]ExtractParamsHeaderUnion `json:"headers,omitzero"`
+	// Locale for browser language and region settings
+	//
+	// Any of "aa-DJ", "aa-ER", "aa-ET", "af", "af-NA", "af-ZA", "ak", "ak-GH", "am",
+	// "am-ET", "an-ES", "ar", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IN", "ar-IQ",
+	// "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA", "ar-SA", "ar-SD",
+	// "ar-SY", "ar-TN", "ar-YE", "as", "as-IN", "asa", "asa-TZ", "ast-ES", "az",
+	// "az-AZ", "az-Cyrl", "az-Cyrl-AZ", "az-Latn", "az-Latn-AZ", "be", "be-BY", "bem",
+	// "bem-ZM", "ber-DZ", "ber-MA", "bez", "bez-TZ", "bg", "bg-BG", "bho-IN", "bm",
+	// "bm-ML", "bn", "bn-BD", "bn-IN", "bo", "bo-CN", "bo-IN", "br-FR", "brx-IN",
+	// "bs", "bs-BA", "byn-ER", "ca", "ca-AD", "ca-ES", "ca-FR", "ca-IT", "cgg",
+	// "cgg-UG", "chr", "chr-US", "crh-UA", "cs", "cs-CZ", "csb-PL", "cv-RU", "cy",
+	// "cy-GB", "da", "da-DK", "dav", "dav-KE", "de", "de-AT", "de-BE", "de-CH",
+	// "de-DE", "de-LI", "de-LU", "dv-MV", "dz-BT", "ebu", "ebu-KE", "ee", "ee-GH",
+	// "ee-TG", "el", "el-CY", "el-GR", "en", "en-AG", "en-AS", "en-AU", "en-BE",
+	// "en-BW", "en-BZ", "en-CA", "en-DK", "en-GB", "en-GU", "en-HK", "en-IE", "en-IN",
+	// "en-JM", "en-MH", "en-MP", "en-MT", "en-MU", "en-NA", "en-NG", "en-NZ", "en-PH",
+	// "en-PK", "en-SG", "en-TT", "en-UM", "en-US", "en-VI", "en-ZA", "en-ZM", "en-ZW",
+	// "eo", "es", "es-419", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU",
+	// "es-DO", "es-EC", "es-ES", "es-GQ", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA",
+	// "es-PE", "es-PR", "es-PY", "es-SV", "es-US", "es-UY", "es-VE", "et", "et-EE",
+	// "eu", "eu-ES", "fa", "fa-AF", "fa-IR", "ff", "ff-SN", "fi", "fi-FI", "fil",
+	// "fil-PH", "fo", "fo-FO", "fr", "fr-BE", "fr-BF", "fr-BI", "fr-BJ", "fr-BL",
+	// "fr-CA", "fr-CD", "fr-CF", "fr-CG", "fr-CH", "fr-CI", "fr-CM", "fr-DJ", "fr-FR",
+	// "fr-GA", "fr-GN", "fr-GP", "fr-GQ", "fr-KM", "fr-LU", "fr-MC", "fr-MF", "fr-MG",
+	// "fr-ML", "fr-MQ", "fr-NE", "fr-RE", "fr-RW", "fr-SN", "fr-TD", "fr-TG",
+	// "fur-IT", "fy-DE", "fy-NL", "ga", "ga-IE", "gd-GB", "gez-ER", "gez-ET", "gl",
+	// "gl-ES", "gsw", "gsw-CH", "gu", "gu-IN", "guz", "guz-KE", "gv", "gv-GB", "ha",
+	// "ha-Latn", "ha-Latn-GH", "ha-Latn-NE", "ha-Latn-NG", "ha-NG", "haw", "haw-US",
+	// "he", "he-IL", "hi", "hi-IN", "hne-IN", "hr", "hr-HR", "hsb-DE", "ht-HT", "hu",
+	// "hu-HU", "hy", "hy-AM", "id", "id-ID", "ig", "ig-NG", "ii", "ii-CN", "ik-CA",
+	// "is", "is-IS", "it", "it-CH", "it-IT", "iu-CA", "iw-IL", "ja", "ja-JP", "jmc",
+	// "jmc-TZ", "ka", "ka-GE", "kab", "kab-DZ", "kam", "kam-KE", "kde", "kde-TZ",
+	// "kea", "kea-CV", "khq", "khq-ML", "ki", "ki-KE", "kk", "kk-Cyrl", "kk-Cyrl-KZ",
+	// "kk-KZ", "kl", "kl-GL", "kln", "kln-KE", "km", "km-KH", "kn", "kn-IN", "ko",
+	// "ko-KR", "kok", "kok-IN", "ks-IN", "ku-TR", "kw", "kw-GB", "ky-KG", "lag",
+	// "lag-TZ", "lb-LU", "lg", "lg-UG", "li-BE", "li-NL", "lij-IT", "lo-LA", "lt",
+	// "lt-LT", "luo", "luo-KE", "luy", "luy-KE", "lv", "lv-LV", "mag-IN", "mai-IN",
+	// "mas", "mas-KE", "mas-TZ", "mer", "mer-KE", "mfe", "mfe-MU", "mg", "mg-MG",
+	// "mhr-RU", "mi-NZ", "mk", "mk-MK", "ml", "ml-IN", "mn-MN", "mr", "mr-IN", "ms",
+	// "ms-BN", "ms-MY", "mt", "mt-MT", "my", "my-MM", "nan-TW", "naq", "naq-NA", "nb",
+	// "nb-NO", "nd", "nd-ZW", "nds-DE", "nds-NL", "ne", "ne-IN", "ne-NP", "nl",
+	// "nl-AW", "nl-BE", "nl-NL", "nn", "nn-NO", "nr-ZA", "nso-ZA", "nyn", "nyn-UG",
+	// "oc-FR", "om", "om-ET", "om-KE", "or", "or-IN", "os-RU", "pa", "pa-Arab",
+	// "pa-Arab-PK", "pa-Guru", "pa-Guru-IN", "pa-IN", "pa-PK", "pap-AN", "pl",
+	// "pl-PL", "ps", "ps-AF", "pt", "pt-BR", "pt-GW", "pt-MZ", "pt-PT", "rm", "rm-CH",
+	// "ro", "ro-MD", "ro-RO", "rof", "rof-TZ", "ru", "ru-MD", "ru-RU", "ru-UA", "rw",
+	// "rw-RW", "rwk", "rwk-TZ", "sa-IN", "saq", "saq-KE", "sc-IT", "sd-IN", "se-NO",
+	// "seh", "seh-MZ", "ses", "ses-ML", "sg", "sg-CF", "shi", "shi-Latn",
+	// "shi-Latn-MA", "shi-Tfng", "shi-Tfng-MA", "shs-CA", "si", "si-LK", "sid-ET",
+	// "sk", "sk-SK", "sl", "sl-SI", "sn", "sn-ZW", "so", "so-DJ", "so-ET", "so-KE",
+	// "so-SO", "sq", "sq-AL", "sq-MK", "sr", "sr-Cyrl", "sr-Cyrl-BA", "sr-Cyrl-ME",
+	// "sr-Cyrl-RS", "sr-Latn", "sr-Latn-BA", "sr-Latn-ME", "sr-Latn-RS", "sr-ME",
+	// "sr-RS", "ss-ZA", "st-ZA", "sv", "sv-FI", "sv-SE", "sw", "sw-KE", "sw-TZ", "ta",
+	// "ta-IN", "ta-LK", "te", "te-IN", "teo", "teo-KE", "teo-UG", "tg-TJ", "th",
+	// "th-TH", "ti", "ti-ER", "ti-ET", "tig-ER", "tk-TM", "tl-PH", "tn-ZA", "to",
+	// "to-TO", "tr", "tr-CY", "tr-TR", "ts-ZA", "tt-RU", "tzm", "tzm-Latn",
+	// "tzm-Latn-MA", "ug-CN", "uk", "uk-UA", "unm-US", "ur", "ur-IN", "ur-PK", "uz",
+	// "uz-Arab", "uz-Arab-AF", "uz-Cyrl", "uz-Cyrl-UZ", "uz-Latn", "uz-Latn-UZ",
+	// "uz-UZ", "ve-ZA", "vi", "vi-VN", "vun", "vun-TZ", "wa-BE", "wae-CH", "wal-ET",
+	// "wo-SN", "xh-ZA", "xog", "xog-UG", "yi-US", "yo", "yo-NG", "yue-HK", "zh",
+	// "zh-CN", "zh-HK", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK", "zh-Hans-MO",
+	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
+	// "zh-TW", "zu", "zu-ZA", "auto".
+	Locale ExtractParamsLocale `json:"locale,omitzero"`
+	// HTTP method for the request
+	//
+	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
+	Method ExtractParamsMethod `json:"method,omitzero"`
+	// Filters for capturing network traffic
+	NetworkCapture []ExtractParamsNetworkCapture `json:"network_capture,omitzero"`
+	// Operating system to emulate
+	//
+	// Any of "windows", "mac os", "linux", "android", "ios".
+	Os ExtractParamsOs `json:"os,omitzero"`
+	// Custom parser configuration as a key-value map
+	Parser ExtractParamsParserUnion `json:"parser,omitzero"`
+	// Referrer policy for the request
+	//
+	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
+	// "twitter", "instagram".
+	ReferrerType ExtractParamsReferrerType `json:"referrer_type,omitzero"`
+	Session      ExtractParamsSession      `json:"session,omitzero"`
+	// Skills or capabilities required for the request
+	Skill ExtractParamsSkillUnion `json:"skill,omitzero"`
+	// US state for geolocation (only valid when country is US)
+	//
+	// Any of "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA",
+	// "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+	// "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP",
+	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+	// "VI", "WA", "WV", "WI", "WY".
+	State ExtractParamsState `json:"state,omitzero"`
+	paramObj
+}
+
+func (r ExtractParams) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsBrowserString)
+	OfExtractsBrowserString param.Opt[string]           `json:",omitzero,inline"`
+	OfExtractsBrowserObject *ExtractParamsBrowserObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsBrowserString, u.OfExtractsBrowserObject)
+}
+func (u *ExtractParamsBrowserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsBrowserString) {
+		return &u.OfExtractsBrowserString
+	} else if !param.IsOmitted(u.OfExtractsBrowserObject) {
+		return u.OfExtractsBrowserObject
+	}
+	return nil
+}
+
+// Browser type to emulate
+type ExtractParamsBrowserString string
+
+const (
+	ExtractParamsBrowserStringChrome  ExtractParamsBrowserString = "chrome"
+	ExtractParamsBrowserStringFirefox ExtractParamsBrowserString = "firefox"
+)
+
+// The property Name is required.
+type ExtractParamsBrowserObject struct {
+	// Any of "chrome", "firefox".
+	Name string `json:"name,omitzero,required"`
+	// Specific browser version to emulate
+	Version param.Opt[string] `json:"version,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsBrowserObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsBrowserObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsBrowserObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsBrowserObject](
+		"name", "chrome", "firefox",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsBrowserActionUnion struct {
+	OfAutoScrollAction        *shared.AutoScrollActionParam        `json:",omitzero,inline"`
+	OfClickAction             *shared.ClickActionParam             `json:",omitzero,inline"`
+	OfEvalAction              *shared.EvalActionParam              `json:",omitzero,inline"`
+	OfFetchAction             *shared.FetchActionParam             `json:",omitzero,inline"`
+	OfFillAction              *shared.FillActionParam              `json:",omitzero,inline"`
+	OfGetCookiesAction        *shared.GetCookiesActionParam        `json:",omitzero,inline"`
+	OfGotoAction              *shared.GotoActionParam              `json:",omitzero,inline"`
+	OfPressAction             *shared.PressActionParam             `json:",omitzero,inline"`
+	OfScreenshotAction        *shared.ScreenshotActionParam        `json:",omitzero,inline"`
+	OfScrollAction            *shared.ScrollActionParam            `json:",omitzero,inline"`
+	OfWaitAction              *shared.WaitActionParam              `json:",omitzero,inline"`
+	OfWaitForElementAction    *shared.WaitForElementActionParam    `json:",omitzero,inline"`
+	OfWaitForNavigationAction *shared.WaitForNavigationActionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsBrowserActionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAutoScrollAction,
+		u.OfClickAction,
+		u.OfEvalAction,
+		u.OfFetchAction,
+		u.OfFillAction,
+		u.OfGetCookiesAction,
+		u.OfGotoAction,
+		u.OfPressAction,
+		u.OfScreenshotAction,
+		u.OfScrollAction,
+		u.OfWaitAction,
+		u.OfWaitForElementAction,
+		u.OfWaitForNavigationAction)
+}
+func (u *ExtractParamsBrowserActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsBrowserActionUnion) asAny() any {
+	if !param.IsOmitted(u.OfAutoScrollAction) {
+		return u.OfAutoScrollAction
+	} else if !param.IsOmitted(u.OfClickAction) {
+		return u.OfClickAction
+	} else if !param.IsOmitted(u.OfEvalAction) {
+		return u.OfEvalAction
+	} else if !param.IsOmitted(u.OfFetchAction) {
+		return u.OfFetchAction
+	} else if !param.IsOmitted(u.OfFillAction) {
+		return u.OfFillAction
+	} else if !param.IsOmitted(u.OfGetCookiesAction) {
+		return u.OfGetCookiesAction
+	} else if !param.IsOmitted(u.OfGotoAction) {
+		return u.OfGotoAction
+	} else if !param.IsOmitted(u.OfPressAction) {
+		return u.OfPressAction
+	} else if !param.IsOmitted(u.OfScreenshotAction) {
+		return u.OfScreenshotAction
+	} else if !param.IsOmitted(u.OfScrollAction) {
+		return u.OfScrollAction
+	} else if !param.IsOmitted(u.OfWaitAction) {
+		return u.OfWaitAction
+	} else if !param.IsOmitted(u.OfWaitForElementAction) {
+		return u.OfWaitForElementAction
+	} else if !param.IsOmitted(u.OfWaitForNavigationAction) {
+		return u.OfWaitForNavigationAction
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsCookiesUnion struct {
+	OfExtractsCookiesArray []ExtractParamsCookiesArrayItem `json:",omitzero,inline"`
+	OfString               param.Opt[string]               `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsCookiesArray, u.OfString)
+}
+func (u *ExtractParamsCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsCookiesArray) {
+		return &u.OfExtractsCookiesArray
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+type ExtractParamsCookiesArrayItem struct {
+	Creation      param.Opt[string]                        `json:"creation,omitzero"`
+	Domain        param.Opt[string]                        `json:"domain,omitzero"`
+	HostOnly      param.Opt[bool]                          `json:"hostOnly,omitzero"`
+	HTTPOnly      param.Opt[bool]                          `json:"httpOnly,omitzero"`
+	LastAccessed  param.Opt[string]                        `json:"lastAccessed,omitzero"`
+	Path          param.Opt[string]                        `json:"path,omitzero"`
+	PathIsDefault param.Opt[bool]                          `json:"pathIsDefault,omitzero"`
+	Expires       param.Opt[string]                        `json:"expires,omitzero"`
+	Name          param.Opt[string]                        `json:"name,omitzero"`
+	Secure        param.Opt[bool]                          `json:"secure,omitzero"`
+	Value         param.Opt[string]                        `json:"value,omitzero"`
+	Extensions    []string                                 `json:"extensions,omitzero"`
+	MaxAge        ExtractParamsCookiesArrayItemMaxAgeUnion `json:"maxAge,omitzero"`
+	// Any of "strict", "lax", "none".
+	SameSite    string         `json:"sameSite,omitzero"`
+	ExtraFields map[string]any `json:"-"`
+	paramObj
+}
+
+func (r ExtractParamsCookiesArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsCookiesArrayItem
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *ExtractParamsCookiesArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsCookiesArrayItem](
+		"sameSite", "strict", "lax", "none",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsCookiesArrayItemMaxAgeUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractsCookiesArrayItemMaxAgeString)
+	OfExtractsCookiesArrayItemMaxAgeString param.Opt[ExtractParamsCookiesArrayItemMaxAgeString] `json:",omitzero,inline"`
+	OfFloat                                param.Opt[float64]                                   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsCookiesArrayItemMaxAgeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractsCookiesArrayItemMaxAgeString, u.OfFloat)
+}
+func (u *ExtractParamsCookiesArrayItemMaxAgeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsCookiesArrayItemMaxAgeUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractsCookiesArrayItemMaxAgeString) {
+		return &u.OfExtractsCookiesArrayItemMaxAgeString
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	}
+	return nil
+}
+
+type ExtractParamsCookiesArrayItemMaxAgeString string
+
+const (
+	ExtractParamsCookiesArrayItemMaxAgeStringInfinity      ExtractParamsCookiesArrayItemMaxAgeString = "Infinity"
+	ExtractParamsCookiesArrayItemMaxAgeStringMinusInfinity ExtractParamsCookiesArrayItemMaxAgeString = "-Infinity"
+)
+
+// Country code for geolocation and proxy selection
+type ExtractParamsCountry string
+
+const (
+	ExtractParamsCountryAd  ExtractParamsCountry = "AD"
+	ExtractParamsCountryAe  ExtractParamsCountry = "AE"
+	ExtractParamsCountryAf  ExtractParamsCountry = "AF"
+	ExtractParamsCountryAg  ExtractParamsCountry = "AG"
+	ExtractParamsCountryAI  ExtractParamsCountry = "AI"
+	ExtractParamsCountryAl  ExtractParamsCountry = "AL"
+	ExtractParamsCountryAm  ExtractParamsCountry = "AM"
+	ExtractParamsCountryAo  ExtractParamsCountry = "AO"
+	ExtractParamsCountryAq  ExtractParamsCountry = "AQ"
+	ExtractParamsCountryAr  ExtractParamsCountry = "AR"
+	ExtractParamsCountryAs  ExtractParamsCountry = "AS"
+	ExtractParamsCountryAt  ExtractParamsCountry = "AT"
+	ExtractParamsCountryAu  ExtractParamsCountry = "AU"
+	ExtractParamsCountryAw  ExtractParamsCountry = "AW"
+	ExtractParamsCountryAx  ExtractParamsCountry = "AX"
+	ExtractParamsCountryAz  ExtractParamsCountry = "AZ"
+	ExtractParamsCountryBa  ExtractParamsCountry = "BA"
+	ExtractParamsCountryBb  ExtractParamsCountry = "BB"
+	ExtractParamsCountryBd  ExtractParamsCountry = "BD"
+	ExtractParamsCountryBe  ExtractParamsCountry = "BE"
+	ExtractParamsCountryBf  ExtractParamsCountry = "BF"
+	ExtractParamsCountryBg  ExtractParamsCountry = "BG"
+	ExtractParamsCountryBh  ExtractParamsCountry = "BH"
+	ExtractParamsCountryBi  ExtractParamsCountry = "BI"
+	ExtractParamsCountryBj  ExtractParamsCountry = "BJ"
+	ExtractParamsCountryBl  ExtractParamsCountry = "BL"
+	ExtractParamsCountryBm  ExtractParamsCountry = "BM"
+	ExtractParamsCountryBn  ExtractParamsCountry = "BN"
+	ExtractParamsCountryBo  ExtractParamsCountry = "BO"
+	ExtractParamsCountryBq  ExtractParamsCountry = "BQ"
+	ExtractParamsCountryBr  ExtractParamsCountry = "BR"
+	ExtractParamsCountryBs  ExtractParamsCountry = "BS"
+	ExtractParamsCountryBt  ExtractParamsCountry = "BT"
+	ExtractParamsCountryBv  ExtractParamsCountry = "BV"
+	ExtractParamsCountryBw  ExtractParamsCountry = "BW"
+	ExtractParamsCountryBy  ExtractParamsCountry = "BY"
+	ExtractParamsCountryBz  ExtractParamsCountry = "BZ"
+	ExtractParamsCountryCa  ExtractParamsCountry = "CA"
+	ExtractParamsCountryCc  ExtractParamsCountry = "CC"
+	ExtractParamsCountryCd  ExtractParamsCountry = "CD"
+	ExtractParamsCountryCf  ExtractParamsCountry = "CF"
+	ExtractParamsCountryCg  ExtractParamsCountry = "CG"
+	ExtractParamsCountryCh  ExtractParamsCountry = "CH"
+	ExtractParamsCountryCi  ExtractParamsCountry = "CI"
+	ExtractParamsCountryCk  ExtractParamsCountry = "CK"
+	ExtractParamsCountryCl  ExtractParamsCountry = "CL"
+	ExtractParamsCountryCm  ExtractParamsCountry = "CM"
+	ExtractParamsCountryCn  ExtractParamsCountry = "CN"
+	ExtractParamsCountryCo  ExtractParamsCountry = "CO"
+	ExtractParamsCountryCr  ExtractParamsCountry = "CR"
+	ExtractParamsCountryCu  ExtractParamsCountry = "CU"
+	ExtractParamsCountryCv  ExtractParamsCountry = "CV"
+	ExtractParamsCountryCw  ExtractParamsCountry = "CW"
+	ExtractParamsCountryCx  ExtractParamsCountry = "CX"
+	ExtractParamsCountryCy  ExtractParamsCountry = "CY"
+	ExtractParamsCountryCz  ExtractParamsCountry = "CZ"
+	ExtractParamsCountryDe  ExtractParamsCountry = "DE"
+	ExtractParamsCountryDj  ExtractParamsCountry = "DJ"
+	ExtractParamsCountryDk  ExtractParamsCountry = "DK"
+	ExtractParamsCountryDm  ExtractParamsCountry = "DM"
+	ExtractParamsCountryDo  ExtractParamsCountry = "DO"
+	ExtractParamsCountryDz  ExtractParamsCountry = "DZ"
+	ExtractParamsCountryEc  ExtractParamsCountry = "EC"
+	ExtractParamsCountryEe  ExtractParamsCountry = "EE"
+	ExtractParamsCountryEg  ExtractParamsCountry = "EG"
+	ExtractParamsCountryEh  ExtractParamsCountry = "EH"
+	ExtractParamsCountryEr  ExtractParamsCountry = "ER"
+	ExtractParamsCountryEs  ExtractParamsCountry = "ES"
+	ExtractParamsCountryEt  ExtractParamsCountry = "ET"
+	ExtractParamsCountryFi  ExtractParamsCountry = "FI"
+	ExtractParamsCountryFj  ExtractParamsCountry = "FJ"
+	ExtractParamsCountryFk  ExtractParamsCountry = "FK"
+	ExtractParamsCountryFm  ExtractParamsCountry = "FM"
+	ExtractParamsCountryFo  ExtractParamsCountry = "FO"
+	ExtractParamsCountryFr  ExtractParamsCountry = "FR"
+	ExtractParamsCountryGa  ExtractParamsCountry = "GA"
+	ExtractParamsCountryGB  ExtractParamsCountry = "GB"
+	ExtractParamsCountryGd  ExtractParamsCountry = "GD"
+	ExtractParamsCountryGe  ExtractParamsCountry = "GE"
+	ExtractParamsCountryGf  ExtractParamsCountry = "GF"
+	ExtractParamsCountryGg  ExtractParamsCountry = "GG"
+	ExtractParamsCountryGh  ExtractParamsCountry = "GH"
+	ExtractParamsCountryGi  ExtractParamsCountry = "GI"
+	ExtractParamsCountryGl  ExtractParamsCountry = "GL"
+	ExtractParamsCountryGm  ExtractParamsCountry = "GM"
+	ExtractParamsCountryGn  ExtractParamsCountry = "GN"
+	ExtractParamsCountryGp  ExtractParamsCountry = "GP"
+	ExtractParamsCountryGq  ExtractParamsCountry = "GQ"
+	ExtractParamsCountryGr  ExtractParamsCountry = "GR"
+	ExtractParamsCountryGs  ExtractParamsCountry = "GS"
+	ExtractParamsCountryGt  ExtractParamsCountry = "GT"
+	ExtractParamsCountryGu  ExtractParamsCountry = "GU"
+	ExtractParamsCountryGw  ExtractParamsCountry = "GW"
+	ExtractParamsCountryGy  ExtractParamsCountry = "GY"
+	ExtractParamsCountryHk  ExtractParamsCountry = "HK"
+	ExtractParamsCountryHm  ExtractParamsCountry = "HM"
+	ExtractParamsCountryHn  ExtractParamsCountry = "HN"
+	ExtractParamsCountryHr  ExtractParamsCountry = "HR"
+	ExtractParamsCountryHt  ExtractParamsCountry = "HT"
+	ExtractParamsCountryHu  ExtractParamsCountry = "HU"
+	ExtractParamsCountryID  ExtractParamsCountry = "ID"
+	ExtractParamsCountryIe  ExtractParamsCountry = "IE"
+	ExtractParamsCountryIl  ExtractParamsCountry = "IL"
+	ExtractParamsCountryIm  ExtractParamsCountry = "IM"
+	ExtractParamsCountryIn  ExtractParamsCountry = "IN"
+	ExtractParamsCountryIo  ExtractParamsCountry = "IO"
+	ExtractParamsCountryIq  ExtractParamsCountry = "IQ"
+	ExtractParamsCountryIr  ExtractParamsCountry = "IR"
+	ExtractParamsCountryIs  ExtractParamsCountry = "IS"
+	ExtractParamsCountryIt  ExtractParamsCountry = "IT"
+	ExtractParamsCountryJe  ExtractParamsCountry = "JE"
+	ExtractParamsCountryJm  ExtractParamsCountry = "JM"
+	ExtractParamsCountryJo  ExtractParamsCountry = "JO"
+	ExtractParamsCountryJp  ExtractParamsCountry = "JP"
+	ExtractParamsCountryKe  ExtractParamsCountry = "KE"
+	ExtractParamsCountryKg  ExtractParamsCountry = "KG"
+	ExtractParamsCountryKh  ExtractParamsCountry = "KH"
+	ExtractParamsCountryKi  ExtractParamsCountry = "KI"
+	ExtractParamsCountryKm  ExtractParamsCountry = "KM"
+	ExtractParamsCountryKn  ExtractParamsCountry = "KN"
+	ExtractParamsCountryKp  ExtractParamsCountry = "KP"
+	ExtractParamsCountryKr  ExtractParamsCountry = "KR"
+	ExtractParamsCountryKw  ExtractParamsCountry = "KW"
+	ExtractParamsCountryKy  ExtractParamsCountry = "KY"
+	ExtractParamsCountryKz  ExtractParamsCountry = "KZ"
+	ExtractParamsCountryLa  ExtractParamsCountry = "LA"
+	ExtractParamsCountryLb  ExtractParamsCountry = "LB"
+	ExtractParamsCountryLc  ExtractParamsCountry = "LC"
+	ExtractParamsCountryLi  ExtractParamsCountry = "LI"
+	ExtractParamsCountryLk  ExtractParamsCountry = "LK"
+	ExtractParamsCountryLr  ExtractParamsCountry = "LR"
+	ExtractParamsCountryLs  ExtractParamsCountry = "LS"
+	ExtractParamsCountryLt  ExtractParamsCountry = "LT"
+	ExtractParamsCountryLu  ExtractParamsCountry = "LU"
+	ExtractParamsCountryLv  ExtractParamsCountry = "LV"
+	ExtractParamsCountryLy  ExtractParamsCountry = "LY"
+	ExtractParamsCountryMa  ExtractParamsCountry = "MA"
+	ExtractParamsCountryMc  ExtractParamsCountry = "MC"
+	ExtractParamsCountryMd  ExtractParamsCountry = "MD"
+	ExtractParamsCountryMe  ExtractParamsCountry = "ME"
+	ExtractParamsCountryMf  ExtractParamsCountry = "MF"
+	ExtractParamsCountryMg  ExtractParamsCountry = "MG"
+	ExtractParamsCountryMh  ExtractParamsCountry = "MH"
+	ExtractParamsCountryMk  ExtractParamsCountry = "MK"
+	ExtractParamsCountryMl  ExtractParamsCountry = "ML"
+	ExtractParamsCountryMm  ExtractParamsCountry = "MM"
+	ExtractParamsCountryMn  ExtractParamsCountry = "MN"
+	ExtractParamsCountryMo  ExtractParamsCountry = "MO"
+	ExtractParamsCountryMp  ExtractParamsCountry = "MP"
+	ExtractParamsCountryMq  ExtractParamsCountry = "MQ"
+	ExtractParamsCountryMr  ExtractParamsCountry = "MR"
+	ExtractParamsCountryMs  ExtractParamsCountry = "MS"
+	ExtractParamsCountryMt  ExtractParamsCountry = "MT"
+	ExtractParamsCountryMu  ExtractParamsCountry = "MU"
+	ExtractParamsCountryMv  ExtractParamsCountry = "MV"
+	ExtractParamsCountryMw  ExtractParamsCountry = "MW"
+	ExtractParamsCountryMx  ExtractParamsCountry = "MX"
+	ExtractParamsCountryMy  ExtractParamsCountry = "MY"
+	ExtractParamsCountryMz  ExtractParamsCountry = "MZ"
+	ExtractParamsCountryNa  ExtractParamsCountry = "NA"
+	ExtractParamsCountryNc  ExtractParamsCountry = "NC"
+	ExtractParamsCountryNe  ExtractParamsCountry = "NE"
+	ExtractParamsCountryNf  ExtractParamsCountry = "NF"
+	ExtractParamsCountryNg  ExtractParamsCountry = "NG"
+	ExtractParamsCountryNi  ExtractParamsCountry = "NI"
+	ExtractParamsCountryNl  ExtractParamsCountry = "NL"
+	ExtractParamsCountryNo  ExtractParamsCountry = "NO"
+	ExtractParamsCountryNp  ExtractParamsCountry = "NP"
+	ExtractParamsCountryNr  ExtractParamsCountry = "NR"
+	ExtractParamsCountryNu  ExtractParamsCountry = "NU"
+	ExtractParamsCountryNz  ExtractParamsCountry = "NZ"
+	ExtractParamsCountryOm  ExtractParamsCountry = "OM"
+	ExtractParamsCountryPa  ExtractParamsCountry = "PA"
+	ExtractParamsCountryPe  ExtractParamsCountry = "PE"
+	ExtractParamsCountryPf  ExtractParamsCountry = "PF"
+	ExtractParamsCountryPg  ExtractParamsCountry = "PG"
+	ExtractParamsCountryPh  ExtractParamsCountry = "PH"
+	ExtractParamsCountryPk  ExtractParamsCountry = "PK"
+	ExtractParamsCountryPl  ExtractParamsCountry = "PL"
+	ExtractParamsCountryPm  ExtractParamsCountry = "PM"
+	ExtractParamsCountryPn  ExtractParamsCountry = "PN"
+	ExtractParamsCountryPr  ExtractParamsCountry = "PR"
+	ExtractParamsCountryPs  ExtractParamsCountry = "PS"
+	ExtractParamsCountryPt  ExtractParamsCountry = "PT"
+	ExtractParamsCountryPw  ExtractParamsCountry = "PW"
+	ExtractParamsCountryPy  ExtractParamsCountry = "PY"
+	ExtractParamsCountryQa  ExtractParamsCountry = "QA"
+	ExtractParamsCountryRe  ExtractParamsCountry = "RE"
+	ExtractParamsCountryRo  ExtractParamsCountry = "RO"
+	ExtractParamsCountryRs  ExtractParamsCountry = "RS"
+	ExtractParamsCountryRu  ExtractParamsCountry = "RU"
+	ExtractParamsCountryRw  ExtractParamsCountry = "RW"
+	ExtractParamsCountrySa  ExtractParamsCountry = "SA"
+	ExtractParamsCountrySb  ExtractParamsCountry = "SB"
+	ExtractParamsCountrySc  ExtractParamsCountry = "SC"
+	ExtractParamsCountrySd  ExtractParamsCountry = "SD"
+	ExtractParamsCountrySe  ExtractParamsCountry = "SE"
+	ExtractParamsCountrySg  ExtractParamsCountry = "SG"
+	ExtractParamsCountrySh  ExtractParamsCountry = "SH"
+	ExtractParamsCountrySi  ExtractParamsCountry = "SI"
+	ExtractParamsCountrySj  ExtractParamsCountry = "SJ"
+	ExtractParamsCountrySk  ExtractParamsCountry = "SK"
+	ExtractParamsCountrySl  ExtractParamsCountry = "SL"
+	ExtractParamsCountrySm  ExtractParamsCountry = "SM"
+	ExtractParamsCountrySn  ExtractParamsCountry = "SN"
+	ExtractParamsCountrySo  ExtractParamsCountry = "SO"
+	ExtractParamsCountrySr  ExtractParamsCountry = "SR"
+	ExtractParamsCountrySS  ExtractParamsCountry = "SS"
+	ExtractParamsCountrySt  ExtractParamsCountry = "ST"
+	ExtractParamsCountrySv  ExtractParamsCountry = "SV"
+	ExtractParamsCountrySx  ExtractParamsCountry = "SX"
+	ExtractParamsCountrySy  ExtractParamsCountry = "SY"
+	ExtractParamsCountrySz  ExtractParamsCountry = "SZ"
+	ExtractParamsCountryTc  ExtractParamsCountry = "TC"
+	ExtractParamsCountryTd  ExtractParamsCountry = "TD"
+	ExtractParamsCountryTf  ExtractParamsCountry = "TF"
+	ExtractParamsCountryTg  ExtractParamsCountry = "TG"
+	ExtractParamsCountryTh  ExtractParamsCountry = "TH"
+	ExtractParamsCountryTj  ExtractParamsCountry = "TJ"
+	ExtractParamsCountryTk  ExtractParamsCountry = "TK"
+	ExtractParamsCountryTl  ExtractParamsCountry = "TL"
+	ExtractParamsCountryTm  ExtractParamsCountry = "TM"
+	ExtractParamsCountryTn  ExtractParamsCountry = "TN"
+	ExtractParamsCountryTo  ExtractParamsCountry = "TO"
+	ExtractParamsCountryTr  ExtractParamsCountry = "TR"
+	ExtractParamsCountryTt  ExtractParamsCountry = "TT"
+	ExtractParamsCountryTv  ExtractParamsCountry = "TV"
+	ExtractParamsCountryTw  ExtractParamsCountry = "TW"
+	ExtractParamsCountryTz  ExtractParamsCountry = "TZ"
+	ExtractParamsCountryUa  ExtractParamsCountry = "UA"
+	ExtractParamsCountryUg  ExtractParamsCountry = "UG"
+	ExtractParamsCountryUm  ExtractParamsCountry = "UM"
+	ExtractParamsCountryUs  ExtractParamsCountry = "US"
+	ExtractParamsCountryUy  ExtractParamsCountry = "UY"
+	ExtractParamsCountryUz  ExtractParamsCountry = "UZ"
+	ExtractParamsCountryVa  ExtractParamsCountry = "VA"
+	ExtractParamsCountryVc  ExtractParamsCountry = "VC"
+	ExtractParamsCountryVe  ExtractParamsCountry = "VE"
+	ExtractParamsCountryVg  ExtractParamsCountry = "VG"
+	ExtractParamsCountryVi  ExtractParamsCountry = "VI"
+	ExtractParamsCountryVn  ExtractParamsCountry = "VN"
+	ExtractParamsCountryVu  ExtractParamsCountry = "VU"
+	ExtractParamsCountryWf  ExtractParamsCountry = "WF"
+	ExtractParamsCountryWs  ExtractParamsCountry = "WS"
+	ExtractParamsCountryXk  ExtractParamsCountry = "XK"
+	ExtractParamsCountryYe  ExtractParamsCountry = "YE"
+	ExtractParamsCountryYt  ExtractParamsCountry = "YT"
+	ExtractParamsCountryZa  ExtractParamsCountry = "ZA"
+	ExtractParamsCountryZm  ExtractParamsCountry = "ZM"
+	ExtractParamsCountryZw  ExtractParamsCountry = "ZW"
+	ExtractParamsCountryAll ExtractParamsCountry = "ALL"
+)
+
+// Device type for browser emulation
+type ExtractParamsDevice string
+
+const (
+	ExtractParamsDeviceDesktop ExtractParamsDevice = "desktop"
+	ExtractParamsDeviceMobile  ExtractParamsDevice = "mobile"
+	ExtractParamsDeviceTablet  ExtractParamsDevice = "tablet"
+)
+
+// Browser driver to use
+type ExtractParamsDriver string
+
+const (
+	ExtractParamsDriverVx6     ExtractParamsDriver = "vx6"
+	ExtractParamsDriverVx8     ExtractParamsDriver = "vx8"
+	ExtractParamsDriverVx8Pro  ExtractParamsDriver = "vx8-pro"
+	ExtractParamsDriverVx10    ExtractParamsDriver = "vx10"
+	ExtractParamsDriverVx10Pro ExtractParamsDriver = "vx10-pro"
+	ExtractParamsDriverVx12    ExtractParamsDriver = "vx12"
+	ExtractParamsDriverVx12Pro ExtractParamsDriver = "vx12-pro"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsHeaderUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsHeaderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsHeaderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsHeaderUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Locale for browser language and region settings
+type ExtractParamsLocale string
+
+const (
+	ExtractParamsLocaleAaDj      ExtractParamsLocale = "aa-DJ"
+	ExtractParamsLocaleAaEr      ExtractParamsLocale = "aa-ER"
+	ExtractParamsLocaleAaEt      ExtractParamsLocale = "aa-ET"
+	ExtractParamsLocaleAf        ExtractParamsLocale = "af"
+	ExtractParamsLocaleAfNa      ExtractParamsLocale = "af-NA"
+	ExtractParamsLocaleAfZa      ExtractParamsLocale = "af-ZA"
+	ExtractParamsLocaleAk        ExtractParamsLocale = "ak"
+	ExtractParamsLocaleAkGh      ExtractParamsLocale = "ak-GH"
+	ExtractParamsLocaleAm        ExtractParamsLocale = "am"
+	ExtractParamsLocaleAmEt      ExtractParamsLocale = "am-ET"
+	ExtractParamsLocaleAnEs      ExtractParamsLocale = "an-ES"
+	ExtractParamsLocaleAr        ExtractParamsLocale = "ar"
+	ExtractParamsLocaleArAe      ExtractParamsLocale = "ar-AE"
+	ExtractParamsLocaleArBh      ExtractParamsLocale = "ar-BH"
+	ExtractParamsLocaleArDz      ExtractParamsLocale = "ar-DZ"
+	ExtractParamsLocaleArEg      ExtractParamsLocale = "ar-EG"
+	ExtractParamsLocaleArIn      ExtractParamsLocale = "ar-IN"
+	ExtractParamsLocaleArIq      ExtractParamsLocale = "ar-IQ"
+	ExtractParamsLocaleArJo      ExtractParamsLocale = "ar-JO"
+	ExtractParamsLocaleArKw      ExtractParamsLocale = "ar-KW"
+	ExtractParamsLocaleArLb      ExtractParamsLocale = "ar-LB"
+	ExtractParamsLocaleArLy      ExtractParamsLocale = "ar-LY"
+	ExtractParamsLocaleArMa      ExtractParamsLocale = "ar-MA"
+	ExtractParamsLocaleArOm      ExtractParamsLocale = "ar-OM"
+	ExtractParamsLocaleArQa      ExtractParamsLocale = "ar-QA"
+	ExtractParamsLocaleArSa      ExtractParamsLocale = "ar-SA"
+	ExtractParamsLocaleArSd      ExtractParamsLocale = "ar-SD"
+	ExtractParamsLocaleArSy      ExtractParamsLocale = "ar-SY"
+	ExtractParamsLocaleArTn      ExtractParamsLocale = "ar-TN"
+	ExtractParamsLocaleArYe      ExtractParamsLocale = "ar-YE"
+	ExtractParamsLocaleAs        ExtractParamsLocale = "as"
+	ExtractParamsLocaleAsIn      ExtractParamsLocale = "as-IN"
+	ExtractParamsLocaleAsa       ExtractParamsLocale = "asa"
+	ExtractParamsLocaleAsaTz     ExtractParamsLocale = "asa-TZ"
+	ExtractParamsLocaleAstEs     ExtractParamsLocale = "ast-ES"
+	ExtractParamsLocaleAz        ExtractParamsLocale = "az"
+	ExtractParamsLocaleAzAz      ExtractParamsLocale = "az-AZ"
+	ExtractParamsLocaleAzCyrl    ExtractParamsLocale = "az-Cyrl"
+	ExtractParamsLocaleAzCyrlAz  ExtractParamsLocale = "az-Cyrl-AZ"
+	ExtractParamsLocaleAzLatn    ExtractParamsLocale = "az-Latn"
+	ExtractParamsLocaleAzLatnAz  ExtractParamsLocale = "az-Latn-AZ"
+	ExtractParamsLocaleBe        ExtractParamsLocale = "be"
+	ExtractParamsLocaleBeBy      ExtractParamsLocale = "be-BY"
+	ExtractParamsLocaleBem       ExtractParamsLocale = "bem"
+	ExtractParamsLocaleBemZm     ExtractParamsLocale = "bem-ZM"
+	ExtractParamsLocaleBerDz     ExtractParamsLocale = "ber-DZ"
+	ExtractParamsLocaleBerMa     ExtractParamsLocale = "ber-MA"
+	ExtractParamsLocaleBez       ExtractParamsLocale = "bez"
+	ExtractParamsLocaleBezTz     ExtractParamsLocale = "bez-TZ"
+	ExtractParamsLocaleBg        ExtractParamsLocale = "bg"
+	ExtractParamsLocaleBgBg      ExtractParamsLocale = "bg-BG"
+	ExtractParamsLocaleBhoIn     ExtractParamsLocale = "bho-IN"
+	ExtractParamsLocaleBm        ExtractParamsLocale = "bm"
+	ExtractParamsLocaleBmMl      ExtractParamsLocale = "bm-ML"
+	ExtractParamsLocaleBn        ExtractParamsLocale = "bn"
+	ExtractParamsLocaleBnBd      ExtractParamsLocale = "bn-BD"
+	ExtractParamsLocaleBnIn      ExtractParamsLocale = "bn-IN"
+	ExtractParamsLocaleBo        ExtractParamsLocale = "bo"
+	ExtractParamsLocaleBoCn      ExtractParamsLocale = "bo-CN"
+	ExtractParamsLocaleBoIn      ExtractParamsLocale = "bo-IN"
+	ExtractParamsLocaleBrFr      ExtractParamsLocale = "br-FR"
+	ExtractParamsLocaleBrxIn     ExtractParamsLocale = "brx-IN"
+	ExtractParamsLocaleBs        ExtractParamsLocale = "bs"
+	ExtractParamsLocaleBsBa      ExtractParamsLocale = "bs-BA"
+	ExtractParamsLocaleBynEr     ExtractParamsLocale = "byn-ER"
+	ExtractParamsLocaleCa        ExtractParamsLocale = "ca"
+	ExtractParamsLocaleCaAd      ExtractParamsLocale = "ca-AD"
+	ExtractParamsLocaleCaEs      ExtractParamsLocale = "ca-ES"
+	ExtractParamsLocaleCaFr      ExtractParamsLocale = "ca-FR"
+	ExtractParamsLocaleCaIt      ExtractParamsLocale = "ca-IT"
+	ExtractParamsLocaleCgg       ExtractParamsLocale = "cgg"
+	ExtractParamsLocaleCggUg     ExtractParamsLocale = "cgg-UG"
+	ExtractParamsLocaleChr       ExtractParamsLocale = "chr"
+	ExtractParamsLocaleChrUs     ExtractParamsLocale = "chr-US"
+	ExtractParamsLocaleCrhUa     ExtractParamsLocale = "crh-UA"
+	ExtractParamsLocaleCs        ExtractParamsLocale = "cs"
+	ExtractParamsLocaleCsCz      ExtractParamsLocale = "cs-CZ"
+	ExtractParamsLocaleCsbPl     ExtractParamsLocale = "csb-PL"
+	ExtractParamsLocaleCvRu      ExtractParamsLocale = "cv-RU"
+	ExtractParamsLocaleCy        ExtractParamsLocale = "cy"
+	ExtractParamsLocaleCyGB      ExtractParamsLocale = "cy-GB"
+	ExtractParamsLocaleDa        ExtractParamsLocale = "da"
+	ExtractParamsLocaleDaDk      ExtractParamsLocale = "da-DK"
+	ExtractParamsLocaleDav       ExtractParamsLocale = "dav"
+	ExtractParamsLocaleDavKe     ExtractParamsLocale = "dav-KE"
+	ExtractParamsLocaleDe        ExtractParamsLocale = "de"
+	ExtractParamsLocaleDeAt      ExtractParamsLocale = "de-AT"
+	ExtractParamsLocaleDeBe      ExtractParamsLocale = "de-BE"
+	ExtractParamsLocaleDeCh      ExtractParamsLocale = "de-CH"
+	ExtractParamsLocaleDeDe      ExtractParamsLocale = "de-DE"
+	ExtractParamsLocaleDeLi      ExtractParamsLocale = "de-LI"
+	ExtractParamsLocaleDeLu      ExtractParamsLocale = "de-LU"
+	ExtractParamsLocaleDvMv      ExtractParamsLocale = "dv-MV"
+	ExtractParamsLocaleDzBt      ExtractParamsLocale = "dz-BT"
+	ExtractParamsLocaleEbu       ExtractParamsLocale = "ebu"
+	ExtractParamsLocaleEbuKe     ExtractParamsLocale = "ebu-KE"
+	ExtractParamsLocaleEe        ExtractParamsLocale = "ee"
+	ExtractParamsLocaleEeGh      ExtractParamsLocale = "ee-GH"
+	ExtractParamsLocaleEeTg      ExtractParamsLocale = "ee-TG"
+	ExtractParamsLocaleEl        ExtractParamsLocale = "el"
+	ExtractParamsLocaleElCy      ExtractParamsLocale = "el-CY"
+	ExtractParamsLocaleElGr      ExtractParamsLocale = "el-GR"
+	ExtractParamsLocaleEn        ExtractParamsLocale = "en"
+	ExtractParamsLocaleEnAg      ExtractParamsLocale = "en-AG"
+	ExtractParamsLocaleEnAs      ExtractParamsLocale = "en-AS"
+	ExtractParamsLocaleEnAu      ExtractParamsLocale = "en-AU"
+	ExtractParamsLocaleEnBe      ExtractParamsLocale = "en-BE"
+	ExtractParamsLocaleEnBw      ExtractParamsLocale = "en-BW"
+	ExtractParamsLocaleEnBz      ExtractParamsLocale = "en-BZ"
+	ExtractParamsLocaleEnCa      ExtractParamsLocale = "en-CA"
+	ExtractParamsLocaleEnDk      ExtractParamsLocale = "en-DK"
+	ExtractParamsLocaleEnGB      ExtractParamsLocale = "en-GB"
+	ExtractParamsLocaleEnGu      ExtractParamsLocale = "en-GU"
+	ExtractParamsLocaleEnHk      ExtractParamsLocale = "en-HK"
+	ExtractParamsLocaleEnIe      ExtractParamsLocale = "en-IE"
+	ExtractParamsLocaleEnIn      ExtractParamsLocale = "en-IN"
+	ExtractParamsLocaleEnJm      ExtractParamsLocale = "en-JM"
+	ExtractParamsLocaleEnMh      ExtractParamsLocale = "en-MH"
+	ExtractParamsLocaleEnMp      ExtractParamsLocale = "en-MP"
+	ExtractParamsLocaleEnMt      ExtractParamsLocale = "en-MT"
+	ExtractParamsLocaleEnMu      ExtractParamsLocale = "en-MU"
+	ExtractParamsLocaleEnNa      ExtractParamsLocale = "en-NA"
+	ExtractParamsLocaleEnNg      ExtractParamsLocale = "en-NG"
+	ExtractParamsLocaleEnNz      ExtractParamsLocale = "en-NZ"
+	ExtractParamsLocaleEnPh      ExtractParamsLocale = "en-PH"
+	ExtractParamsLocaleEnPk      ExtractParamsLocale = "en-PK"
+	ExtractParamsLocaleEnSg      ExtractParamsLocale = "en-SG"
+	ExtractParamsLocaleEnTt      ExtractParamsLocale = "en-TT"
+	ExtractParamsLocaleEnUm      ExtractParamsLocale = "en-UM"
+	ExtractParamsLocaleEnUs      ExtractParamsLocale = "en-US"
+	ExtractParamsLocaleEnVi      ExtractParamsLocale = "en-VI"
+	ExtractParamsLocaleEnZa      ExtractParamsLocale = "en-ZA"
+	ExtractParamsLocaleEnZm      ExtractParamsLocale = "en-ZM"
+	ExtractParamsLocaleEnZw      ExtractParamsLocale = "en-ZW"
+	ExtractParamsLocaleEo        ExtractParamsLocale = "eo"
+	ExtractParamsLocaleEs        ExtractParamsLocale = "es"
+	ExtractParamsLocaleEs419     ExtractParamsLocale = "es-419"
+	ExtractParamsLocaleEsAr      ExtractParamsLocale = "es-AR"
+	ExtractParamsLocaleEsBo      ExtractParamsLocale = "es-BO"
+	ExtractParamsLocaleEsCl      ExtractParamsLocale = "es-CL"
+	ExtractParamsLocaleEsCo      ExtractParamsLocale = "es-CO"
+	ExtractParamsLocaleEsCr      ExtractParamsLocale = "es-CR"
+	ExtractParamsLocaleEsCu      ExtractParamsLocale = "es-CU"
+	ExtractParamsLocaleEsDo      ExtractParamsLocale = "es-DO"
+	ExtractParamsLocaleEsEc      ExtractParamsLocale = "es-EC"
+	ExtractParamsLocaleEsEs      ExtractParamsLocale = "es-ES"
+	ExtractParamsLocaleEsGq      ExtractParamsLocale = "es-GQ"
+	ExtractParamsLocaleEsGt      ExtractParamsLocale = "es-GT"
+	ExtractParamsLocaleEsHn      ExtractParamsLocale = "es-HN"
+	ExtractParamsLocaleEsMx      ExtractParamsLocale = "es-MX"
+	ExtractParamsLocaleEsNi      ExtractParamsLocale = "es-NI"
+	ExtractParamsLocaleEsPa      ExtractParamsLocale = "es-PA"
+	ExtractParamsLocaleEsPe      ExtractParamsLocale = "es-PE"
+	ExtractParamsLocaleEsPr      ExtractParamsLocale = "es-PR"
+	ExtractParamsLocaleEsPy      ExtractParamsLocale = "es-PY"
+	ExtractParamsLocaleEsSv      ExtractParamsLocale = "es-SV"
+	ExtractParamsLocaleEsUs      ExtractParamsLocale = "es-US"
+	ExtractParamsLocaleEsUy      ExtractParamsLocale = "es-UY"
+	ExtractParamsLocaleEsVe      ExtractParamsLocale = "es-VE"
+	ExtractParamsLocaleEt        ExtractParamsLocale = "et"
+	ExtractParamsLocaleEtEe      ExtractParamsLocale = "et-EE"
+	ExtractParamsLocaleEu        ExtractParamsLocale = "eu"
+	ExtractParamsLocaleEuEs      ExtractParamsLocale = "eu-ES"
+	ExtractParamsLocaleFa        ExtractParamsLocale = "fa"
+	ExtractParamsLocaleFaAf      ExtractParamsLocale = "fa-AF"
+	ExtractParamsLocaleFaIr      ExtractParamsLocale = "fa-IR"
+	ExtractParamsLocaleFf        ExtractParamsLocale = "ff"
+	ExtractParamsLocaleFfSn      ExtractParamsLocale = "ff-SN"
+	ExtractParamsLocaleFi        ExtractParamsLocale = "fi"
+	ExtractParamsLocaleFiFi      ExtractParamsLocale = "fi-FI"
+	ExtractParamsLocaleFil       ExtractParamsLocale = "fil"
+	ExtractParamsLocaleFilPh     ExtractParamsLocale = "fil-PH"
+	ExtractParamsLocaleFo        ExtractParamsLocale = "fo"
+	ExtractParamsLocaleFoFo      ExtractParamsLocale = "fo-FO"
+	ExtractParamsLocaleFr        ExtractParamsLocale = "fr"
+	ExtractParamsLocaleFrBe      ExtractParamsLocale = "fr-BE"
+	ExtractParamsLocaleFrBf      ExtractParamsLocale = "fr-BF"
+	ExtractParamsLocaleFrBi      ExtractParamsLocale = "fr-BI"
+	ExtractParamsLocaleFrBj      ExtractParamsLocale = "fr-BJ"
+	ExtractParamsLocaleFrBl      ExtractParamsLocale = "fr-BL"
+	ExtractParamsLocaleFrCa      ExtractParamsLocale = "fr-CA"
+	ExtractParamsLocaleFrCd      ExtractParamsLocale = "fr-CD"
+	ExtractParamsLocaleFrCf      ExtractParamsLocale = "fr-CF"
+	ExtractParamsLocaleFrCg      ExtractParamsLocale = "fr-CG"
+	ExtractParamsLocaleFrCh      ExtractParamsLocale = "fr-CH"
+	ExtractParamsLocaleFrCi      ExtractParamsLocale = "fr-CI"
+	ExtractParamsLocaleFrCm      ExtractParamsLocale = "fr-CM"
+	ExtractParamsLocaleFrDj      ExtractParamsLocale = "fr-DJ"
+	ExtractParamsLocaleFrFr      ExtractParamsLocale = "fr-FR"
+	ExtractParamsLocaleFrGa      ExtractParamsLocale = "fr-GA"
+	ExtractParamsLocaleFrGn      ExtractParamsLocale = "fr-GN"
+	ExtractParamsLocaleFrGp      ExtractParamsLocale = "fr-GP"
+	ExtractParamsLocaleFrGq      ExtractParamsLocale = "fr-GQ"
+	ExtractParamsLocaleFrKm      ExtractParamsLocale = "fr-KM"
+	ExtractParamsLocaleFrLu      ExtractParamsLocale = "fr-LU"
+	ExtractParamsLocaleFrMc      ExtractParamsLocale = "fr-MC"
+	ExtractParamsLocaleFrMf      ExtractParamsLocale = "fr-MF"
+	ExtractParamsLocaleFrMg      ExtractParamsLocale = "fr-MG"
+	ExtractParamsLocaleFrMl      ExtractParamsLocale = "fr-ML"
+	ExtractParamsLocaleFrMq      ExtractParamsLocale = "fr-MQ"
+	ExtractParamsLocaleFrNe      ExtractParamsLocale = "fr-NE"
+	ExtractParamsLocaleFrRe      ExtractParamsLocale = "fr-RE"
+	ExtractParamsLocaleFrRw      ExtractParamsLocale = "fr-RW"
+	ExtractParamsLocaleFrSn      ExtractParamsLocale = "fr-SN"
+	ExtractParamsLocaleFrTd      ExtractParamsLocale = "fr-TD"
+	ExtractParamsLocaleFrTg      ExtractParamsLocale = "fr-TG"
+	ExtractParamsLocaleFurIt     ExtractParamsLocale = "fur-IT"
+	ExtractParamsLocaleFyDe      ExtractParamsLocale = "fy-DE"
+	ExtractParamsLocaleFyNl      ExtractParamsLocale = "fy-NL"
+	ExtractParamsLocaleGa        ExtractParamsLocale = "ga"
+	ExtractParamsLocaleGaIe      ExtractParamsLocale = "ga-IE"
+	ExtractParamsLocaleGdGB      ExtractParamsLocale = "gd-GB"
+	ExtractParamsLocaleGezEr     ExtractParamsLocale = "gez-ER"
+	ExtractParamsLocaleGezEt     ExtractParamsLocale = "gez-ET"
+	ExtractParamsLocaleGl        ExtractParamsLocale = "gl"
+	ExtractParamsLocaleGlEs      ExtractParamsLocale = "gl-ES"
+	ExtractParamsLocaleGsw       ExtractParamsLocale = "gsw"
+	ExtractParamsLocaleGswCh     ExtractParamsLocale = "gsw-CH"
+	ExtractParamsLocaleGu        ExtractParamsLocale = "gu"
+	ExtractParamsLocaleGuIn      ExtractParamsLocale = "gu-IN"
+	ExtractParamsLocaleGuz       ExtractParamsLocale = "guz"
+	ExtractParamsLocaleGuzKe     ExtractParamsLocale = "guz-KE"
+	ExtractParamsLocaleGv        ExtractParamsLocale = "gv"
+	ExtractParamsLocaleGvGB      ExtractParamsLocale = "gv-GB"
+	ExtractParamsLocaleHa        ExtractParamsLocale = "ha"
+	ExtractParamsLocaleHaLatn    ExtractParamsLocale = "ha-Latn"
+	ExtractParamsLocaleHaLatnGh  ExtractParamsLocale = "ha-Latn-GH"
+	ExtractParamsLocaleHaLatnNe  ExtractParamsLocale = "ha-Latn-NE"
+	ExtractParamsLocaleHaLatnNg  ExtractParamsLocale = "ha-Latn-NG"
+	ExtractParamsLocaleHaNg      ExtractParamsLocale = "ha-NG"
+	ExtractParamsLocaleHaw       ExtractParamsLocale = "haw"
+	ExtractParamsLocaleHawUs     ExtractParamsLocale = "haw-US"
+	ExtractParamsLocaleHe        ExtractParamsLocale = "he"
+	ExtractParamsLocaleHeIl      ExtractParamsLocale = "he-IL"
+	ExtractParamsLocaleHi        ExtractParamsLocale = "hi"
+	ExtractParamsLocaleHiIn      ExtractParamsLocale = "hi-IN"
+	ExtractParamsLocaleHneIn     ExtractParamsLocale = "hne-IN"
+	ExtractParamsLocaleHr        ExtractParamsLocale = "hr"
+	ExtractParamsLocaleHrHr      ExtractParamsLocale = "hr-HR"
+	ExtractParamsLocaleHsbDe     ExtractParamsLocale = "hsb-DE"
+	ExtractParamsLocaleHtHt      ExtractParamsLocale = "ht-HT"
+	ExtractParamsLocaleHu        ExtractParamsLocale = "hu"
+	ExtractParamsLocaleHuHu      ExtractParamsLocale = "hu-HU"
+	ExtractParamsLocaleHy        ExtractParamsLocale = "hy"
+	ExtractParamsLocaleHyAm      ExtractParamsLocale = "hy-AM"
+	ExtractParamsLocaleID        ExtractParamsLocale = "id"
+	ExtractParamsLocaleIDID      ExtractParamsLocale = "id-ID"
+	ExtractParamsLocaleIg        ExtractParamsLocale = "ig"
+	ExtractParamsLocaleIgNg      ExtractParamsLocale = "ig-NG"
+	ExtractParamsLocaleIi        ExtractParamsLocale = "ii"
+	ExtractParamsLocaleIiCn      ExtractParamsLocale = "ii-CN"
+	ExtractParamsLocaleIkCa      ExtractParamsLocale = "ik-CA"
+	ExtractParamsLocaleIs        ExtractParamsLocale = "is"
+	ExtractParamsLocaleIsIs      ExtractParamsLocale = "is-IS"
+	ExtractParamsLocaleIt        ExtractParamsLocale = "it"
+	ExtractParamsLocaleItCh      ExtractParamsLocale = "it-CH"
+	ExtractParamsLocaleItIt      ExtractParamsLocale = "it-IT"
+	ExtractParamsLocaleIuCa      ExtractParamsLocale = "iu-CA"
+	ExtractParamsLocaleIwIl      ExtractParamsLocale = "iw-IL"
+	ExtractParamsLocaleJa        ExtractParamsLocale = "ja"
+	ExtractParamsLocaleJaJp      ExtractParamsLocale = "ja-JP"
+	ExtractParamsLocaleJmc       ExtractParamsLocale = "jmc"
+	ExtractParamsLocaleJmcTz     ExtractParamsLocale = "jmc-TZ"
+	ExtractParamsLocaleKa        ExtractParamsLocale = "ka"
+	ExtractParamsLocaleKaGe      ExtractParamsLocale = "ka-GE"
+	ExtractParamsLocaleKab       ExtractParamsLocale = "kab"
+	ExtractParamsLocaleKabDz     ExtractParamsLocale = "kab-DZ"
+	ExtractParamsLocaleKam       ExtractParamsLocale = "kam"
+	ExtractParamsLocaleKamKe     ExtractParamsLocale = "kam-KE"
+	ExtractParamsLocaleKde       ExtractParamsLocale = "kde"
+	ExtractParamsLocaleKdeTz     ExtractParamsLocale = "kde-TZ"
+	ExtractParamsLocaleKea       ExtractParamsLocale = "kea"
+	ExtractParamsLocaleKeaCv     ExtractParamsLocale = "kea-CV"
+	ExtractParamsLocaleKhq       ExtractParamsLocale = "khq"
+	ExtractParamsLocaleKhqMl     ExtractParamsLocale = "khq-ML"
+	ExtractParamsLocaleKi        ExtractParamsLocale = "ki"
+	ExtractParamsLocaleKiKe      ExtractParamsLocale = "ki-KE"
+	ExtractParamsLocaleKk        ExtractParamsLocale = "kk"
+	ExtractParamsLocaleKkCyrl    ExtractParamsLocale = "kk-Cyrl"
+	ExtractParamsLocaleKkCyrlKz  ExtractParamsLocale = "kk-Cyrl-KZ"
+	ExtractParamsLocaleKkKz      ExtractParamsLocale = "kk-KZ"
+	ExtractParamsLocaleKl        ExtractParamsLocale = "kl"
+	ExtractParamsLocaleKlGl      ExtractParamsLocale = "kl-GL"
+	ExtractParamsLocaleKln       ExtractParamsLocale = "kln"
+	ExtractParamsLocaleKlnKe     ExtractParamsLocale = "kln-KE"
+	ExtractParamsLocaleKm        ExtractParamsLocale = "km"
+	ExtractParamsLocaleKmKh      ExtractParamsLocale = "km-KH"
+	ExtractParamsLocaleKn        ExtractParamsLocale = "kn"
+	ExtractParamsLocaleKnIn      ExtractParamsLocale = "kn-IN"
+	ExtractParamsLocaleKo        ExtractParamsLocale = "ko"
+	ExtractParamsLocaleKoKr      ExtractParamsLocale = "ko-KR"
+	ExtractParamsLocaleKok       ExtractParamsLocale = "kok"
+	ExtractParamsLocaleKokIn     ExtractParamsLocale = "kok-IN"
+	ExtractParamsLocaleKsIn      ExtractParamsLocale = "ks-IN"
+	ExtractParamsLocaleKuTr      ExtractParamsLocale = "ku-TR"
+	ExtractParamsLocaleKw        ExtractParamsLocale = "kw"
+	ExtractParamsLocaleKwGB      ExtractParamsLocale = "kw-GB"
+	ExtractParamsLocaleKyKg      ExtractParamsLocale = "ky-KG"
+	ExtractParamsLocaleLag       ExtractParamsLocale = "lag"
+	ExtractParamsLocaleLagTz     ExtractParamsLocale = "lag-TZ"
+	ExtractParamsLocaleLbLu      ExtractParamsLocale = "lb-LU"
+	ExtractParamsLocaleLg        ExtractParamsLocale = "lg"
+	ExtractParamsLocaleLgUg      ExtractParamsLocale = "lg-UG"
+	ExtractParamsLocaleLiBe      ExtractParamsLocale = "li-BE"
+	ExtractParamsLocaleLiNl      ExtractParamsLocale = "li-NL"
+	ExtractParamsLocaleLijIt     ExtractParamsLocale = "lij-IT"
+	ExtractParamsLocaleLoLa      ExtractParamsLocale = "lo-LA"
+	ExtractParamsLocaleLt        ExtractParamsLocale = "lt"
+	ExtractParamsLocaleLtLt      ExtractParamsLocale = "lt-LT"
+	ExtractParamsLocaleLuo       ExtractParamsLocale = "luo"
+	ExtractParamsLocaleLuoKe     ExtractParamsLocale = "luo-KE"
+	ExtractParamsLocaleLuy       ExtractParamsLocale = "luy"
+	ExtractParamsLocaleLuyKe     ExtractParamsLocale = "luy-KE"
+	ExtractParamsLocaleLv        ExtractParamsLocale = "lv"
+	ExtractParamsLocaleLvLv      ExtractParamsLocale = "lv-LV"
+	ExtractParamsLocaleMagIn     ExtractParamsLocale = "mag-IN"
+	ExtractParamsLocaleMaiIn     ExtractParamsLocale = "mai-IN"
+	ExtractParamsLocaleMas       ExtractParamsLocale = "mas"
+	ExtractParamsLocaleMasKe     ExtractParamsLocale = "mas-KE"
+	ExtractParamsLocaleMasTz     ExtractParamsLocale = "mas-TZ"
+	ExtractParamsLocaleMer       ExtractParamsLocale = "mer"
+	ExtractParamsLocaleMerKe     ExtractParamsLocale = "mer-KE"
+	ExtractParamsLocaleMfe       ExtractParamsLocale = "mfe"
+	ExtractParamsLocaleMfeMu     ExtractParamsLocale = "mfe-MU"
+	ExtractParamsLocaleMg        ExtractParamsLocale = "mg"
+	ExtractParamsLocaleMgMg      ExtractParamsLocale = "mg-MG"
+	ExtractParamsLocaleMhrRu     ExtractParamsLocale = "mhr-RU"
+	ExtractParamsLocaleMiNz      ExtractParamsLocale = "mi-NZ"
+	ExtractParamsLocaleMk        ExtractParamsLocale = "mk"
+	ExtractParamsLocaleMkMk      ExtractParamsLocale = "mk-MK"
+	ExtractParamsLocaleMl        ExtractParamsLocale = "ml"
+	ExtractParamsLocaleMlIn      ExtractParamsLocale = "ml-IN"
+	ExtractParamsLocaleMnMn      ExtractParamsLocale = "mn-MN"
+	ExtractParamsLocaleMr        ExtractParamsLocale = "mr"
+	ExtractParamsLocaleMrIn      ExtractParamsLocale = "mr-IN"
+	ExtractParamsLocaleMs        ExtractParamsLocale = "ms"
+	ExtractParamsLocaleMsBn      ExtractParamsLocale = "ms-BN"
+	ExtractParamsLocaleMsMy      ExtractParamsLocale = "ms-MY"
+	ExtractParamsLocaleMt        ExtractParamsLocale = "mt"
+	ExtractParamsLocaleMtMt      ExtractParamsLocale = "mt-MT"
+	ExtractParamsLocaleMy        ExtractParamsLocale = "my"
+	ExtractParamsLocaleMyMm      ExtractParamsLocale = "my-MM"
+	ExtractParamsLocaleNanTw     ExtractParamsLocale = "nan-TW"
+	ExtractParamsLocaleNaq       ExtractParamsLocale = "naq"
+	ExtractParamsLocaleNaqNa     ExtractParamsLocale = "naq-NA"
+	ExtractParamsLocaleNb        ExtractParamsLocale = "nb"
+	ExtractParamsLocaleNbNo      ExtractParamsLocale = "nb-NO"
+	ExtractParamsLocaleNd        ExtractParamsLocale = "nd"
+	ExtractParamsLocaleNdZw      ExtractParamsLocale = "nd-ZW"
+	ExtractParamsLocaleNdsDe     ExtractParamsLocale = "nds-DE"
+	ExtractParamsLocaleNdsNl     ExtractParamsLocale = "nds-NL"
+	ExtractParamsLocaleNe        ExtractParamsLocale = "ne"
+	ExtractParamsLocaleNeIn      ExtractParamsLocale = "ne-IN"
+	ExtractParamsLocaleNeNp      ExtractParamsLocale = "ne-NP"
+	ExtractParamsLocaleNl        ExtractParamsLocale = "nl"
+	ExtractParamsLocaleNlAw      ExtractParamsLocale = "nl-AW"
+	ExtractParamsLocaleNlBe      ExtractParamsLocale = "nl-BE"
+	ExtractParamsLocaleNlNl      ExtractParamsLocale = "nl-NL"
+	ExtractParamsLocaleNn        ExtractParamsLocale = "nn"
+	ExtractParamsLocaleNnNo      ExtractParamsLocale = "nn-NO"
+	ExtractParamsLocaleNrZa      ExtractParamsLocale = "nr-ZA"
+	ExtractParamsLocaleNsoZa     ExtractParamsLocale = "nso-ZA"
+	ExtractParamsLocaleNyn       ExtractParamsLocale = "nyn"
+	ExtractParamsLocaleNynUg     ExtractParamsLocale = "nyn-UG"
+	ExtractParamsLocaleOcFr      ExtractParamsLocale = "oc-FR"
+	ExtractParamsLocaleOm        ExtractParamsLocale = "om"
+	ExtractParamsLocaleOmEt      ExtractParamsLocale = "om-ET"
+	ExtractParamsLocaleOmKe      ExtractParamsLocale = "om-KE"
+	ExtractParamsLocaleOr        ExtractParamsLocale = "or"
+	ExtractParamsLocaleOrIn      ExtractParamsLocale = "or-IN"
+	ExtractParamsLocaleOsRu      ExtractParamsLocale = "os-RU"
+	ExtractParamsLocalePa        ExtractParamsLocale = "pa"
+	ExtractParamsLocalePaArab    ExtractParamsLocale = "pa-Arab"
+	ExtractParamsLocalePaArabPk  ExtractParamsLocale = "pa-Arab-PK"
+	ExtractParamsLocalePaGuru    ExtractParamsLocale = "pa-Guru"
+	ExtractParamsLocalePaGuruIn  ExtractParamsLocale = "pa-Guru-IN"
+	ExtractParamsLocalePaIn      ExtractParamsLocale = "pa-IN"
+	ExtractParamsLocalePaPk      ExtractParamsLocale = "pa-PK"
+	ExtractParamsLocalePapAn     ExtractParamsLocale = "pap-AN"
+	ExtractParamsLocalePl        ExtractParamsLocale = "pl"
+	ExtractParamsLocalePlPl      ExtractParamsLocale = "pl-PL"
+	ExtractParamsLocalePs        ExtractParamsLocale = "ps"
+	ExtractParamsLocalePsAf      ExtractParamsLocale = "ps-AF"
+	ExtractParamsLocalePt        ExtractParamsLocale = "pt"
+	ExtractParamsLocalePtBr      ExtractParamsLocale = "pt-BR"
+	ExtractParamsLocalePtGw      ExtractParamsLocale = "pt-GW"
+	ExtractParamsLocalePtMz      ExtractParamsLocale = "pt-MZ"
+	ExtractParamsLocalePtPt      ExtractParamsLocale = "pt-PT"
+	ExtractParamsLocaleRm        ExtractParamsLocale = "rm"
+	ExtractParamsLocaleRmCh      ExtractParamsLocale = "rm-CH"
+	ExtractParamsLocaleRo        ExtractParamsLocale = "ro"
+	ExtractParamsLocaleRoMd      ExtractParamsLocale = "ro-MD"
+	ExtractParamsLocaleRoRo      ExtractParamsLocale = "ro-RO"
+	ExtractParamsLocaleRof       ExtractParamsLocale = "rof"
+	ExtractParamsLocaleRofTz     ExtractParamsLocale = "rof-TZ"
+	ExtractParamsLocaleRu        ExtractParamsLocale = "ru"
+	ExtractParamsLocaleRuMd      ExtractParamsLocale = "ru-MD"
+	ExtractParamsLocaleRuRu      ExtractParamsLocale = "ru-RU"
+	ExtractParamsLocaleRuUa      ExtractParamsLocale = "ru-UA"
+	ExtractParamsLocaleRw        ExtractParamsLocale = "rw"
+	ExtractParamsLocaleRwRw      ExtractParamsLocale = "rw-RW"
+	ExtractParamsLocaleRwk       ExtractParamsLocale = "rwk"
+	ExtractParamsLocaleRwkTz     ExtractParamsLocale = "rwk-TZ"
+	ExtractParamsLocaleSaIn      ExtractParamsLocale = "sa-IN"
+	ExtractParamsLocaleSaq       ExtractParamsLocale = "saq"
+	ExtractParamsLocaleSaqKe     ExtractParamsLocale = "saq-KE"
+	ExtractParamsLocaleScIt      ExtractParamsLocale = "sc-IT"
+	ExtractParamsLocaleSdIn      ExtractParamsLocale = "sd-IN"
+	ExtractParamsLocaleSeNo      ExtractParamsLocale = "se-NO"
+	ExtractParamsLocaleSeh       ExtractParamsLocale = "seh"
+	ExtractParamsLocaleSehMz     ExtractParamsLocale = "seh-MZ"
+	ExtractParamsLocaleSes       ExtractParamsLocale = "ses"
+	ExtractParamsLocaleSesMl     ExtractParamsLocale = "ses-ML"
+	ExtractParamsLocaleSg        ExtractParamsLocale = "sg"
+	ExtractParamsLocaleSgCf      ExtractParamsLocale = "sg-CF"
+	ExtractParamsLocaleShi       ExtractParamsLocale = "shi"
+	ExtractParamsLocaleShiLatn   ExtractParamsLocale = "shi-Latn"
+	ExtractParamsLocaleShiLatnMa ExtractParamsLocale = "shi-Latn-MA"
+	ExtractParamsLocaleShiTfng   ExtractParamsLocale = "shi-Tfng"
+	ExtractParamsLocaleShiTfngMa ExtractParamsLocale = "shi-Tfng-MA"
+	ExtractParamsLocaleShsCa     ExtractParamsLocale = "shs-CA"
+	ExtractParamsLocaleSi        ExtractParamsLocale = "si"
+	ExtractParamsLocaleSiLk      ExtractParamsLocale = "si-LK"
+	ExtractParamsLocaleSidEt     ExtractParamsLocale = "sid-ET"
+	ExtractParamsLocaleSk        ExtractParamsLocale = "sk"
+	ExtractParamsLocaleSkSk      ExtractParamsLocale = "sk-SK"
+	ExtractParamsLocaleSl        ExtractParamsLocale = "sl"
+	ExtractParamsLocaleSlSi      ExtractParamsLocale = "sl-SI"
+	ExtractParamsLocaleSn        ExtractParamsLocale = "sn"
+	ExtractParamsLocaleSnZw      ExtractParamsLocale = "sn-ZW"
+	ExtractParamsLocaleSo        ExtractParamsLocale = "so"
+	ExtractParamsLocaleSoDj      ExtractParamsLocale = "so-DJ"
+	ExtractParamsLocaleSoEt      ExtractParamsLocale = "so-ET"
+	ExtractParamsLocaleSoKe      ExtractParamsLocale = "so-KE"
+	ExtractParamsLocaleSoSo      ExtractParamsLocale = "so-SO"
+	ExtractParamsLocaleSq        ExtractParamsLocale = "sq"
+	ExtractParamsLocaleSqAl      ExtractParamsLocale = "sq-AL"
+	ExtractParamsLocaleSqMk      ExtractParamsLocale = "sq-MK"
+	ExtractParamsLocaleSr        ExtractParamsLocale = "sr"
+	ExtractParamsLocaleSrCyrl    ExtractParamsLocale = "sr-Cyrl"
+	ExtractParamsLocaleSrCyrlBa  ExtractParamsLocale = "sr-Cyrl-BA"
+	ExtractParamsLocaleSrCyrlMe  ExtractParamsLocale = "sr-Cyrl-ME"
+	ExtractParamsLocaleSrCyrlRs  ExtractParamsLocale = "sr-Cyrl-RS"
+	ExtractParamsLocaleSrLatn    ExtractParamsLocale = "sr-Latn"
+	ExtractParamsLocaleSrLatnBa  ExtractParamsLocale = "sr-Latn-BA"
+	ExtractParamsLocaleSrLatnMe  ExtractParamsLocale = "sr-Latn-ME"
+	ExtractParamsLocaleSrLatnRs  ExtractParamsLocale = "sr-Latn-RS"
+	ExtractParamsLocaleSrMe      ExtractParamsLocale = "sr-ME"
+	ExtractParamsLocaleSrRs      ExtractParamsLocale = "sr-RS"
+	ExtractParamsLocaleSSZa      ExtractParamsLocale = "ss-ZA"
+	ExtractParamsLocaleStZa      ExtractParamsLocale = "st-ZA"
+	ExtractParamsLocaleSv        ExtractParamsLocale = "sv"
+	ExtractParamsLocaleSvFi      ExtractParamsLocale = "sv-FI"
+	ExtractParamsLocaleSvSe      ExtractParamsLocale = "sv-SE"
+	ExtractParamsLocaleSw        ExtractParamsLocale = "sw"
+	ExtractParamsLocaleSwKe      ExtractParamsLocale = "sw-KE"
+	ExtractParamsLocaleSwTz      ExtractParamsLocale = "sw-TZ"
+	ExtractParamsLocaleTa        ExtractParamsLocale = "ta"
+	ExtractParamsLocaleTaIn      ExtractParamsLocale = "ta-IN"
+	ExtractParamsLocaleTaLk      ExtractParamsLocale = "ta-LK"
+	ExtractParamsLocaleTe        ExtractParamsLocale = "te"
+	ExtractParamsLocaleTeIn      ExtractParamsLocale = "te-IN"
+	ExtractParamsLocaleTeo       ExtractParamsLocale = "teo"
+	ExtractParamsLocaleTeoKe     ExtractParamsLocale = "teo-KE"
+	ExtractParamsLocaleTeoUg     ExtractParamsLocale = "teo-UG"
+	ExtractParamsLocaleTgTj      ExtractParamsLocale = "tg-TJ"
+	ExtractParamsLocaleTh        ExtractParamsLocale = "th"
+	ExtractParamsLocaleThTh      ExtractParamsLocale = "th-TH"
+	ExtractParamsLocaleTi        ExtractParamsLocale = "ti"
+	ExtractParamsLocaleTiEr      ExtractParamsLocale = "ti-ER"
+	ExtractParamsLocaleTiEt      ExtractParamsLocale = "ti-ET"
+	ExtractParamsLocaleTigEr     ExtractParamsLocale = "tig-ER"
+	ExtractParamsLocaleTkTm      ExtractParamsLocale = "tk-TM"
+	ExtractParamsLocaleTlPh      ExtractParamsLocale = "tl-PH"
+	ExtractParamsLocaleTnZa      ExtractParamsLocale = "tn-ZA"
+	ExtractParamsLocaleTo        ExtractParamsLocale = "to"
+	ExtractParamsLocaleToTo      ExtractParamsLocale = "to-TO"
+	ExtractParamsLocaleTr        ExtractParamsLocale = "tr"
+	ExtractParamsLocaleTrCy      ExtractParamsLocale = "tr-CY"
+	ExtractParamsLocaleTrTr      ExtractParamsLocale = "tr-TR"
+	ExtractParamsLocaleTsZa      ExtractParamsLocale = "ts-ZA"
+	ExtractParamsLocaleTtRu      ExtractParamsLocale = "tt-RU"
+	ExtractParamsLocaleTzm       ExtractParamsLocale = "tzm"
+	ExtractParamsLocaleTzmLatn   ExtractParamsLocale = "tzm-Latn"
+	ExtractParamsLocaleTzmLatnMa ExtractParamsLocale = "tzm-Latn-MA"
+	ExtractParamsLocaleUgCn      ExtractParamsLocale = "ug-CN"
+	ExtractParamsLocaleUk        ExtractParamsLocale = "uk"
+	ExtractParamsLocaleUkUa      ExtractParamsLocale = "uk-UA"
+	ExtractParamsLocaleUnmUs     ExtractParamsLocale = "unm-US"
+	ExtractParamsLocaleUr        ExtractParamsLocale = "ur"
+	ExtractParamsLocaleUrIn      ExtractParamsLocale = "ur-IN"
+	ExtractParamsLocaleUrPk      ExtractParamsLocale = "ur-PK"
+	ExtractParamsLocaleUz        ExtractParamsLocale = "uz"
+	ExtractParamsLocaleUzArab    ExtractParamsLocale = "uz-Arab"
+	ExtractParamsLocaleUzArabAf  ExtractParamsLocale = "uz-Arab-AF"
+	ExtractParamsLocaleUzCyrl    ExtractParamsLocale = "uz-Cyrl"
+	ExtractParamsLocaleUzCyrlUz  ExtractParamsLocale = "uz-Cyrl-UZ"
+	ExtractParamsLocaleUzLatn    ExtractParamsLocale = "uz-Latn"
+	ExtractParamsLocaleUzLatnUz  ExtractParamsLocale = "uz-Latn-UZ"
+	ExtractParamsLocaleUzUz      ExtractParamsLocale = "uz-UZ"
+	ExtractParamsLocaleVeZa      ExtractParamsLocale = "ve-ZA"
+	ExtractParamsLocaleVi        ExtractParamsLocale = "vi"
+	ExtractParamsLocaleViVn      ExtractParamsLocale = "vi-VN"
+	ExtractParamsLocaleVun       ExtractParamsLocale = "vun"
+	ExtractParamsLocaleVunTz     ExtractParamsLocale = "vun-TZ"
+	ExtractParamsLocaleWaBe      ExtractParamsLocale = "wa-BE"
+	ExtractParamsLocaleWaeCh     ExtractParamsLocale = "wae-CH"
+	ExtractParamsLocaleWalEt     ExtractParamsLocale = "wal-ET"
+	ExtractParamsLocaleWoSn      ExtractParamsLocale = "wo-SN"
+	ExtractParamsLocaleXhZa      ExtractParamsLocale = "xh-ZA"
+	ExtractParamsLocaleXog       ExtractParamsLocale = "xog"
+	ExtractParamsLocaleXogUg     ExtractParamsLocale = "xog-UG"
+	ExtractParamsLocaleYiUs      ExtractParamsLocale = "yi-US"
+	ExtractParamsLocaleYo        ExtractParamsLocale = "yo"
+	ExtractParamsLocaleYoNg      ExtractParamsLocale = "yo-NG"
+	ExtractParamsLocaleYueHk     ExtractParamsLocale = "yue-HK"
+	ExtractParamsLocaleZh        ExtractParamsLocale = "zh"
+	ExtractParamsLocaleZhCn      ExtractParamsLocale = "zh-CN"
+	ExtractParamsLocaleZhHk      ExtractParamsLocale = "zh-HK"
+	ExtractParamsLocaleZhHans    ExtractParamsLocale = "zh-Hans"
+	ExtractParamsLocaleZhHansCn  ExtractParamsLocale = "zh-Hans-CN"
+	ExtractParamsLocaleZhHansHk  ExtractParamsLocale = "zh-Hans-HK"
+	ExtractParamsLocaleZhHansMo  ExtractParamsLocale = "zh-Hans-MO"
+	ExtractParamsLocaleZhHansSg  ExtractParamsLocale = "zh-Hans-SG"
+	ExtractParamsLocaleZhHant    ExtractParamsLocale = "zh-Hant"
+	ExtractParamsLocaleZhHantHk  ExtractParamsLocale = "zh-Hant-HK"
+	ExtractParamsLocaleZhHantMo  ExtractParamsLocale = "zh-Hant-MO"
+	ExtractParamsLocaleZhHantTw  ExtractParamsLocale = "zh-Hant-TW"
+	ExtractParamsLocaleZhSg      ExtractParamsLocale = "zh-SG"
+	ExtractParamsLocaleZhTw      ExtractParamsLocale = "zh-TW"
+	ExtractParamsLocaleZu        ExtractParamsLocale = "zu"
+	ExtractParamsLocaleZuZa      ExtractParamsLocale = "zu-ZA"
+	ExtractParamsLocaleAuto      ExtractParamsLocale = "auto"
+)
+
+// HTTP method for the request
+type ExtractParamsMethod string
+
+const (
+	ExtractParamsMethodGet    ExtractParamsMethod = "GET"
+	ExtractParamsMethodPost   ExtractParamsMethod = "POST"
+	ExtractParamsMethodPut    ExtractParamsMethod = "PUT"
+	ExtractParamsMethodPatch  ExtractParamsMethod = "PATCH"
+	ExtractParamsMethodDelete ExtractParamsMethod = "DELETE"
+)
+
+type ExtractParamsNetworkCapture struct {
+	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
+	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
+	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Resource type for network capture filtering
+	ResourceType ExtractParamsNetworkCaptureResourceTypeUnion `json:"resource_type,omitzero"`
+	StatusCode   ExtractParamsNetworkCaptureStatusCodeUnion   `json:"status_code,omitzero"`
+	URL          ExtractParamsNetworkCaptureURL               `json:"url,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsNetworkCapture) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsNetworkCapture
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsNetworkCapture](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsNetworkCaptureResourceTypeUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsNetworkCaptureResourceTypeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsNetworkCaptureResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsNetworkCaptureResourceTypeUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsNetworkCaptureStatusCodeUnion struct {
+	OfFloat      param.Opt[float64] `json:",omitzero,inline"`
+	OfFloatArray []float64          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsNetworkCaptureStatusCodeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfFloatArray)
+}
+func (u *ExtractParamsNetworkCaptureStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsNetworkCaptureStatusCodeUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfFloatArray) {
+		return &u.OfFloatArray
+	}
+	return nil
+}
+
+// The property Value is required.
+type ExtractParamsNetworkCaptureURL struct {
+	Value string `json:"value,required"`
+	// Any of "exact", "contains".
+	Type string `json:"type,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsNetworkCaptureURL) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsNetworkCaptureURL
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsNetworkCaptureURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractParamsNetworkCaptureURL](
+		"type", "exact", "contains",
+	)
+}
+
+// Operating system to emulate
+type ExtractParamsOs string
+
+const (
+	ExtractParamsOsWindows ExtractParamsOs = "windows"
+	ExtractParamsOsMacOs   ExtractParamsOs = "mac os"
+	ExtractParamsOsLinux   ExtractParamsOs = "linux"
+	ExtractParamsOsAndroid ExtractParamsOs = "android"
+	ExtractParamsOsIos     ExtractParamsOs = "ios"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsParserUnion struct {
+	OfAnyMap map[string]any    `json:",omitzero,inline"`
+	OfString param.Opt[string] `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsParserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAnyMap, u.OfString)
+}
+func (u *ExtractParamsParserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsParserUnion) asAny() any {
+	if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Referrer policy for the request
+type ExtractParamsReferrerType string
+
+const (
+	ExtractParamsReferrerTypeRandom     ExtractParamsReferrerType = "random"
+	ExtractParamsReferrerTypeNoReferer  ExtractParamsReferrerType = "no-referer"
+	ExtractParamsReferrerTypeSameOrigin ExtractParamsReferrerType = "same-origin"
+	ExtractParamsReferrerTypeGoogle     ExtractParamsReferrerType = "google"
+	ExtractParamsReferrerTypeBing       ExtractParamsReferrerType = "bing"
+	ExtractParamsReferrerTypeFacebook   ExtractParamsReferrerType = "facebook"
+	ExtractParamsReferrerTypeTwitter    ExtractParamsReferrerType = "twitter"
+	ExtractParamsReferrerTypeInstagram  ExtractParamsReferrerType = "instagram"
+)
+
+type ExtractParamsSession struct {
+	ID                  param.Opt[string]  `json:"id,omitzero"`
+	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	Retry               param.Opt[bool]    `json:"retry,omitzero"`
+	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
+	paramObj
+}
+
+func (r ExtractParamsSession) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractParamsSession
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractParamsSession) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsSkillUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsSkillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractParamsSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsSkillUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// US state for geolocation (only valid when country is US)
+type ExtractParamsState string
+
+const (
+	ExtractParamsStateAl ExtractParamsState = "AL"
+	ExtractParamsStateAk ExtractParamsState = "AK"
+	ExtractParamsStateAs ExtractParamsState = "AS"
+	ExtractParamsStateAz ExtractParamsState = "AZ"
+	ExtractParamsStateAr ExtractParamsState = "AR"
+	ExtractParamsStateCa ExtractParamsState = "CA"
+	ExtractParamsStateCo ExtractParamsState = "CO"
+	ExtractParamsStateCt ExtractParamsState = "CT"
+	ExtractParamsStateDe ExtractParamsState = "DE"
+	ExtractParamsStateDc ExtractParamsState = "DC"
+	ExtractParamsStateFl ExtractParamsState = "FL"
+	ExtractParamsStateGa ExtractParamsState = "GA"
+	ExtractParamsStateGu ExtractParamsState = "GU"
+	ExtractParamsStateHi ExtractParamsState = "HI"
+	ExtractParamsStateID ExtractParamsState = "ID"
+	ExtractParamsStateIl ExtractParamsState = "IL"
+	ExtractParamsStateIn ExtractParamsState = "IN"
+	ExtractParamsStateIa ExtractParamsState = "IA"
+	ExtractParamsStateKs ExtractParamsState = "KS"
+	ExtractParamsStateKy ExtractParamsState = "KY"
+	ExtractParamsStateLa ExtractParamsState = "LA"
+	ExtractParamsStateMe ExtractParamsState = "ME"
+	ExtractParamsStateMd ExtractParamsState = "MD"
+	ExtractParamsStateMa ExtractParamsState = "MA"
+	ExtractParamsStateMi ExtractParamsState = "MI"
+	ExtractParamsStateMn ExtractParamsState = "MN"
+	ExtractParamsStateMs ExtractParamsState = "MS"
+	ExtractParamsStateMo ExtractParamsState = "MO"
+	ExtractParamsStateMt ExtractParamsState = "MT"
+	ExtractParamsStateNe ExtractParamsState = "NE"
+	ExtractParamsStateNv ExtractParamsState = "NV"
+	ExtractParamsStateNh ExtractParamsState = "NH"
+	ExtractParamsStateNj ExtractParamsState = "NJ"
+	ExtractParamsStateNm ExtractParamsState = "NM"
+	ExtractParamsStateNy ExtractParamsState = "NY"
+	ExtractParamsStateNc ExtractParamsState = "NC"
+	ExtractParamsStateNd ExtractParamsState = "ND"
+	ExtractParamsStateMp ExtractParamsState = "MP"
+	ExtractParamsStateOh ExtractParamsState = "OH"
+	ExtractParamsStateOk ExtractParamsState = "OK"
+	ExtractParamsStateOr ExtractParamsState = "OR"
+	ExtractParamsStatePa ExtractParamsState = "PA"
+	ExtractParamsStatePr ExtractParamsState = "PR"
+	ExtractParamsStateRi ExtractParamsState = "RI"
+	ExtractParamsStateSc ExtractParamsState = "SC"
+	ExtractParamsStateSd ExtractParamsState = "SD"
+	ExtractParamsStateTn ExtractParamsState = "TN"
+	ExtractParamsStateTx ExtractParamsState = "TX"
+	ExtractParamsStateUt ExtractParamsState = "UT"
+	ExtractParamsStateVt ExtractParamsState = "VT"
+	ExtractParamsStateVa ExtractParamsState = "VA"
+	ExtractParamsStateVi ExtractParamsState = "VI"
+	ExtractParamsStateWa ExtractParamsState = "WA"
+	ExtractParamsStateWv ExtractParamsState = "WV"
+	ExtractParamsStateWi ExtractParamsState = "WI"
+	ExtractParamsStateWy ExtractParamsState = "WY"
+)
 
 type MapParams struct {
 	// Url to map.

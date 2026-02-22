@@ -120,6 +120,14 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
 }
 
+// Extract
+func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/extract"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
 // Create map task
 func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.RequestOption) (res *MapResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
