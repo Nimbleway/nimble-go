@@ -1,3 +1,19 @@
+# Shared Params Types
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#AutoScrollActionParam">AutoScrollActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#ClickActionParam">ClickActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#EvalActionParam">EvalActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#FetchActionParam">FetchActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#FillActionParam">FillActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#GetCookiesActionParam">GetCookiesActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#GotoActionParam">GotoActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#PressActionParam">PressActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#ScreenshotActionParam">ScreenshotActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#ScrollActionParam">ScrollActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#WaitActionParam">WaitActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#WaitForElementActionParam">WaitForElementActionParam</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go/shared#WaitForNavigationActionParam">WaitForNavigationActionParam</a>
+
 # githubcomnimblewaynimblego
 
 Response Types:
