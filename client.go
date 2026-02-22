@@ -18,7 +18,6 @@ import (
 type Client struct {
 	Options []option.RequestOption
 	Agent   AgentService
-	Extract ExtractService
 	Crawl   CrawlService
 	Tasks   TaskService
 }
@@ -46,7 +45,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r = Client{Options: opts}
 
 	r.Agent = NewAgentService(opts...)
-	r.Extract = NewExtractService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 	r.Tasks = NewTaskService(opts...)
 
@@ -126,6 +124,14 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/extract"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
+// Extract Async Endpoint
+func (r *Client) ExtractAsync(ctx context.Context, body ExtractAsyncParams, opts ...option.RequestOption) (res *ExtractAsyncResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/extract/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
