@@ -26,7 +26,7 @@ func TestUsage(t *testing.T) {
 	)
 	t.Skip("Mock server tests are disabled")
 	response, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
-		URL: "url",
+		URL: "https://exapmle.com",
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

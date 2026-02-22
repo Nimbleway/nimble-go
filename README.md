@@ -66,7 +66,7 @@ func main() {
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLE_API_KEY")
 	)
 	response, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
-		URL: "url",
+		URL: "https://exapmle.com",
 	})
 	if err != nil {
 		panic(err.Error())
@@ -309,7 +309,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
 _, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
-	URL: "url",
+	URL: "https://exapmle.com",
 })
 if err != nil {
 	var apierr *githubcomnimblewaynimblego.Error
@@ -338,7 +338,7 @@ defer cancel()
 client.Extract.Run(
 	ctx,
 	githubcomnimblewaynimblego.ExtractRunParams{
-		URL: "url",
+		URL: "https://exapmle.com",
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -376,7 +376,7 @@ client := githubcomnimblewaynimblego.NewClient(
 client.Extract.Run(
 	context.TODO(),
 	githubcomnimblewaynimblego.ExtractRunParams{
-		URL: "url",
+		URL: "https://exapmle.com",
 	},
 	option.WithMaxRetries(5),
 )
@@ -393,7 +393,7 @@ var response *http.Response
 response, err := client.Extract.Run(
 	context.TODO(),
 	githubcomnimblewaynimblego.ExtractRunParams{
-		URL: "url",
+		URL: "https://exapmle.com",
 	},
 	option.WithResponseInto(&response),
 )
