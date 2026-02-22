@@ -47,14 +47,6 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 	return
 }
 
-// Execute WSA Async Endpoint
-func (r *AgentService) Async(ctx context.Context, body AgentAsyncParams, opts ...option.RequestOption) (res *AgentAsyncResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents/async"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
-}
-
 // Get Template
 func (r *AgentService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -71,6 +63,14 @@ func (r *AgentService) Get(ctx context.Context, templateName string, opts ...opt
 func (r *AgentService) Run(ctx context.Context, body AgentRunParams, opts ...option.RequestOption) (res *AgentRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents/run"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
+// Execute WSA Async Endpoint
+func (r *AgentService) RunAsync(ctx context.Context, body AgentRunAsyncParams, opts ...option.RequestOption) (res *AgentRunAsyncResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/agents/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
@@ -102,24 +102,6 @@ type AgentListResponse struct {
 // Returns the unmodified JSON received from the API
 func (r AgentListResponse) RawJSON() string { return r.JSON.raw }
 func (r *AgentListResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentAsyncResponse struct {
-	Status constant.Success `json:"status,required"`
-	Task   map[string]any   `json:"task,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Status      respjson.Field
-		Task        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentAsyncResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentAsyncResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -835,6 +817,24 @@ func (r *AgentRunResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type AgentRunAsyncResponse struct {
+	Status constant.Success `json:"status,required"`
+	Task   map[string]any   `json:"task,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Status      respjson.Field
+		Task        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentRunAsyncResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentRunAsyncResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type AgentListParams struct {
 	// Number of results per page
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
@@ -876,7 +876,22 @@ const (
 	AgentListParamsPrivacyAll     AgentListParamsPrivacy = "all"
 )
 
-type AgentAsyncParams struct {
+type AgentRunParams struct {
+	Agent        string          `json:"agent,required"`
+	Params       map[string]any  `json:"params,omitzero,required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	paramObj
+}
+
+func (r AgentRunParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentRunAsyncParams struct {
 	Agent  string         `json:"agent,required"`
 	Params map[string]any `json:"params,omitzero,required"`
 	// URL to call back when async operation completes
@@ -893,25 +908,10 @@ type AgentAsyncParams struct {
 	paramObj
 }
 
-func (r AgentAsyncParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentAsyncParams
+func (r AgentRunAsyncParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunAsyncParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentAsyncParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunParams struct {
-	Agent        string          `json:"agent,required"`
-	Params       map[string]any  `json:"params,omitzero,required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	paramObj
-}
-
-func (r AgentRunParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunParams) UnmarshalJSON(data []byte) error {
+func (r *AgentRunAsyncParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

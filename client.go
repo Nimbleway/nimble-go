@@ -17,9 +17,10 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
+	Agent   AgentService
 	Extract ExtractService
-	Agents  AgentService
 	Crawl   CrawlService
+	Tasks   TaskService
 }
 
 // DefaultClientOptions read from the environment (NIMBLE_API_KEY,
@@ -44,9 +45,10 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
+	r.Agent = NewAgentService(opts...)
 	r.Extract = NewExtractService(opts...)
-	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
+	r.Tasks = NewTaskService(opts...)
 
 	return
 }
