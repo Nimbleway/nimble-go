@@ -65,7 +65,7 @@ func main() {
 	client := githubcomnimblewaynimblego.NewClient(
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("NIMBLE_API_KEY")
 	)
-	response, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
+	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "https://exapmle.com",
 	})
 	if err != nil {
@@ -277,7 +277,7 @@ client := githubcomnimblewaynimblego.NewClient(
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
 
-client.Extract.Run(context.TODO(), ...,
+client.Extract(context.TODO(), ...,
 	// Override the header
 	option.WithHeader("X-Some-Header", "some_other_custom_header_info"),
 	// Add an undocumented field to the request body, using sjson syntax
@@ -308,7 +308,7 @@ When the API returns a non-success status code, we return an error with type
 To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
-_, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
+_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 	URL: "https://exapmle.com",
 })
 if err != nil {
@@ -335,9 +335,9 @@ To set a per-retry timeout, use `option.WithRequestTimeout()`.
 // This sets the timeout for the request, including all the retries.
 ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 defer cancel()
-client.Extract.Run(
+client.Extract(
 	ctx,
-	githubcomnimblewaynimblego.ExtractRunParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "https://exapmle.com",
 	},
 	// This sets the per-retry timeout
@@ -373,9 +373,9 @@ client := githubcomnimblewaynimblego.NewClient(
 )
 
 // Override per-request:
-client.Extract.Run(
+client.Extract(
 	context.TODO(),
-	githubcomnimblewaynimblego.ExtractRunParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "https://exapmle.com",
 	},
 	option.WithMaxRetries(5),
@@ -390,9 +390,9 @@ you need to examine response headers, status codes, or other details.
 ```go
 // Create a variable to store the HTTP response
 var response *http.Response
-response, err := client.Extract.Run(
+response, err := client.Extract(
 	context.TODO(),
-	githubcomnimblewaynimblego.ExtractRunParams{
+	githubcomnimblewaynimblego.ExtractParams{
 		URL: "https://exapmle.com",
 	},
 	option.WithResponseInto(&response),
