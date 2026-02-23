@@ -676,7 +676,7 @@ type ExtractAsyncResponseTask struct {
 	StatusURL string `json:"status_url,required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social".
+	// Any of "web", "serp", "ecommerce", "social", "agent", "extract".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -4868,20 +4868,22 @@ type SearchParams struct {
 	EndDate param.Opt[string] `json:"end_date,omitzero"`
 	// Filter results after this date (format: YYYY-MM-DD or YYYY)
 	StartDate param.Opt[string] `json:"start_date,omitzero"`
-	Country   param.Opt[string] `json:"country,omitzero"`
-	// If True, fetches and extracts full page content for each search result. If
-	// False, returns only metadata (title, snippet, URL)
+	// Country code for geo-targeted results (e.g., 'US', 'GB', 'IL')
+	Country param.Opt[string] `json:"country,omitzero"`
+	// Deep Mode (true, default): fetches full-page content for deeper analysis. Fast
+	// Mode (false): returns metadata only (title, snippet, URL) for quick,
+	// token-efficient results.
 	DeepSearch param.Opt[bool] `json:"deep_search,omitzero"`
-	// Generate LLM answer summary based on search result snippets (works with both
-	// deep_search=True and False)
-	IncludeAnswer param.Opt[bool]   `json:"include_answer,omitzero"`
-	Locale        param.Opt[string] `json:"locale,omitzero"`
+	// Generate an LLM-powered answer summary based on search result snippets.
+	IncludeAnswer param.Opt[bool] `json:"include_answer,omitzero"`
+	// Language/locale code (e.g., 'en', 'fr', 'de')
+	Locale param.Opt[string] `json:"locale,omitzero"`
+	// Maximum number of results to return. Actual count may be lower depending on
+	// availability.
+	MaxResults param.Opt[int64] `json:"max_results,omitzero"`
 	// Maximum number of subagents to execute in parallel for WSA focus modes
-	// (shopping, social, geo). Ignored for traditional SERP focus modes. Default: 3,
-	// Range: 1-10.
+	// (shopping, social, geo). Ignored for SERP focus modes.
 	MaxSubagents param.Opt[int64] `json:"max_subagents,omitzero"`
-	// Maximum number of results to return (actual count may be less)
-	NumResults param.Opt[int64] `json:"num_results,omitzero"`
 	// Filter by content type (only supported with focus=general). Supports semantic
 	// groups ('documents', 'spreadsheets', 'presentations') and specific formats
 	// ('pdf', 'docx', 'xlsx', etc.)
@@ -4890,23 +4892,17 @@ type SearchParams struct {
 	ExcludeDomains []string `json:"exclude_domains,omitzero"`
 	// List of domains to include in search results. Maximum 50 domains.
 	IncludeDomains []string `json:"include_domains,omitzero"`
-	// Enum representing the search engines supported by Nimble ⚠️ DEPRECATED: This
-	// parameter is ignored. Use 'focus' parameter instead.
-	//
-	// Any of "google_search", "google_sge", "bing_search", "yandex_search".
-	SearchEngine SearchParamsSearchEngine `json:"search_engine,omitzero"`
 	// Time range filters passed to Webit SERP API as 'time' parameter.
 	//
 	// Any of "hour", "day", "week", "month", "year".
 	TimeRange SearchParamsTimeRange `json:"time_range,omitzero"`
+	// Search focus mode (e.g., 'general', 'news', 'shopping') or a list of explicit
+	// subagent names (e.g., ['amazon_serp', 'target_serp'])
+	Focus SearchParamsFocusUnion `json:"focus,omitzero"`
 	// Output format: plain_text, markdown, or simplified_html
 	//
 	// Any of "plain_text", "markdown", "simplified_html".
-	ParsingType SearchParamsParsingType `json:"parsing_type,omitzero"`
-	// Search focus/specialization. Can be a single focus mode (e.g., 'shopping',
-	// 'social') or a list of explicit subagent names (e.g., ['amazon_serp',
-	// 'target_serp'])
-	Topic SearchParamsTopicUnion `json:"topic,omitzero"`
+	OutputFormat SearchParamsOutputFormat `json:"output_format,omitzero"`
 	paramObj
 }
 
@@ -4918,24 +4914,38 @@ func (r *SearchParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SearchParamsFocusUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SearchParamsFocusUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *SearchParamsFocusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *SearchParamsFocusUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
 // Output format: plain_text, markdown, or simplified_html
-type SearchParamsParsingType string
+type SearchParamsOutputFormat string
 
 const (
-	SearchParamsParsingTypePlainText      SearchParamsParsingType = "plain_text"
-	SearchParamsParsingTypeMarkdown       SearchParamsParsingType = "markdown"
-	SearchParamsParsingTypeSimplifiedHTML SearchParamsParsingType = "simplified_html"
-)
-
-// Enum representing the search engines supported by Nimble ⚠️ DEPRECATED: This
-// parameter is ignored. Use 'focus' parameter instead.
-type SearchParamsSearchEngine string
-
-const (
-	SearchParamsSearchEngineGoogleSearch SearchParamsSearchEngine = "google_search"
-	SearchParamsSearchEngineGoogleSge    SearchParamsSearchEngine = "google_sge"
-	SearchParamsSearchEngineBingSearch   SearchParamsSearchEngine = "bing_search"
-	SearchParamsSearchEngineYandexSearch SearchParamsSearchEngine = "yandex_search"
+	SearchParamsOutputFormatPlainText      SearchParamsOutputFormat = "plain_text"
+	SearchParamsOutputFormatMarkdown       SearchParamsOutputFormat = "markdown"
+	SearchParamsOutputFormatSimplifiedHTML SearchParamsOutputFormat = "simplified_html"
 )
 
 // Time range filters passed to Webit SERP API as 'time' parameter.
@@ -4948,28 +4958,3 @@ const (
 	SearchParamsTimeRangeMonth SearchParamsTimeRange = "month"
 	SearchParamsTimeRangeYear  SearchParamsTimeRange = "year"
 )
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SearchParamsTopicUnion struct {
-	OfString      param.Opt[string] `json:",omitzero,inline"`
-	OfStringArray []string          `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SearchParamsTopicUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
-}
-func (u *SearchParamsTopicUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *SearchParamsTopicUnion) asAny() any {
-	if !param.IsOmitted(u.OfString) {
-		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfStringArray) {
-		return &u.OfStringArray
-	}
-	return nil
-}

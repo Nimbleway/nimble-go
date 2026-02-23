@@ -467,18 +467,17 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
 		EndDate:        githubcomnimblewaynimblego.String("end_date"),
 		ExcludeDomains: []string{"string"},
+		Focus: githubcomnimblewaynimblego.SearchParamsFocusUnion{
+			OfString: githubcomnimblewaynimblego.String("string"),
+		},
 		IncludeAnswer:  githubcomnimblewaynimblego.Bool(true),
 		IncludeDomains: []string{"string"},
 		Locale:         githubcomnimblewaynimblego.String("locale"),
+		MaxResults:     githubcomnimblewaynimblego.Int(1),
 		MaxSubagents:   githubcomnimblewaynimblego.Int(1),
-		NumResults:     githubcomnimblewaynimblego.Int(1),
-		ParsingType:    githubcomnimblewaynimblego.SearchParamsParsingTypePlainText,
-		SearchEngine:   githubcomnimblewaynimblego.SearchParamsSearchEngineGoogleSearch,
+		OutputFormat:   githubcomnimblewaynimblego.SearchParamsOutputFormatPlainText,
 		StartDate:      githubcomnimblewaynimblego.String("start_date"),
 		TimeRange:      githubcomnimblewaynimblego.SearchParamsTimeRangeHour,
-		Topic: githubcomnimblewaynimblego.SearchParamsTopicUnion{
-			OfString: githubcomnimblewaynimblego.String("string"),
-		},
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
