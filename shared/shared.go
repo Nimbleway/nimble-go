@@ -18,7 +18,7 @@ type paramObj = param.APIObject
 //
 // The property AutoScroll is required.
 type AutoScrollActionParam struct {
-	AutoScroll AutoScrollActionAutoScrollUnionParam `json:"auto_scroll,omitzero,required"`
+	AutoScroll AutoScrollActionAutoScrollUnionParam `json:"auto_scroll,omitzero" api:"required"`
 	paramObj
 }
 
@@ -348,7 +348,7 @@ const (
 //
 // The property Click is required.
 type ClickActionParam struct {
-	Click ClickActionClickUnionParam `json:"click,omitzero,required"`
+	Click ClickActionClickUnionParam `json:"click,omitzero" api:"required"`
 	paramObj
 }
 
@@ -392,7 +392,7 @@ func (u *ClickActionClickUnionParam) asAny() any {
 type ClickActionClickObjectParam struct {
 	// CSS selector or array of alternative selectors. Use an array when you have
 	// multiple possible selectors for the same element.
-	Selector ClickActionClickObjectSelectorUnionParam `json:"selector,omitzero,required"`
+	Selector ClickActionClickObjectSelectorUnionParam `json:"selector,omitzero" api:"required"`
 	Count    param.Opt[float64]                       `json:"count,omitzero"`
 	OffsetX  param.Opt[int64]                         `json:"offset_x,omitzero"`
 	OffsetY  param.Opt[int64]                         `json:"offset_y,omitzero"`
@@ -552,7 +552,7 @@ const (
 //
 // The property Eval is required.
 type EvalActionParam struct {
-	Eval EvalActionEvalUnionParam `json:"eval,omitzero,required"`
+	Eval EvalActionEvalUnionParam `json:"eval,omitzero" api:"required"`
 	paramObj
 }
 
@@ -591,7 +591,7 @@ func (u *EvalActionEvalUnionParam) asAny() any {
 
 // The property Code is required.
 type EvalActionEvalObjectParam struct {
-	Code string `json:"code,required"`
+	Code string `json:"code" api:"required"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
 	// 15000ms.
 	Timeout param.Opt[float64] `json:"timeout,omitzero"`
@@ -684,7 +684,7 @@ const (
 //
 // The property Fetch is required.
 type FetchActionParam struct {
-	Fetch FetchActionFetchUnionParam `json:"fetch,omitzero,required" format:"uri"`
+	Fetch FetchActionFetchUnionParam `json:"fetch,omitzero" api:"required" format:"uri"`
 	paramObj
 }
 
@@ -723,7 +723,7 @@ func (u *FetchActionFetchUnionParam) asAny() any {
 
 // The property URL is required.
 type FetchActionFetchObjectParam struct {
-	URL  string            `json:"url,required" format:"uri"`
+	URL  string            `json:"url" api:"required" format:"uri"`
 	Body param.Opt[string] `json:"body,omitzero"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
 	// 15000ms.
@@ -829,7 +829,7 @@ const (
 type FillActionParam struct {
 	// Fill options with mode-specific fields. Use "type" mode for behavioral typing
 	// simulation, or "paste" mode for instant paste.
-	Fill FillActionFillUnionParam `json:"fill,omitzero,required"`
+	Fill FillActionFillUnionParam `json:"fill,omitzero" api:"required"`
 	paramObj
 }
 
@@ -1062,8 +1062,8 @@ func init() {
 type FillActionFillTypeParam struct {
 	// CSS selector or array of alternative selectors. Use an array when you have
 	// multiple possible selectors for the same element.
-	Selector       FillActionFillTypeSelectorUnionParam `json:"selector,omitzero,required"`
-	Value          string                               `json:"value,required"`
+	Selector       FillActionFillTypeSelectorUnionParam `json:"selector,omitzero" api:"required"`
+	Value          string                               `json:"value" api:"required"`
 	ClickOnElement param.Opt[bool]                      `json:"click_on_element,omitzero"`
 	Scroll         param.Opt[bool]                      `json:"scroll,omitzero"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
@@ -1258,8 +1258,8 @@ func (u *FillActionFillTypeTypingIntervalUnionParam) asAny() any {
 type FillActionFillPasteParam struct {
 	// CSS selector or array of alternative selectors. Use an array when you have
 	// multiple possible selectors for the same element.
-	Selector       FillActionFillPasteSelectorUnionParam `json:"selector,omitzero,required"`
-	Value          string                                `json:"value,required"`
+	Selector       FillActionFillPasteSelectorUnionParam `json:"selector,omitzero" api:"required"`
+	Value          string                                `json:"value" api:"required"`
 	ClickOnElement param.Opt[bool]                       `json:"click_on_element,omitzero"`
 	Scroll         param.Opt[bool]                       `json:"scroll,omitzero"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
@@ -1276,7 +1276,7 @@ type FillActionFillPasteParam struct {
 	// false.
 	Skip FillActionFillPasteSkipUnionParam `json:"skip,omitzero"`
 	// This field can be elided, and will marshal its zero value as "paste".
-	Mode constant.Paste `json:"mode,required"`
+	Mode constant.Paste `json:"mode" api:"required"`
 	paramObj
 }
 
@@ -1410,7 +1410,7 @@ const (
 //
 // The property GetCookies is required.
 type GetCookiesActionParam struct {
-	GetCookies GetCookiesActionGetCookiesUnionParam `json:"get_cookies,omitzero,required"`
+	GetCookies GetCookiesActionGetCookiesUnionParam `json:"get_cookies,omitzero" api:"required"`
 	paramObj
 }
 
@@ -1538,7 +1538,7 @@ const (
 //
 // The property Goto is required.
 type GotoActionParam struct {
-	Goto GotoActionGotoUnionParam `json:"goto,omitzero,required" format:"uri"`
+	Goto GotoActionGotoUnionParam `json:"goto,omitzero" api:"required" format:"uri"`
 	paramObj
 }
 
@@ -1577,7 +1577,7 @@ func (u *GotoActionGotoUnionParam) asAny() any {
 
 // The property URL is required.
 type GotoActionGotoObjectParam struct {
-	URL     string            `json:"url,required" format:"uri"`
+	URL     string            `json:"url" api:"required" format:"uri"`
 	Referer param.Opt[string] `json:"referer,omitzero"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
 	// 15000ms.
@@ -1679,7 +1679,7 @@ const (
 //
 // The property Press is required.
 type PressActionParam struct {
-	Press PressActionPressUnionParam `json:"press,omitzero,required"`
+	Press PressActionPressUnionParam `json:"press,omitzero" api:"required"`
 	paramObj
 }
 
@@ -1746,7 +1746,7 @@ type PressActionPressObjectParam struct {
 	// "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ":",
 	// "<", "\_", ">", "?", "~", "{", "|", "}", "\"", "SoftLeft", "SoftRight",
 	// "Camera", "Call", "EndCall", "VolumeDown", "VolumeUp".
-	Key string `json:"key,omitzero,required"`
+	Key string `json:"key,omitzero" api:"required"`
 	// Duration value that accepts various formats. Supports: number (ms), string
 	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
 	Delay PressActionPressObjectDelayUnionParam `json:"delay,omitzero"`
@@ -1870,7 +1870,7 @@ const (
 //
 // The property Screenshot is required.
 type ScreenshotActionParam struct {
-	Screenshot ScreenshotActionScreenshotUnionParam `json:"screenshot,omitzero,required"`
+	Screenshot ScreenshotActionScreenshotUnionParam `json:"screenshot,omitzero" api:"required"`
 	paramObj
 }
 
@@ -2007,7 +2007,7 @@ const (
 //
 // The property Scroll is required.
 type ScrollActionParam struct {
-	Scroll ScrollActionScrollUnionParam `json:"scroll,omitzero,required"`
+	Scroll ScrollActionScrollUnionParam `json:"scroll,omitzero" api:"required"`
 	paramObj
 }
 
@@ -2196,7 +2196,7 @@ func (u *ScrollActionScrollObjectToUnionParam) asAny() any {
 //
 // The property Wait is required.
 type WaitActionParam struct {
-	Wait WaitActionWaitUnionParam `json:"wait,omitzero,required"`
+	Wait WaitActionWaitUnionParam `json:"wait,omitzero" api:"required"`
 	paramObj
 }
 
@@ -2240,7 +2240,7 @@ func (u *WaitActionWaitUnionParam) asAny() any {
 type WaitActionWaitObjectParam struct {
 	// Duration value that accepts various formats. Supports: number (ms), string
 	// ("1000"), or string with unit ("2s", "500ms", "2m", "1h")
-	Duration WaitActionWaitObjectDurationUnionParam `json:"duration,omitzero,required"`
+	Duration WaitActionWaitObjectDurationUnionParam `json:"duration,omitzero" api:"required"`
 	// Whether this action is required. If true, pipeline stops on failure. Accepts
 	// boolean or string "true"/"false". Default: true.
 	Required WaitActionWaitObjectRequiredUnionParam `json:"required,omitzero"`
@@ -2355,7 +2355,7 @@ const (
 //
 // The property WaitForElement is required.
 type WaitForElementActionParam struct {
-	WaitForElement WaitForElementActionWaitForElementUnionParam `json:"wait_for_element,omitzero,required"`
+	WaitForElement WaitForElementActionWaitForElementUnionParam `json:"wait_for_element,omitzero" api:"required"`
 	paramObj
 }
 
@@ -2399,7 +2399,7 @@ func (u *WaitForElementActionWaitForElementUnionParam) asAny() any {
 type WaitForElementActionWaitForElementObjectParam struct {
 	// CSS selector or array of alternative selectors. Use an array when you have
 	// multiple possible selectors for the same element.
-	Selector WaitForElementActionWaitForElementObjectSelectorUnionParam `json:"selector,omitzero,required"`
+	Selector WaitForElementActionWaitForElementObjectSelectorUnionParam `json:"selector,omitzero" api:"required"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
 	// 15000ms.
 	Timeout param.Opt[float64] `json:"timeout,omitzero"`
@@ -2518,7 +2518,7 @@ const (
 //
 // The property WaitForNavigation is required.
 type WaitForNavigationActionParam struct {
-	WaitForNavigation WaitForNavigationActionWaitForNavigationUnionParam `json:"wait_for_navigation,omitzero,required"`
+	WaitForNavigation WaitForNavigationActionWaitForNavigationUnionParam `json:"wait_for_navigation,omitzero" api:"required"`
 	paramObj
 }
 
@@ -2569,7 +2569,7 @@ const (
 // The property Navigation is required.
 type WaitForNavigationActionWaitForNavigationObjectParam struct {
 	// Any of "load", "domcontentloaded", "networkidle0", "networkidle2".
-	Navigation string `json:"navigation,omitzero,required"`
+	Navigation string `json:"navigation,omitzero" api:"required"`
 	// Timeout in milliseconds. Set to 0 for infinite timeout (no timeout). Default:
 	// 15000ms.
 	Timeout param.Opt[float64] `json:"timeout,omitzero"`
