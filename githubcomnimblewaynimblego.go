@@ -13,17 +13,17 @@ import (
 )
 
 type ExtractResponse struct {
-	Data     ExtractResponseData     `json:"data,required"`
-	Metadata ExtractResponseMetadata `json:"metadata,required"`
+	Data     ExtractResponseData     `json:"data" api:"required"`
+	Metadata ExtractResponseMetadata `json:"metadata" api:"required"`
 	// The status of the task.
 	//
 	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
 	// "rejected", "blocked".
-	Status ExtractResponseStatus `json:"status,required"`
+	Status ExtractResponseStatus `json:"status" api:"required"`
 	// Unique identifier for the task.
-	TaskID string `json:"task_id,required"`
+	TaskID string `json:"task_id" api:"required"`
 	// The final URL.
-	URL   string               `json:"url,required"`
+	URL   string               `json:"url" api:"required"`
 	Debug ExtractResponseDebug `json:"debug"`
 	// Pagination information if applicable.
 	Pagination ExtractResponsePaginationUnion `json:"pagination"`
@@ -105,9 +105,9 @@ func (r *ExtractResponseData) UnmarshalJSON(data []byte) error {
 // Browser actions execution results. Present only when browser_actions were
 // specified in the request.
 type ExtractResponseDataBrowserActions struct {
-	Results       []ExtractResponseDataBrowserActionsResult `json:"results,required"`
-	Success       bool                                      `json:"success,required"`
-	TotalDuration float64                                   `json:"total_duration,required"`
+	Results       []ExtractResponseDataBrowserActionsResult `json:"results" api:"required"`
+	Success       bool                                      `json:"success" api:"required"`
+	TotalDuration float64                                   `json:"total_duration" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Results       respjson.Field
@@ -125,13 +125,13 @@ func (r *ExtractResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponseDataBrowserActionsResult struct {
-	Duration float64 `json:"duration,required"`
+	Duration float64 `json:"duration" api:"required"`
 	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
 	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
 	// "fetch".
-	Name string `json:"name,required"`
+	Name string `json:"name" api:"required"`
 	// Any of "no-run", "in-progress", "done", "error", "skipped".
-	Status string `json:"status,required"`
+	Status string `json:"status" api:"required"`
 	Error  string `json:"error"`
 	Result any    `json:"result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -153,8 +153,8 @@ func (r *ExtractResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) err
 }
 
 type ExtractResponseDataNetworkCapture struct {
-	Filter       ExtractResponseDataNetworkCaptureFilter   `json:"filter,required"`
-	Results      []ExtractResponseDataNetworkCaptureResult `json:"results,required"`
+	Filter       ExtractResponseDataNetworkCaptureFilter   `json:"filter" api:"required"`
+	Results      []ExtractResponseDataNetworkCaptureResult `json:"results" api:"required"`
 	ErrorMessage string                                    `json:"errorMessage"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -173,8 +173,8 @@ func (r *ExtractResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponseDataNetworkCaptureFilter struct {
-	Validation           bool    `json:"validation,required"`
-	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	Validation           bool    `json:"validation" api:"required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count" api:"required"`
 	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
 	// "PATCH".
 	Method string `json:"method"`
@@ -303,8 +303,8 @@ func (r *ExtractResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(d
 
 type ExtractResponseDataNetworkCaptureFilterURL struct {
 	// Any of "exact", "contains".
-	Type  string `json:"type,required"`
-	Value string `json:"value,required"`
+	Type  string `json:"type" api:"required"`
+	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -321,8 +321,8 @@ func (r *ExtractResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte) 
 }
 
 type ExtractResponseDataNetworkCaptureResult struct {
-	Request  ExtractResponseDataNetworkCaptureResultRequest  `json:"request,required"`
-	Response ExtractResponseDataNetworkCaptureResultResponse `json:"response,required"`
+	Request  ExtractResponseDataNetworkCaptureResultRequest  `json:"request" api:"required"`
+	Response ExtractResponseDataNetworkCaptureResultResponse `json:"response" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Request     respjson.Field
@@ -339,15 +339,15 @@ func (r *ExtractResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) err
 }
 
 type ExtractResponseDataNetworkCaptureResultRequest struct {
-	Headers map[string]string `json:"headers,required"`
-	Method  string            `json:"method,required"`
+	Headers map[string]string `json:"headers" api:"required"`
+	Method  string            `json:"method" api:"required"`
 	// Resource type for network capture filtering
 	//
 	// Any of "document", "stylesheet", "image", "media", "font", "script",
 	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
 	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
-	ResourceType string `json:"resource_type,required"`
-	URL          string `json:"url,required"`
+	ResourceType string `json:"resource_type" api:"required"`
+	URL          string `json:"url" api:"required"`
 	Body         string `json:"body"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -368,12 +368,12 @@ func (r *ExtractResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []by
 }
 
 type ExtractResponseDataNetworkCaptureResultResponse struct {
-	Body    string            `json:"body,required"`
-	Headers map[string]string `json:"headers,required"`
+	Body    string            `json:"body" api:"required"`
+	Headers map[string]string `json:"headers" api:"required"`
 	// Any of "none", "base64".
-	Serialization string  `json:"serialization,required"`
-	Status        float64 `json:"status,required"`
-	StatusText    string  `json:"status_text,required"`
+	Serialization string  `json:"serialization" api:"required"`
+	Status        float64 `json:"status" api:"required"`
+	StatusText    string  `json:"status_text" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Body          respjson.Field
@@ -440,8 +440,8 @@ func (r *ExtractResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponseDataParsingParsingSuccessResult struct {
-	Entities map[string]any   `json:"entities,required"`
-	Status   constant.Success `json:"status,required"`
+	Entities map[string]any   `json:"entities" api:"required"`
+	Status   constant.Success `json:"status" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
@@ -458,8 +458,8 @@ func (r *ExtractResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []by
 }
 
 type ExtractResponseDataParsingParsingErrorResult struct {
-	Error  string         `json:"error,required"`
-	Status constant.Error `json:"status,required"`
+	Error  string         `json:"error" api:"required"`
+	Status constant.Error `json:"status" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -476,8 +476,8 @@ func (r *ExtractResponseDataParsingParsingErrorResult) UnmarshalJSON(data []byte
 }
 
 type ExtractResponseDataRedirect struct {
-	StatusCode float64 `json:"status_code,required"`
-	URL        string  `json:"url,required"`
+	StatusCode float64 `json:"status_code" api:"required"`
+	URL        string  `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		StatusCode  respjson.Field
@@ -607,7 +607,7 @@ func (r *ExtractResponsePaginationUnion) UnmarshalJSON(data []byte) error {
 }
 
 type ExtractResponsePaginationNextPageParams struct {
-	NextPageParams map[string]any `json:"next_page_params,required"`
+	NextPageParams map[string]any `json:"next_page_params" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NextPageParams respjson.Field
@@ -623,7 +623,7 @@ func (r *ExtractResponsePaginationNextPageParams) UnmarshalJSON(data []byte) err
 }
 
 type ExtractResponsePaginationArrayItem struct {
-	NextPageParams map[string]any `json:"next_page_params,required"`
+	NextPageParams map[string]any `json:"next_page_params" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NextPageParams respjson.Field
@@ -641,9 +641,9 @@ func (r *ExtractResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 // Response when an async extract task is created successfully.
 type ExtractAsyncResponse struct {
 	// Status indicating the async task was created successfully.
-	Status constant.Success `json:"status,required"`
+	Status constant.Success `json:"status" api:"required"`
 	// The created async task details.
-	Task ExtractAsyncResponseTask `json:"task,required"`
+	Task ExtractAsyncResponseTask `json:"task" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Status      respjson.Field
@@ -662,18 +662,18 @@ func (r *ExtractAsyncResponse) UnmarshalJSON(data []byte) error {
 // The created async task details.
 type ExtractAsyncResponseTask struct {
 	// Unique task identifier.
-	ID    string `json:"id,required"`
-	Query any    `json:"_query,required"`
+	ID    string `json:"id" api:"required"`
+	Query any    `json:"_query" api:"required"`
 	// Timestamp when the task was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Original input data for the task.
-	Input any `json:"input,required"`
+	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
 	// Any of "pending", "success", "error".
-	State string `json:"state,required"`
+	State string `json:"state" api:"required"`
 	// URL for checking the task status.
-	StatusURL string `json:"status_url,required" format:"uri"`
+	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "agent", "extract".
@@ -723,11 +723,11 @@ func (r *ExtractAsyncResponseTask) UnmarshalJSON(data []byte) error {
 // Response schema for map requests.
 type MapResponse struct {
 	// Array of mapped links with optional titles and descriptions.
-	Links []MapResponseLink `json:"links,required"`
+	Links []MapResponseLink `json:"links" api:"required"`
 	// Indicates if the map request was successful.
-	Success bool `json:"success,required"`
+	Success bool `json:"success" api:"required"`
 	// Unique identifier for the map task.
-	TaskID string `json:"task_id,required"`
+	TaskID string `json:"task_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Links       respjson.Field
@@ -745,7 +745,7 @@ func (r *MapResponse) UnmarshalJSON(data []byte) error {
 }
 
 type MapResponseLink struct {
-	URL         string `json:"url,required" format:"uri"`
+	URL         string `json:"url" api:"required" format:"uri"`
 	Description string `json:"description"`
 	Title       string `json:"title"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -770,13 +770,13 @@ func (r *MapResponseLink) UnmarshalJSON(data []byte) error {
 // so no validation is needed.
 type SearchResponse struct {
 	// Unique identifier for this request (UUID)
-	RequestID string                 `json:"request_id,required"`
-	Results   []SearchResponseResult `json:"results,required"`
+	RequestID string                 `json:"request_id" api:"required"`
+	Results   []SearchResponseResult `json:"results" api:"required"`
 	// Number of results returned
-	TotalResults int64  `json:"total_results,required"`
-	Answer       string `json:"answer,nullable"`
+	TotalResults int64  `json:"total_results" api:"required"`
+	Answer       string `json:"answer" api:"nullable"`
 	// Citations mapping citation markers to result indices
-	AnswerCitations []SearchResponseAnswerCitation `json:"answer_citations,nullable"`
+	AnswerCitations []SearchResponseAnswerCitation `json:"answer_citations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		RequestID       respjson.Field
@@ -800,15 +800,15 @@ func (r *SearchResponse) UnmarshalJSON(data []byte) error {
 // This model provides a consistent structure for search results, with
 // platform-specific data in additional_data and typed metadata.
 type SearchResponseResult struct {
-	Content     string `json:"content,required"`
-	Description string `json:"description,required"`
+	Content     string `json:"content" api:"required"`
+	Description string `json:"description" api:"required"`
 	// Metadata for SERP-based search results (general, news, location).
-	Metadata SearchResponseResultMetadataUnion `json:"metadata,required"`
-	Title    string                            `json:"title,required"`
-	URL      string                            `json:"url,required"`
+	Metadata SearchResponseResultMetadataUnion `json:"metadata" api:"required"`
+	Title    string                            `json:"title" api:"required"`
+	URL      string                            `json:"url" api:"required"`
 	// Platform-specific fields (e.g., price, rating, publish_date). Omitted from
 	// response when no extra data.
-	AdditionalData map[string]any `json:"additional_data,nullable"`
+	AdditionalData map[string]any `json:"additional_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content        respjson.Field
@@ -876,11 +876,11 @@ func (r *SearchResponseResultMetadataUnion) UnmarshalJSON(data []byte) error {
 
 // Metadata for SERP-based search results (general, news, location).
 type SearchResponseResultMetadataSerpMetadata struct {
-	Country    string `json:"country,required"`
-	EntityType string `json:"entity_type,required"`
-	Locale     string `json:"locale,required"`
-	Position   int64  `json:"position,required"`
-	Driver     string `json:"driver,nullable"`
+	Country    string `json:"country" api:"required"`
+	EntityType string `json:"entity_type" api:"required"`
+	Locale     string `json:"locale" api:"required"`
+	Position   int64  `json:"position" api:"required"`
+	Driver     string `json:"driver" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Country     respjson.Field
@@ -901,7 +901,7 @@ func (r *SearchResponseResultMetadataSerpMetadata) UnmarshalJSON(data []byte) er
 
 // Metadata for WSA-based search results.
 type SearchResponseResultMetadataWsaMetadata struct {
-	AgentName string `json:"agent_name,required"`
+	AgentName string `json:"agent_name" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AgentName   respjson.Field
@@ -919,9 +919,9 @@ func (r *SearchResponseResultMetadataWsaMetadata) UnmarshalJSON(data []byte) err
 // Citation model that maps citation markers to result indices.
 type SearchResponseAnswerCitation struct {
 	// Citation marker number (e.g., 1 for [1])
-	Marker int64 `json:"marker,required"`
+	Marker int64 `json:"marker" api:"required"`
 	// Zero-based index into the results array
-	ResultIndex int64 `json:"result_index,required"`
+	ResultIndex int64 `json:"result_index" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Marker      respjson.Field
@@ -939,7 +939,7 @@ func (r *SearchResponseAnswerCitation) UnmarshalJSON(data []byte) error {
 
 type ExtractParams struct {
 	// Target URL to scrape
-	URL string `json:"url,required"`
+	URL string `json:"url" api:"required"`
 	// City for geolocation
 	City param.Opt[string] `json:"city,omitzero"`
 	// Whether to automatically handle cookie consent headers
@@ -1142,7 +1142,7 @@ const (
 // The property Name is required.
 type ExtractParamsBrowserObject struct {
 	// Any of "chrome", "firefox".
-	Name string `json:"name,omitzero,required"`
+	Name string `json:"name,omitzero" api:"required"`
 	// Specific browser version to emulate
 	Version param.Opt[string] `json:"version,omitzero"`
 	paramObj
@@ -2259,7 +2259,7 @@ func (u *ExtractParamsNetworkCaptureStatusCodeUnion) asAny() any {
 
 // The property Value is required.
 type ExtractParamsNetworkCaptureURL struct {
-	Value string `json:"value,required"`
+	Value string `json:"value" api:"required"`
 	// Any of "exact", "contains".
 	Type string `json:"type,omitzero"`
 	paramObj
@@ -2434,7 +2434,7 @@ const (
 
 type ExtractAsyncParams struct {
 	// Target URL to scrape
-	URL string `json:"url,required"`
+	URL string `json:"url" api:"required"`
 	// URL to call back when async operation completes
 	CallbackURL param.Opt[string] `json:"callback_url,omitzero"`
 	// City for geolocation
@@ -2647,7 +2647,7 @@ const (
 // The property Name is required.
 type ExtractAsyncParamsBrowserObject struct {
 	// Any of "chrome", "firefox".
-	Name string `json:"name,omitzero,required"`
+	Name string `json:"name,omitzero" api:"required"`
 	// Specific browser version to emulate
 	Version param.Opt[string] `json:"version,omitzero"`
 	paramObj
@@ -3764,7 +3764,7 @@ func (u *ExtractAsyncParamsNetworkCaptureStatusCodeUnion) asAny() any {
 
 // The property Value is required.
 type ExtractAsyncParamsNetworkCaptureURL struct {
-	Value string `json:"value,required"`
+	Value string `json:"value" api:"required"`
 	// Any of "exact", "contains".
 	Type string `json:"type,omitzero"`
 	paramObj
@@ -3939,7 +3939,7 @@ const (
 
 type MapParams struct {
 	// Url to map.
-	URL string `json:"url,required"`
+	URL string `json:"url" api:"required"`
 	// Maximum number of links to return.
 	Limit param.Opt[int64] `json:"limit,omitzero"`
 	// Country code for geolocation and proxy selection
@@ -4863,7 +4863,7 @@ const (
 
 type SearchParams struct {
 	// Search query string
-	Query string `json:"query,required"`
+	Query string `json:"query" api:"required"`
 	// Filter results before this date (format: YYYY-MM-DD or YYYY)
 	EndDate param.Opt[string] `json:"end_date,omitzero"`
 	// Filter results after this date (format: YYYY-MM-DD or YYYY)
