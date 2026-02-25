@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0 (2026-02-25)
+
+Full Changelog: [v0.6.0...v0.7.0](https://github.com/Nimbleway/nimble-go/compare/v0.6.0...v0.7.0)
+
+### Features
+
+* **api:** api update ([fa0ae0b](https://github.com/Nimbleway/nimble-go/commit/fa0ae0b670412c87f77b1f17d912a123f3e1e3fb))
+
+
+### Chores
+
+* **internal:** move custom custom `json` tags to `api` ([4a0783c](https://github.com/Nimbleway/nimble-go/commit/4a0783cb4d869d78111bd331f9e7bd1264d4e26e))
+
 ## 0.6.0 (2026-02-22)
 
 Full Changelog: [v0.5.0...v0.6.0](https://github.com/Nimbleway/nimble-go/compare/v0.5.0...v0.6.0)
