@@ -81,8 +81,8 @@ func (r *CrawlService) Terminate(ctx context.Context, id string, opts ...option.
 
 // Successful get crawl response
 type CrawlListResponse struct {
-	Data       []CrawlListResponseData     `json:"data,required"`
-	Pagination CrawlListResponsePagination `json:"pagination,required"`
+	Data       []CrawlListResponseData     `json:"data" api:"required"`
+	Pagination CrawlListResponsePagination `json:"pagination" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -100,19 +100,19 @@ func (r *CrawlListResponse) UnmarshalJSON(data []byte) error {
 
 // Crawl API response
 type CrawlListResponseData struct {
-	AccountName  string                              `json:"account_name,required"`
-	CrawlID      string                              `json:"crawl_id,required" format:"uuid"`
-	CrawlOptions CrawlListResponseDataCrawlOptions   `json:"crawl_options,required"`
-	CreatedAt    CrawlListResponseDataCreatedAtUnion `json:"created_at,required"`
+	AccountName  string                              `json:"account_name" api:"required"`
+	CrawlID      string                              `json:"crawl_id" api:"required" format:"uuid"`
+	CrawlOptions CrawlListResponseDataCrawlOptions   `json:"crawl_options" api:"required"`
+	CreatedAt    CrawlListResponseDataCreatedAtUnion `json:"created_at" api:"required"`
 	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status         string                                `json:"status,required"`
-	UpdatedAt      CrawlListResponseDataUpdatedAtUnion   `json:"updated_at,required"`
-	URL            string                                `json:"url,required" format:"uri"`
+	Status         string                                `json:"status" api:"required"`
+	UpdatedAt      CrawlListResponseDataUpdatedAtUnion   `json:"updated_at" api:"required"`
+	URL            string                                `json:"url" api:"required" format:"uri"`
 	Completed      float64                               `json:"completed"`
-	CompletedAt    CrawlListResponseDataCompletedAtUnion `json:"completed_at,nullable"`
-	ExtractOptions map[string]any                        `json:"extract_options,nullable"`
+	CompletedAt    CrawlListResponseDataCompletedAtUnion `json:"completed_at" api:"nullable"`
+	ExtractOptions map[string]any                        `json:"extract_options" api:"nullable"`
 	Failed         float64                               `json:"failed"`
-	Name           string                                `json:"name,nullable"`
+	Name           string                                `json:"name" api:"nullable"`
 	Pending        float64                               `json:"pending"`
 	Tasks          []CrawlListResponseDataTask           `json:"tasks"`
 	Total          float64                               `json:"total"`
@@ -145,18 +145,18 @@ func (r *CrawlListResponseData) UnmarshalJSON(data []byte) error {
 }
 
 type CrawlListResponseDataCrawlOptions struct {
-	AllowExternalLinks    bool  `json:"allow_external_links,required"`
-	AllowSubdomains       bool  `json:"allow_subdomains,required"`
-	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
-	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
-	Limit                 int64 `json:"limit,required"`
-	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	AllowExternalLinks    bool  `json:"allow_external_links" api:"required"`
+	AllowSubdomains       bool  `json:"allow_subdomains" api:"required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain" api:"required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters" api:"required"`
+	Limit                 int64 `json:"limit" api:"required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth" api:"required"`
 	// Any of "skip", "include", "only".
-	Sitemap      string                                         `json:"sitemap,required"`
+	Sitemap      string                                         `json:"sitemap" api:"required"`
 	Callback     CrawlListResponseDataCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
 	ExcludePaths []string                                       `json:"exclude_paths"`
 	IncludePaths []string                                       `json:"include_paths"`
-	ExtraFields  map[string]any                                 `json:",extras"`
+	ExtraFields  map[string]any                                 `json:"" api:"extrafields"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowExternalLinks    respjson.Field
@@ -226,7 +226,7 @@ func (r *CrawlListResponseDataCrawlOptionsCallbackUnion) UnmarshalJSON(data []by
 }
 
 type CrawlListResponseDataCrawlOptionsCallbackObject struct {
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// Any of "started", "page", "completed", "failed".
 	Events   []string          `json:"events"`
 	Headers  map[string]string `json:"headers"`
@@ -358,8 +358,8 @@ func (r *CrawlListResponseDataCompletedAtUnion) UnmarshalJSON(data []byte) error
 
 type CrawlListResponseDataTask struct {
 	// Any of "pending", "completed", "failed".
-	Status    string `json:"status,required"`
-	TaskID    string `json:"task_id,required"`
+	Status    string `json:"status" api:"required"`
+	TaskID    string `json:"task_id" api:"required"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -380,8 +380,8 @@ func (r *CrawlListResponseDataTask) UnmarshalJSON(data []byte) error {
 }
 
 type CrawlListResponsePagination struct {
-	HasNext    bool    `json:"has_next,required"`
-	NextCursor string  `json:"next_cursor,nullable"`
+	HasNext    bool    `json:"has_next" api:"required"`
+	NextCursor string  `json:"next_cursor" api:"nullable"`
 	Total      float64 `json:"total"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -401,19 +401,19 @@ func (r *CrawlListResponsePagination) UnmarshalJSON(data []byte) error {
 
 // Crawl API response
 type CrawlRunResponse struct {
-	AccountName  string                         `json:"account_name,required"`
-	CrawlID      string                         `json:"crawl_id,required" format:"uuid"`
-	CrawlOptions CrawlRunResponseCrawlOptions   `json:"crawl_options,required"`
-	CreatedAt    CrawlRunResponseCreatedAtUnion `json:"created_at,required"`
+	AccountName  string                         `json:"account_name" api:"required"`
+	CrawlID      string                         `json:"crawl_id" api:"required" format:"uuid"`
+	CrawlOptions CrawlRunResponseCrawlOptions   `json:"crawl_options" api:"required"`
+	CreatedAt    CrawlRunResponseCreatedAtUnion `json:"created_at" api:"required"`
 	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status         CrawlRunResponseStatus           `json:"status,required"`
-	UpdatedAt      CrawlRunResponseUpdatedAtUnion   `json:"updated_at,required"`
-	URL            string                           `json:"url,required" format:"uri"`
+	Status         CrawlRunResponseStatus           `json:"status" api:"required"`
+	UpdatedAt      CrawlRunResponseUpdatedAtUnion   `json:"updated_at" api:"required"`
+	URL            string                           `json:"url" api:"required" format:"uri"`
 	Completed      float64                          `json:"completed"`
-	CompletedAt    CrawlRunResponseCompletedAtUnion `json:"completed_at,nullable"`
-	ExtractOptions map[string]any                   `json:"extract_options,nullable"`
+	CompletedAt    CrawlRunResponseCompletedAtUnion `json:"completed_at" api:"nullable"`
+	ExtractOptions map[string]any                   `json:"extract_options" api:"nullable"`
 	Failed         float64                          `json:"failed"`
-	Name           string                           `json:"name,nullable"`
+	Name           string                           `json:"name" api:"nullable"`
 	Pending        float64                          `json:"pending"`
 	Tasks          []CrawlRunResponseTask           `json:"tasks"`
 	Total          float64                          `json:"total"`
@@ -446,18 +446,18 @@ func (r *CrawlRunResponse) UnmarshalJSON(data []byte) error {
 }
 
 type CrawlRunResponseCrawlOptions struct {
-	AllowExternalLinks    bool  `json:"allow_external_links,required"`
-	AllowSubdomains       bool  `json:"allow_subdomains,required"`
-	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
-	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
-	Limit                 int64 `json:"limit,required"`
-	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	AllowExternalLinks    bool  `json:"allow_external_links" api:"required"`
+	AllowSubdomains       bool  `json:"allow_subdomains" api:"required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain" api:"required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters" api:"required"`
+	Limit                 int64 `json:"limit" api:"required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth" api:"required"`
 	// Any of "skip", "include", "only".
-	Sitemap      string                                    `json:"sitemap,required"`
+	Sitemap      string                                    `json:"sitemap" api:"required"`
 	Callback     CrawlRunResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
 	ExcludePaths []string                                  `json:"exclude_paths"`
 	IncludePaths []string                                  `json:"include_paths"`
-	ExtraFields  map[string]any                            `json:",extras"`
+	ExtraFields  map[string]any                            `json:"" api:"extrafields"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowExternalLinks    respjson.Field
@@ -527,7 +527,7 @@ func (r *CrawlRunResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte) e
 }
 
 type CrawlRunResponseCrawlOptionsCallbackObject struct {
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// Any of "started", "page", "completed", "failed".
 	Events   []string          `json:"events"`
 	Headers  map[string]string `json:"headers"`
@@ -669,8 +669,8 @@ func (r *CrawlRunResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
 
 type CrawlRunResponseTask struct {
 	// Any of "pending", "completed", "failed".
-	Status    string `json:"status,required"`
-	TaskID    string `json:"task_id,required"`
+	Status    string `json:"status" api:"required"`
+	TaskID    string `json:"task_id" api:"required"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -692,19 +692,19 @@ func (r *CrawlRunResponseTask) UnmarshalJSON(data []byte) error {
 
 // Crawl API response
 type CrawlStatusResponse struct {
-	AccountName  string                            `json:"account_name,required"`
-	CrawlID      string                            `json:"crawl_id,required" format:"uuid"`
-	CrawlOptions CrawlStatusResponseCrawlOptions   `json:"crawl_options,required"`
-	CreatedAt    CrawlStatusResponseCreatedAtUnion `json:"created_at,required"`
+	AccountName  string                            `json:"account_name" api:"required"`
+	CrawlID      string                            `json:"crawl_id" api:"required" format:"uuid"`
+	CrawlOptions CrawlStatusResponseCrawlOptions   `json:"crawl_options" api:"required"`
+	CreatedAt    CrawlStatusResponseCreatedAtUnion `json:"created_at" api:"required"`
 	// Any of "queued", "running", "succeeded", "failed", "canceled".
-	Status         CrawlStatusResponseStatus           `json:"status,required"`
-	UpdatedAt      CrawlStatusResponseUpdatedAtUnion   `json:"updated_at,required"`
-	URL            string                              `json:"url,required" format:"uri"`
+	Status         CrawlStatusResponseStatus           `json:"status" api:"required"`
+	UpdatedAt      CrawlStatusResponseUpdatedAtUnion   `json:"updated_at" api:"required"`
+	URL            string                              `json:"url" api:"required" format:"uri"`
 	Completed      float64                             `json:"completed"`
-	CompletedAt    CrawlStatusResponseCompletedAtUnion `json:"completed_at,nullable"`
-	ExtractOptions map[string]any                      `json:"extract_options,nullable"`
+	CompletedAt    CrawlStatusResponseCompletedAtUnion `json:"completed_at" api:"nullable"`
+	ExtractOptions map[string]any                      `json:"extract_options" api:"nullable"`
 	Failed         float64                             `json:"failed"`
-	Name           string                              `json:"name,nullable"`
+	Name           string                              `json:"name" api:"nullable"`
 	Pending        float64                             `json:"pending"`
 	Tasks          []CrawlStatusResponseTask           `json:"tasks"`
 	Total          float64                             `json:"total"`
@@ -737,18 +737,18 @@ func (r *CrawlStatusResponse) UnmarshalJSON(data []byte) error {
 }
 
 type CrawlStatusResponseCrawlOptions struct {
-	AllowExternalLinks    bool  `json:"allow_external_links,required"`
-	AllowSubdomains       bool  `json:"allow_subdomains,required"`
-	CrawlEntireDomain     bool  `json:"crawl_entire_domain,required"`
-	IgnoreQueryParameters bool  `json:"ignore_query_parameters,required"`
-	Limit                 int64 `json:"limit,required"`
-	MaxDiscoveryDepth     int64 `json:"max_discovery_depth,required"`
+	AllowExternalLinks    bool  `json:"allow_external_links" api:"required"`
+	AllowSubdomains       bool  `json:"allow_subdomains" api:"required"`
+	CrawlEntireDomain     bool  `json:"crawl_entire_domain" api:"required"`
+	IgnoreQueryParameters bool  `json:"ignore_query_parameters" api:"required"`
+	Limit                 int64 `json:"limit" api:"required"`
+	MaxDiscoveryDepth     int64 `json:"max_discovery_depth" api:"required"`
 	// Any of "skip", "include", "only".
-	Sitemap      string                                       `json:"sitemap,required"`
+	Sitemap      string                                       `json:"sitemap" api:"required"`
 	Callback     CrawlStatusResponseCrawlOptionsCallbackUnion `json:"callback" format:"uri"`
 	ExcludePaths []string                                     `json:"exclude_paths"`
 	IncludePaths []string                                     `json:"include_paths"`
-	ExtraFields  map[string]any                               `json:",extras"`
+	ExtraFields  map[string]any                               `json:"" api:"extrafields"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowExternalLinks    respjson.Field
@@ -818,7 +818,7 @@ func (r *CrawlStatusResponseCrawlOptionsCallbackUnion) UnmarshalJSON(data []byte
 }
 
 type CrawlStatusResponseCrawlOptionsCallbackObject struct {
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// Any of "started", "page", "completed", "failed".
 	Events   []string          `json:"events"`
 	Headers  map[string]string `json:"headers"`
@@ -960,8 +960,8 @@ func (r *CrawlStatusResponseCompletedAtUnion) UnmarshalJSON(data []byte) error {
 
 type CrawlStatusResponseTask struct {
 	// Any of "pending", "completed", "failed".
-	Status    string `json:"status,required"`
-	TaskID    string `json:"task_id,required"`
+	Status    string `json:"status" api:"required"`
+	TaskID    string `json:"task_id" api:"required"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -983,7 +983,7 @@ func (r *CrawlStatusResponseTask) UnmarshalJSON(data []byte) error {
 
 type CrawlTerminateResponse struct {
 	// Any of "canceled".
-	Status CrawlTerminateResponseStatus `json:"status,required"`
+	Status CrawlTerminateResponseStatus `json:"status" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Status      respjson.Field
@@ -1038,7 +1038,7 @@ const (
 
 type CrawlRunParams struct {
 	// Url to crawl.
-	URL string `json:"url,required"`
+	URL string `json:"url" api:"required"`
 	// Allows the crawler to follow links to external websites.
 	AllowExternalLinks param.Opt[bool] `json:"allow_external_links,omitzero"`
 	// Allows the crawler to follow links to subdomains of the main domain.
@@ -1103,7 +1103,7 @@ func (u *CrawlRunParamsCallbackUnion) asAny() any {
 
 // The property URL is required.
 type CrawlRunParamsCallbackObject struct {
-	URL string `json:"url,required" format:"uri"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// Any of "started", "page", "completed", "failed".
 	Events   []string          `json:"events,omitzero"`
 	Headers  map[string]string `json:"headers,omitzero"`
@@ -1342,7 +1342,7 @@ const (
 // The property Name is required.
 type CrawlRunParamsExtractOptionsBrowserObject struct {
 	// Any of "chrome", "firefox".
-	Name string `json:"name,omitzero,required"`
+	Name string `json:"name,omitzero" api:"required"`
 	// Specific browser version to emulate
 	Version param.Opt[string] `json:"version,omitzero"`
 	paramObj
@@ -2426,7 +2426,7 @@ func (u *CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion) asAny() any 
 
 // The property Value is required.
 type CrawlRunParamsExtractOptionsNetworkCaptureURL struct {
-	Value string `json:"value,required"`
+	Value string `json:"value" api:"required"`
 	// Any of "exact", "contains".
 	Type string `json:"type,omitzero"`
 	paramObj

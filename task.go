@@ -72,8 +72,8 @@ func (r *TaskService) Results(ctx context.Context, taskID string, opts ...option
 // Paginated list of tasks response.
 type TaskListResponse struct {
 	// Array of task objects.
-	Data       []TaskListResponseData     `json:"data,required"`
-	Pagination TaskListResponsePagination `json:"pagination,required"`
+	Data       []TaskListResponseData     `json:"data" api:"required"`
+	Pagination TaskListResponsePagination `json:"pagination" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -91,18 +91,18 @@ func (r *TaskListResponse) UnmarshalJSON(data []byte) error {
 
 type TaskListResponseData struct {
 	// Unique task identifier.
-	ID    string `json:"id,required"`
-	Query any    `json:"_query,required"`
+	ID    string `json:"id" api:"required"`
+	Query any    `json:"_query" api:"required"`
 	// Timestamp when the task was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Original input data for the task.
-	Input any `json:"input,required"`
+	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
 	// Any of "pending", "success", "error".
-	State string `json:"state,required"`
+	State string `json:"state" api:"required"`
 	// URL for checking the task status.
-	StatusURL string `json:"status_url,required" format:"uri"`
+	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "agent", "extract".
@@ -151,11 +151,11 @@ func (r *TaskListResponseData) UnmarshalJSON(data []byte) error {
 
 type TaskListResponsePagination struct {
 	// Whether there are more tasks available.
-	HasNext bool `json:"has_next,required"`
+	HasNext bool `json:"has_next" api:"required"`
 	// Cursor to use for fetching the next page.
-	NextCursor string `json:"next_cursor,required"`
+	NextCursor string `json:"next_cursor" api:"required"`
 	// Total number of tasks.
-	Total float64 `json:"total,required"`
+	Total float64 `json:"total" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		HasNext     respjson.Field
@@ -174,7 +174,7 @@ func (r *TaskListResponsePagination) UnmarshalJSON(data []byte) error {
 
 // Response containing task details.
 type TaskGetResponse struct {
-	Task TaskGetResponseTask `json:"task,required"`
+	Task TaskGetResponseTask `json:"task" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Task        respjson.Field
@@ -191,18 +191,18 @@ func (r *TaskGetResponse) UnmarshalJSON(data []byte) error {
 
 type TaskGetResponseTask struct {
 	// Unique task identifier.
-	ID    string `json:"id,required"`
-	Query any    `json:"_query,required"`
+	ID    string `json:"id" api:"required"`
+	Query any    `json:"_query" api:"required"`
 	// Timestamp when the task was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Original input data for the task.
-	Input any `json:"input,required"`
+	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
 	// Any of "pending", "success", "error".
-	State string `json:"state,required"`
+	State string `json:"state" api:"required"`
 	// URL for checking the task status.
-	StatusURL string `json:"status_url,required" format:"uri"`
+	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "agent", "extract".

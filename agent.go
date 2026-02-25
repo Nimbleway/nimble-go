@@ -76,14 +76,14 @@ func (r *AgentService) RunAsync(ctx context.Context, body AgentRunAsyncParams, o
 }
 
 type AgentListResponse struct {
-	DisplayName string `json:"display_name,required"`
-	IsPublic    bool   `json:"is_public,required"`
-	Name        string `json:"name,required"`
-	Description string `json:"description,nullable"`
-	Domain      string `json:"domain,nullable"`
-	EntityType  string `json:"entity_type,nullable"`
-	ManagedBy   string `json:"managed_by,nullable"`
-	Vertical    string `json:"vertical,nullable"`
+	DisplayName string `json:"display_name" api:"required"`
+	IsPublic    bool   `json:"is_public" api:"required"`
+	Name        string `json:"name" api:"required"`
+	Description string `json:"description" api:"nullable"`
+	Domain      string `json:"domain" api:"nullable"`
+	EntityType  string `json:"entity_type" api:"nullable"`
+	ManagedBy   string `json:"managed_by" api:"nullable"`
+	Vertical    string `json:"vertical" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		DisplayName respjson.Field
@@ -106,17 +106,17 @@ func (r *AgentListResponse) UnmarshalJSON(data []byte) error {
 }
 
 type AgentGetResponse struct {
-	DisplayName     string                          `json:"display_name,required"`
-	IsPublic        bool                            `json:"is_public,required"`
-	Name            string                          `json:"name,required"`
-	Description     string                          `json:"description,nullable"`
-	Domain          string                          `json:"domain,nullable"`
-	EntityType      string                          `json:"entity_type,nullable"`
+	DisplayName     string                          `json:"display_name" api:"required"`
+	IsPublic        bool                            `json:"is_public" api:"required"`
+	Name            string                          `json:"name" api:"required"`
+	Description     string                          `json:"description" api:"nullable"`
+	Domain          string                          `json:"domain" api:"nullable"`
+	EntityType      string                          `json:"entity_type" api:"nullable"`
 	FeatureFlags    AgentGetResponseFeatureFlags    `json:"feature_flags"`
-	InputProperties []AgentGetResponseInputProperty `json:"input_properties,nullable"`
-	ManagedBy       string                          `json:"managed_by,nullable"`
-	OutputSchema    map[string]any                  `json:"output_schema,nullable"`
-	Vertical        string                          `json:"vertical,nullable"`
+	InputProperties []AgentGetResponseInputProperty `json:"input_properties" api:"nullable"`
+	ManagedBy       string                          `json:"managed_by" api:"nullable"`
+	OutputSchema    map[string]any                  `json:"output_schema" api:"nullable"`
+	Vertical        string                          `json:"vertical" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		DisplayName     respjson.Field
@@ -160,13 +160,13 @@ func (r *AgentGetResponseFeatureFlags) UnmarshalJSON(data []byte) error {
 }
 
 type AgentGetResponseInputProperty struct {
-	Default             string   `json:"default,nullable"`
-	Description         string   `json:"description,nullable"`
-	Examples            []string `json:"examples,nullable"`
+	Default             string   `json:"default" api:"nullable"`
+	Description         string   `json:"description" api:"nullable"`
+	Examples            []string `json:"examples" api:"nullable"`
 	IsLocalizationParam bool     `json:"is_localization_param"`
 	Name                string   `json:"name"`
 	Required            bool     `json:"required"`
-	Rules               []string `json:"rules,nullable"`
+	Rules               []string `json:"rules" api:"nullable"`
 	Type                string   `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -190,17 +190,17 @@ func (r *AgentGetResponseInputProperty) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunResponse struct {
-	Data     AgentRunResponseData     `json:"data,required"`
-	Metadata AgentRunResponseMetadata `json:"metadata,required"`
+	Data     AgentRunResponseData     `json:"data" api:"required"`
+	Metadata AgentRunResponseMetadata `json:"metadata" api:"required"`
 	// The status of the task.
 	//
 	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
 	// "rejected", "blocked".
-	Status AgentRunResponseStatus `json:"status,required"`
+	Status AgentRunResponseStatus `json:"status" api:"required"`
 	// Unique identifier for the task.
-	TaskID string `json:"task_id,required"`
+	TaskID string `json:"task_id" api:"required"`
 	// The final URL.
-	URL   string                `json:"url,required"`
+	URL   string                `json:"url" api:"required"`
 	Debug AgentRunResponseDebug `json:"debug"`
 	// Pagination information if applicable.
 	Pagination AgentRunResponsePaginationUnion `json:"pagination"`
@@ -282,9 +282,9 @@ func (r *AgentRunResponseData) UnmarshalJSON(data []byte) error {
 // Browser actions execution results. Present only when browser_actions were
 // specified in the request.
 type AgentRunResponseDataBrowserActions struct {
-	Results       []AgentRunResponseDataBrowserActionsResult `json:"results,required"`
-	Success       bool                                       `json:"success,required"`
-	TotalDuration float64                                    `json:"total_duration,required"`
+	Results       []AgentRunResponseDataBrowserActionsResult `json:"results" api:"required"`
+	Success       bool                                       `json:"success" api:"required"`
+	TotalDuration float64                                    `json:"total_duration" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Results       respjson.Field
@@ -302,13 +302,13 @@ func (r *AgentRunResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunResponseDataBrowserActionsResult struct {
-	Duration float64 `json:"duration,required"`
+	Duration float64 `json:"duration" api:"required"`
 	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
 	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
 	// "fetch".
-	Name string `json:"name,required"`
+	Name string `json:"name" api:"required"`
 	// Any of "no-run", "in-progress", "done", "error", "skipped".
-	Status string `json:"status,required"`
+	Status string `json:"status" api:"required"`
 	Error  string `json:"error"`
 	Result any    `json:"result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -330,8 +330,8 @@ func (r *AgentRunResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) er
 }
 
 type AgentRunResponseDataNetworkCapture struct {
-	Filter       AgentRunResponseDataNetworkCaptureFilter   `json:"filter,required"`
-	Results      []AgentRunResponseDataNetworkCaptureResult `json:"results,required"`
+	Filter       AgentRunResponseDataNetworkCaptureFilter   `json:"filter" api:"required"`
+	Results      []AgentRunResponseDataNetworkCaptureResult `json:"results" api:"required"`
 	ErrorMessage string                                     `json:"errorMessage"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -350,8 +350,8 @@ func (r *AgentRunResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunResponseDataNetworkCaptureFilter struct {
-	Validation           bool    `json:"validation,required"`
-	WaitForRequestsCount float64 `json:"wait_for_requests_count,required"`
+	Validation           bool    `json:"validation" api:"required"`
+	WaitForRequestsCount float64 `json:"wait_for_requests_count" api:"required"`
 	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
 	// "PATCH".
 	Method string `json:"method"`
@@ -482,8 +482,8 @@ func (r *AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(
 
 type AgentRunResponseDataNetworkCaptureFilterURL struct {
 	// Any of "exact", "contains".
-	Type  string `json:"type,required"`
-	Value string `json:"value,required"`
+	Type  string `json:"type" api:"required"`
+	Value string `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -500,8 +500,8 @@ func (r *AgentRunResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte)
 }
 
 type AgentRunResponseDataNetworkCaptureResult struct {
-	Request  AgentRunResponseDataNetworkCaptureResultRequest  `json:"request,required"`
-	Response AgentRunResponseDataNetworkCaptureResultResponse `json:"response,required"`
+	Request  AgentRunResponseDataNetworkCaptureResultRequest  `json:"request" api:"required"`
+	Response AgentRunResponseDataNetworkCaptureResultResponse `json:"response" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Request     respjson.Field
@@ -518,15 +518,15 @@ func (r *AgentRunResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) er
 }
 
 type AgentRunResponseDataNetworkCaptureResultRequest struct {
-	Headers map[string]string `json:"headers,required"`
-	Method  string            `json:"method,required"`
+	Headers map[string]string `json:"headers" api:"required"`
+	Method  string            `json:"method" api:"required"`
 	// Resource type for network capture filtering
 	//
 	// Any of "document", "stylesheet", "image", "media", "font", "script",
 	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
 	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
-	ResourceType string `json:"resource_type,required"`
-	URL          string `json:"url,required"`
+	ResourceType string `json:"resource_type" api:"required"`
+	URL          string `json:"url" api:"required"`
 	Body         string `json:"body"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -547,12 +547,12 @@ func (r *AgentRunResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []b
 }
 
 type AgentRunResponseDataNetworkCaptureResultResponse struct {
-	Body    string            `json:"body,required"`
-	Headers map[string]string `json:"headers,required"`
+	Body    string            `json:"body" api:"required"`
+	Headers map[string]string `json:"headers" api:"required"`
 	// Any of "none", "base64".
-	Serialization string  `json:"serialization,required"`
-	Status        float64 `json:"status,required"`
-	StatusText    string  `json:"status_text,required"`
+	Serialization string  `json:"serialization" api:"required"`
+	Status        float64 `json:"status" api:"required"`
+	StatusText    string  `json:"status_text" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Body          respjson.Field
@@ -619,8 +619,8 @@ func (r *AgentRunResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunResponseDataParsingParsingSuccessResult struct {
-	Entities map[string]any   `json:"entities,required"`
-	Status   constant.Success `json:"status,required"`
+	Entities map[string]any   `json:"entities" api:"required"`
+	Status   constant.Success `json:"status" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
@@ -637,8 +637,8 @@ func (r *AgentRunResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []b
 }
 
 type AgentRunResponseDataParsingParsingErrorResult struct {
-	Error  string         `json:"error,required"`
-	Status constant.Error `json:"status,required"`
+	Error  string         `json:"error" api:"required"`
+	Status constant.Error `json:"status" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -655,8 +655,8 @@ func (r *AgentRunResponseDataParsingParsingErrorResult) UnmarshalJSON(data []byt
 }
 
 type AgentRunResponseDataRedirect struct {
-	StatusCode float64 `json:"status_code,required"`
-	URL        string  `json:"url,required"`
+	StatusCode float64 `json:"status_code" api:"required"`
+	URL        string  `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		StatusCode  respjson.Field
@@ -786,7 +786,7 @@ func (r *AgentRunResponsePaginationUnion) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunResponsePaginationNextPageParams struct {
-	NextPageParams map[string]any `json:"next_page_params,required"`
+	NextPageParams map[string]any `json:"next_page_params" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NextPageParams respjson.Field
@@ -802,7 +802,7 @@ func (r *AgentRunResponsePaginationNextPageParams) UnmarshalJSON(data []byte) er
 }
 
 type AgentRunResponsePaginationArrayItem struct {
-	NextPageParams map[string]any `json:"next_page_params,required"`
+	NextPageParams map[string]any `json:"next_page_params" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		NextPageParams respjson.Field
@@ -818,8 +818,8 @@ func (r *AgentRunResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunAsyncResponse struct {
-	Status constant.Success `json:"status,required"`
-	Task   map[string]any   `json:"task,required"`
+	Status constant.Success `json:"status" api:"required"`
+	Task   map[string]any   `json:"task" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Status      respjson.Field
@@ -877,8 +877,8 @@ const (
 )
 
 type AgentRunParams struct {
-	Agent        string          `json:"agent,required"`
-	Params       map[string]any  `json:"params,omitzero,required"`
+	Agent        string          `json:"agent" api:"required"`
+	Params       map[string]any  `json:"params,omitzero" api:"required"`
 	Localization param.Opt[bool] `json:"localization,omitzero"`
 	paramObj
 }
@@ -892,8 +892,8 @@ func (r *AgentRunParams) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunAsyncParams struct {
-	Agent  string         `json:"agent,required"`
-	Params map[string]any `json:"params,omitzero,required"`
+	Agent  string         `json:"agent" api:"required"`
+	Params map[string]any `json:"params,omitzero" api:"required"`
 	// URL to call back when async operation completes
 	CallbackURL  param.Opt[string] `json:"callback_url,omitzero"`
 	Localization param.Opt[bool]   `json:"localization,omitzero"`
