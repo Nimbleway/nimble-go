@@ -476,6 +476,7 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		MaxResults:     githubcomnimblewaynimblego.Int(1),
 		MaxSubagents:   githubcomnimblewaynimblego.Int(1),
 		OutputFormat:   githubcomnimblewaynimblego.SearchParamsOutputFormatPlainText,
+		SearchDepth:    githubcomnimblewaynimblego.SearchParamsSearchDepthLite,
 		StartDate:      githubcomnimblewaynimblego.String("start_date"),
 		TimeRange:      githubcomnimblewaynimblego.SearchParamsTimeRangeHour,
 	})
