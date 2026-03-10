@@ -31,6 +31,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		ManagedBy: githubcomnimblewaynimblego.AgentListParamsManagedByNimble,
 		Offset:    githubcomnimblewaynimblego.Int(0),
 		Privacy:   githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
+		Search:    githubcomnimblewaynimblego.String("search"),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

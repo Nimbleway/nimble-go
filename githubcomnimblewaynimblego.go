@@ -4864,16 +4864,14 @@ const (
 type SearchParams struct {
 	// Search query string
 	Query string `json:"query" api:"required"`
+	// Deprecated. Use search_depth instead. true maps to 'deep', false maps to 'lite'.
+	DeepSearch param.Opt[bool] `json:"deep_search,omitzero"`
 	// Filter results before this date (format: YYYY-MM-DD or YYYY)
 	EndDate param.Opt[string] `json:"end_date,omitzero"`
 	// Filter results after this date (format: YYYY-MM-DD or YYYY)
 	StartDate param.Opt[string] `json:"start_date,omitzero"`
 	// Country code for geo-targeted results (e.g., 'US', 'GB', 'IL')
 	Country param.Opt[string] `json:"country,omitzero"`
-	// Deep Mode (true, default): fetches full-page content for deeper analysis. Fast
-	// Mode (false): returns metadata only (title, snippet, URL) for quick,
-	// token-efficient results.
-	DeepSearch param.Opt[bool] `json:"deep_search,omitzero"`
 	// Generate an LLM-powered answer summary based on search result snippets.
 	IncludeAnswer param.Opt[bool] `json:"include_answer,omitzero"`
 	// Language/locale code (e.g., 'en', 'fr', 'de')
@@ -4892,6 +4890,15 @@ type SearchParams struct {
 	ExcludeDomains []string `json:"exclude_domains,omitzero"`
 	// List of domains to include in search results. Maximum 50 domains.
 	IncludeDomains []string `json:"include_domains,omitzero"`
+	// Controls content richness and latency of search results.
+	//
+	//   - lite: Token-efficient metadata for high-volume pipelines (title, URL,
+	//     description only)
+	//   - fast: Rich content (~2K chars) optimized for AI agents
+	//   - deep: Full page content via Webit scraping for comprehensive analysis
+	//
+	// Any of "lite", "fast", "deep".
+	SearchDepth SearchParamsSearchDepth `json:"search_depth,omitzero"`
 	// Time range filters passed to Webit SERP API as 'time' parameter.
 	//
 	// Any of "hour", "day", "week", "month", "year".
@@ -4946,6 +4953,20 @@ const (
 	SearchParamsOutputFormatPlainText      SearchParamsOutputFormat = "plain_text"
 	SearchParamsOutputFormatMarkdown       SearchParamsOutputFormat = "markdown"
 	SearchParamsOutputFormatSimplifiedHTML SearchParamsOutputFormat = "simplified_html"
+)
+
+// Controls content richness and latency of search results.
+//
+//   - lite: Token-efficient metadata for high-volume pipelines (title, URL,
+//     description only)
+//   - fast: Rich content (~2K chars) optimized for AI agents
+//   - deep: Full page content via Webit scraping for comprehensive analysis
+type SearchParamsSearchDepth string
+
+const (
+	SearchParamsSearchDepthLite SearchParamsSearchDepth = "lite"
+	SearchParamsSearchDepthFast SearchParamsSearchDepth = "fast"
+	SearchParamsSearchDepthDeep SearchParamsSearchDepth = "deep"
 )
 
 // Time range filters passed to Webit SERP API as 'time' parameter.
