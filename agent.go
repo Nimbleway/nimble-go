@@ -115,7 +115,7 @@ type AgentGetResponse struct {
 	FeatureFlags    AgentGetResponseFeatureFlags    `json:"feature_flags"`
 	InputProperties []AgentGetResponseInputProperty `json:"input_properties" api:"nullable"`
 	ManagedBy       string                          `json:"managed_by" api:"nullable"`
-	OutputSchema    map[string]any                  `json:"output_schema" api:"nullable"`
+	OutputSchema    any                             `json:"output_schema" api:"nullable"`
 	Vertical        string                          `json:"vertical" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -836,13 +836,15 @@ func (r *AgentRunAsyncResponse) UnmarshalJSON(data []byte) error {
 }
 
 type AgentListParams struct {
+	// Search templates by name, domain, or vertical
+	Search param.Opt[string] `query:"search,omitzero" json:"-"`
 	// Number of results per page
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Pagination offset
 	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
-	// Filter public templates by attribution
+	// Filter templates by attribution
 	//
-	// Any of "nimble", "community".
+	// Any of "nimble", "community", "self_managed".
 	ManagedBy AgentListParamsManagedBy `query:"managed_by,omitzero" json:"-"`
 	// Filter by privacy level
 	//
@@ -859,12 +861,13 @@ func (r AgentListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Filter public templates by attribution
+// Filter templates by attribution
 type AgentListParamsManagedBy string
 
 const (
-	AgentListParamsManagedByNimble    AgentListParamsManagedBy = "nimble"
-	AgentListParamsManagedByCommunity AgentListParamsManagedBy = "community"
+	AgentListParamsManagedByNimble      AgentListParamsManagedBy = "nimble"
+	AgentListParamsManagedByCommunity   AgentListParamsManagedBy = "community"
+	AgentListParamsManagedBySelfManaged AgentListParamsManagedBy = "self_managed"
 )
 
 // Filter by privacy level
