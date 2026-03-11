@@ -44,7 +44,7 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
-	return
+	return res, err
 }
 
 // Get Template
@@ -52,11 +52,11 @@ func (r *AgentService) Get(ctx context.Context, templateName string, opts ...opt
 	opts = slices.Concat(r.Options, opts)
 	if templateName == "" {
 		err = errors.New("missing required template_name parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s", templateName)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Execute WSA Realtime Endpoint
@@ -64,7 +64,7 @@ func (r *AgentService) Run(ctx context.Context, body AgentRunParams, opts ...opt
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents/run"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Execute WSA Async Endpoint
@@ -72,7 +72,7 @@ func (r *AgentService) RunAsync(ctx context.Context, body AgentRunAsyncParams, o
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 type AgentListResponse struct {

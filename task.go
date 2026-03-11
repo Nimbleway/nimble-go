@@ -42,7 +42,7 @@ func (r *TaskService) List(ctx context.Context, query TaskListParams, opts ...op
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/tasks"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
-	return
+	return res, err
 }
 
 // Retrieve the details of a specific task by its ID.
@@ -50,11 +50,11 @@ func (r *TaskService) Get(ctx context.Context, taskID string, opts ...option.Req
 	opts = slices.Concat(r.Options, opts)
 	if taskID == "" {
 		err = errors.New("missing required task_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/tasks/%s", taskID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Retrieve the results of a completed task.
@@ -62,11 +62,11 @@ func (r *TaskService) Results(ctx context.Context, taskID string, opts ...option
 	opts = slices.Concat(r.Options, opts)
 	if taskID == "" {
 		err = errors.New("missing required task_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/tasks/%s/results", taskID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Paginated list of tasks response.
