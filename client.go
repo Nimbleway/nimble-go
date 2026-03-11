@@ -125,7 +125,7 @@ func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/extract"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Extract Async Endpoint
@@ -133,7 +133,7 @@ func (r *Client) ExtractAsync(ctx context.Context, body ExtractAsyncParams, opts
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/extract/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Create map task
@@ -141,7 +141,7 @@ func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.Request
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/map"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Search
@@ -149,5 +149,5 @@ func (r *Client) Search(ctx context.Context, body SearchParams, opts ...option.R
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/search"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
