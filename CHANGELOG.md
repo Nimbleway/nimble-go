@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.0 (2026-03-11)
+
+Full Changelog: [v0.7.0...v0.8.0](https://github.com/Nimbleway/nimble-go/compare/v0.7.0...v0.8.0)
+
+### Features
+
+* **api:** api update ([3f59aa3](https://github.com/Nimbleway/nimble-go/commit/3f59aa348245a2060e3f93ff4afbb91036428b6c))
+* **api:** api update ([84bb287](https://github.com/Nimbleway/nimble-go/commit/84bb287defe36eb98ede3efc5b8617ab972c14b5))
+
+
+### Chores
+
+* **ci:** skip uploading artifacts on stainless-internal branches ([f2dd32a](https://github.com/Nimbleway/nimble-go/commit/f2dd32aa091e1d0f444ccd10aab0945a4427da65))
+* **internal:** codegen related update ([bb30086](https://github.com/Nimbleway/nimble-go/commit/bb3008670f43e63d40a57e1f76041f00f85b59d5))
+* **internal:** codegen related update ([98f912d](https://github.com/Nimbleway/nimble-go/commit/98f912d455de48d9e16306e8be5fbcc9b66a3d96))
+* **internal:** minor cleanup ([8c897e4](https://github.com/Nimbleway/nimble-go/commit/8c897e4e537e73f43761b13a2d5e1c06c0bc046e))
+* **internal:** use explicit returns ([46564cf](https://github.com/Nimbleway/nimble-go/commit/46564cf55bda2122a7f8f9f25dda65927a1cff2b))
+* **internal:** use explicit returns in more places ([79ab604](https://github.com/Nimbleway/nimble-go/commit/79ab604d0fa2ae6d34cd3c33960768a6101af92f))
+
 ## 0.7.0 (2026-02-25)
 
 Full Changelog: [v0.6.0...v0.7.0](https://github.com/Nimbleway/nimble-go/compare/v0.6.0...v0.7.0)
