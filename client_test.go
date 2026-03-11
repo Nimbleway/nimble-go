@@ -38,7 +38,7 @@ func TestUserAgentHeader(t *testing.T) {
 			},
 		}),
 	)
-	client.Extract(context.Background(), githubcomnimblewaynimblego.ExtractParams{
+	_, _ = client.Extract(context.Background(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "https://exapmle.com",
 	})
 	if userAgent != fmt.Sprintf("Nimble/Go %s", internal.PackageVersion) {
