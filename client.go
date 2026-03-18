@@ -136,6 +136,14 @@ func (r *Client) ExtractAsync(ctx context.Context, body ExtractAsyncParams, opts
 	return res, err
 }
 
+// Extract Batch Endpoint
+func (r *Client) ExtractBatch(ctx context.Context, body ExtractBatchParams, opts ...option.RequestOption) (res *ExtractBatchResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/extract/batch"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // Create map task
 func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.RequestOption) (res *MapResponse, err error) {
 	opts = slices.Concat(r.Options, opts)

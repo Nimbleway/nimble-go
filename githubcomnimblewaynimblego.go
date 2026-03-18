@@ -720,6 +720,90 @@ func (r *ExtractAsyncResponseTask) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response when a batch of extract tasks is created successfully.
+type ExtractBatchResponse struct {
+	// Unique identifier for the batch.
+	BatchID string `json:"batch_id" api:"required"`
+	// Number of tasks in the batch.
+	BatchSize float64 `json:"batch_size" api:"required"`
+	// List of created tasks.
+	Tasks []ExtractBatchResponseTask `json:"tasks" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BatchID     respjson.Field
+		BatchSize   respjson.Field
+		Tasks       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractBatchResponse) RawJSON() string { return r.JSON.raw }
+func (r *ExtractBatchResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ExtractBatchResponseTask struct {
+	// Unique task identifier.
+	ID    string `json:"id" api:"required"`
+	Query any    `json:"_query" api:"required"`
+	// Timestamp when the task was created.
+	CreatedAt string `json:"created_at" api:"required"`
+	// Original input data for the task.
+	Input any `json:"input" api:"required"`
+	// Current state of the task.
+	//
+	// Any of "pending", "success", "error".
+	State string `json:"state" api:"required"`
+	// URL for checking the task status.
+	StatusURL string `json:"status_url" api:"required" format:"uri"`
+	// Account name that owns the task.
+	AccountName string `json:"account_name"`
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	APIType string `json:"api_type"`
+	// Batch ID if this task is part of a batch.
+	BatchID string `json:"batch_id"`
+	// URL for downloading the task results.
+	DownloadURL string `json:"download_url" format:"uri"`
+	// Error message if the task failed.
+	Error string `json:"error"`
+	// Classification of the error type.
+	ErrorType string `json:"error_type"`
+	// Timestamp when the task was last modified.
+	ModifiedAt string `json:"modified_at"`
+	// Storage location of the output data.
+	OutputURL string `json:"output_url"`
+	// HTTP status code from the task execution.
+	StatusCode float64 `json:"status_code"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Query       respjson.Field
+		CreatedAt   respjson.Field
+		Input       respjson.Field
+		State       respjson.Field
+		StatusURL   respjson.Field
+		AccountName respjson.Field
+		APIType     respjson.Field
+		BatchID     respjson.Field
+		DownloadURL respjson.Field
+		Error       respjson.Field
+		ErrorType   respjson.Field
+		ModifiedAt  respjson.Field
+		OutputURL   respjson.Field
+		StatusCode  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExtractBatchResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *ExtractBatchResponseTask) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Response schema for map requests.
 type MapResponse struct {
 	// Array of mapped links with optional titles and descriptions.
@@ -3936,6 +4020,1456 @@ const (
 	ExtractAsyncParamsStateWi ExtractAsyncParamsState = "WI"
 	ExtractAsyncParamsStateWy ExtractAsyncParamsState = "WY"
 )
+
+type ExtractBatchParams struct {
+	// Array of extraction requests. Each object represents one extraction with its own
+	// parameters.
+	Params []ExtractBatchParamsParam `json:"params,omitzero" api:"required"`
+	// Shared parameters applied to the entire batch, such as storage and callback
+	// configuration.
+	SharedParams ExtractBatchParamsSharedParams `json:"shared_params,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParams) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property URL is required.
+type ExtractBatchParamsParam struct {
+	// Target URL to scrape
+	URL string `json:"url" api:"required"`
+	// City for geolocation
+	City param.Opt[string] `json:"city,omitzero"`
+	// Whether to automatically handle cookie consent headers
+	ConsentHeader param.Opt[bool] `json:"consent_header,omitzero"`
+	// Whether to use HTTP/2 protocol
+	Http2 param.Opt[bool] `json:"http2,omitzero"`
+	// Whether to emulate XMLHttpRequest behavior
+	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
+	// Whether to parse the response content
+	Parse param.Opt[bool] `json:"parse,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render param.Opt[bool] `json:"render,omitzero"`
+	// Request timeout in milliseconds
+	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
+	// User-defined tag for request identification
+	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Browser type to emulate
+	Browser ExtractBatchParamsParamBrowserUnion `json:"browser,omitzero"`
+	// Array of browser automation actions to execute sequentially
+	BrowserActions []ExtractBatchParamsParamBrowserActionUnion `json:"browser_actions,omitzero"`
+	// Browser cookies as array of cookie objects
+	Cookies ExtractBatchParamsParamCookiesUnion `json:"cookies,omitzero"`
+	// Country code for geolocation and proxy selection
+	//
+	// Any of "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT",
+	// "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ",
+	// "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA",
+	// "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU",
+	// "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE",
+	// "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB",
+	// "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+	// "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL",
+	// "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG",
+	// "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI",
+	// "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG",
+	// "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV",
+	// "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP",
+	// "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN",
+	// "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB",
+	// "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR",
+	// "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+	// "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US",
+	// "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "XK", "YE",
+	// "YT", "ZA", "ZM", "ZW", "ALL".
+	Country ExtractBatchParamsParamCountry `json:"country,omitzero"`
+	// Device type for browser emulation
+	//
+	// Any of "desktop", "mobile", "tablet".
+	Device string `json:"device,omitzero"`
+	// Browser driver to use
+	//
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	Driver string `json:"driver,omitzero"`
+	// Expected HTTP status codes for successful requests
+	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
+	// List of acceptable response formats in order of preference
+	//
+	// Any of "html", "markdown", "screenshot".
+	Formats []string `json:"formats,omitzero"`
+	// Custom HTTP headers to include in the request
+	Headers map[string]ExtractBatchParamsParamHeaderUnion `json:"headers,omitzero"`
+	// Locale for browser language and region settings
+	//
+	// Any of "aa-DJ", "aa-ER", "aa-ET", "af", "af-NA", "af-ZA", "ak", "ak-GH", "am",
+	// "am-ET", "an-ES", "ar", "ar-AE", "ar-BH", "ar-DZ", "ar-EG", "ar-IN", "ar-IQ",
+	// "ar-JO", "ar-KW", "ar-LB", "ar-LY", "ar-MA", "ar-OM", "ar-QA", "ar-SA", "ar-SD",
+	// "ar-SY", "ar-TN", "ar-YE", "as", "as-IN", "asa", "asa-TZ", "ast-ES", "az",
+	// "az-AZ", "az-Cyrl", "az-Cyrl-AZ", "az-Latn", "az-Latn-AZ", "be", "be-BY", "bem",
+	// "bem-ZM", "ber-DZ", "ber-MA", "bez", "bez-TZ", "bg", "bg-BG", "bho-IN", "bm",
+	// "bm-ML", "bn", "bn-BD", "bn-IN", "bo", "bo-CN", "bo-IN", "br-FR", "brx-IN",
+	// "bs", "bs-BA", "byn-ER", "ca", "ca-AD", "ca-ES", "ca-FR", "ca-IT", "cgg",
+	// "cgg-UG", "chr", "chr-US", "crh-UA", "cs", "cs-CZ", "csb-PL", "cv-RU", "cy",
+	// "cy-GB", "da", "da-DK", "dav", "dav-KE", "de", "de-AT", "de-BE", "de-CH",
+	// "de-DE", "de-LI", "de-LU", "dv-MV", "dz-BT", "ebu", "ebu-KE", "ee", "ee-GH",
+	// "ee-TG", "el", "el-CY", "el-GR", "en", "en-AG", "en-AS", "en-AU", "en-BE",
+	// "en-BW", "en-BZ", "en-CA", "en-DK", "en-GB", "en-GU", "en-HK", "en-IE", "en-IN",
+	// "en-JM", "en-MH", "en-MP", "en-MT", "en-MU", "en-NA", "en-NG", "en-NZ", "en-PH",
+	// "en-PK", "en-SG", "en-TT", "en-UM", "en-US", "en-VI", "en-ZA", "en-ZM", "en-ZW",
+	// "eo", "es", "es-419", "es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU",
+	// "es-DO", "es-EC", "es-ES", "es-GQ", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA",
+	// "es-PE", "es-PR", "es-PY", "es-SV", "es-US", "es-UY", "es-VE", "et", "et-EE",
+	// "eu", "eu-ES", "fa", "fa-AF", "fa-IR", "ff", "ff-SN", "fi", "fi-FI", "fil",
+	// "fil-PH", "fo", "fo-FO", "fr", "fr-BE", "fr-BF", "fr-BI", "fr-BJ", "fr-BL",
+	// "fr-CA", "fr-CD", "fr-CF", "fr-CG", "fr-CH", "fr-CI", "fr-CM", "fr-DJ", "fr-FR",
+	// "fr-GA", "fr-GN", "fr-GP", "fr-GQ", "fr-KM", "fr-LU", "fr-MC", "fr-MF", "fr-MG",
+	// "fr-ML", "fr-MQ", "fr-NE", "fr-RE", "fr-RW", "fr-SN", "fr-TD", "fr-TG",
+	// "fur-IT", "fy-DE", "fy-NL", "ga", "ga-IE", "gd-GB", "gez-ER", "gez-ET", "gl",
+	// "gl-ES", "gsw", "gsw-CH", "gu", "gu-IN", "guz", "guz-KE", "gv", "gv-GB", "ha",
+	// "ha-Latn", "ha-Latn-GH", "ha-Latn-NE", "ha-Latn-NG", "ha-NG", "haw", "haw-US",
+	// "he", "he-IL", "hi", "hi-IN", "hne-IN", "hr", "hr-HR", "hsb-DE", "ht-HT", "hu",
+	// "hu-HU", "hy", "hy-AM", "id", "id-ID", "ig", "ig-NG", "ii", "ii-CN", "ik-CA",
+	// "is", "is-IS", "it", "it-CH", "it-IT", "iu-CA", "iw-IL", "ja", "ja-JP", "jmc",
+	// "jmc-TZ", "ka", "ka-GE", "kab", "kab-DZ", "kam", "kam-KE", "kde", "kde-TZ",
+	// "kea", "kea-CV", "khq", "khq-ML", "ki", "ki-KE", "kk", "kk-Cyrl", "kk-Cyrl-KZ",
+	// "kk-KZ", "kl", "kl-GL", "kln", "kln-KE", "km", "km-KH", "kn", "kn-IN", "ko",
+	// "ko-KR", "kok", "kok-IN", "ks-IN", "ku-TR", "kw", "kw-GB", "ky-KG", "lag",
+	// "lag-TZ", "lb-LU", "lg", "lg-UG", "li-BE", "li-NL", "lij-IT", "lo-LA", "lt",
+	// "lt-LT", "luo", "luo-KE", "luy", "luy-KE", "lv", "lv-LV", "mag-IN", "mai-IN",
+	// "mas", "mas-KE", "mas-TZ", "mer", "mer-KE", "mfe", "mfe-MU", "mg", "mg-MG",
+	// "mhr-RU", "mi-NZ", "mk", "mk-MK", "ml", "ml-IN", "mn-MN", "mr", "mr-IN", "ms",
+	// "ms-BN", "ms-MY", "mt", "mt-MT", "my", "my-MM", "nan-TW", "naq", "naq-NA", "nb",
+	// "nb-NO", "nd", "nd-ZW", "nds-DE", "nds-NL", "ne", "ne-IN", "ne-NP", "nl",
+	// "nl-AW", "nl-BE", "nl-NL", "nn", "nn-NO", "nr-ZA", "nso-ZA", "nyn", "nyn-UG",
+	// "oc-FR", "om", "om-ET", "om-KE", "or", "or-IN", "os-RU", "pa", "pa-Arab",
+	// "pa-Arab-PK", "pa-Guru", "pa-Guru-IN", "pa-IN", "pa-PK", "pap-AN", "pl",
+	// "pl-PL", "ps", "ps-AF", "pt", "pt-BR", "pt-GW", "pt-MZ", "pt-PT", "rm", "rm-CH",
+	// "ro", "ro-MD", "ro-RO", "rof", "rof-TZ", "ru", "ru-MD", "ru-RU", "ru-UA", "rw",
+	// "rw-RW", "rwk", "rwk-TZ", "sa-IN", "saq", "saq-KE", "sc-IT", "sd-IN", "se-NO",
+	// "seh", "seh-MZ", "ses", "ses-ML", "sg", "sg-CF", "shi", "shi-Latn",
+	// "shi-Latn-MA", "shi-Tfng", "shi-Tfng-MA", "shs-CA", "si", "si-LK", "sid-ET",
+	// "sk", "sk-SK", "sl", "sl-SI", "sn", "sn-ZW", "so", "so-DJ", "so-ET", "so-KE",
+	// "so-SO", "sq", "sq-AL", "sq-MK", "sr", "sr-Cyrl", "sr-Cyrl-BA", "sr-Cyrl-ME",
+	// "sr-Cyrl-RS", "sr-Latn", "sr-Latn-BA", "sr-Latn-ME", "sr-Latn-RS", "sr-ME",
+	// "sr-RS", "ss-ZA", "st-ZA", "sv", "sv-FI", "sv-SE", "sw", "sw-KE", "sw-TZ", "ta",
+	// "ta-IN", "ta-LK", "te", "te-IN", "teo", "teo-KE", "teo-UG", "tg-TJ", "th",
+	// "th-TH", "ti", "ti-ER", "ti-ET", "tig-ER", "tk-TM", "tl-PH", "tn-ZA", "to",
+	// "to-TO", "tr", "tr-CY", "tr-TR", "ts-ZA", "tt-RU", "tzm", "tzm-Latn",
+	// "tzm-Latn-MA", "ug-CN", "uk", "uk-UA", "unm-US", "ur", "ur-IN", "ur-PK", "uz",
+	// "uz-Arab", "uz-Arab-AF", "uz-Cyrl", "uz-Cyrl-UZ", "uz-Latn", "uz-Latn-UZ",
+	// "uz-UZ", "ve-ZA", "vi", "vi-VN", "vun", "vun-TZ", "wa-BE", "wae-CH", "wal-ET",
+	// "wo-SN", "xh-ZA", "xog", "xog-UG", "yi-US", "yo", "yo-NG", "yue-HK", "zh",
+	// "zh-CN", "zh-HK", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK", "zh-Hans-MO",
+	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
+	// "zh-TW", "zu", "zu-ZA", "auto".
+	Locale ExtractBatchParamsParamLocale `json:"locale,omitzero"`
+	// HTTP method for the request
+	//
+	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
+	Method string `json:"method,omitzero"`
+	// Filters for capturing network traffic
+	NetworkCapture []ExtractBatchParamsParamNetworkCapture `json:"network_capture,omitzero"`
+	// Operating system to emulate
+	//
+	// Any of "windows", "mac os", "linux", "android", "ios".
+	Os string `json:"os,omitzero"`
+	// Custom parser configuration as a key-value map
+	Parser ExtractBatchParamsParamParserUnion `json:"parser,omitzero"`
+	// Referrer policy for the request
+	//
+	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
+	// "twitter", "instagram".
+	ReferrerType ExtractBatchParamsParamReferrerType `json:"referrer_type,omitzero"`
+	Session      ExtractBatchParamsParamSession      `json:"session,omitzero"`
+	// Skills or capabilities required for the request
+	Skill ExtractBatchParamsParamSkillUnion `json:"skill,omitzero"`
+	// US state for geolocation (only valid when country is US)
+	//
+	// Any of "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA",
+	// "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+	// "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP",
+	// "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+	// "VI", "WA", "WV", "WI", "WY".
+	State string `json:"state,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParam) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractBatchParamsParam](
+		"device", "desktop", "mobile", "tablet",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsParam](
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsParam](
+		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsParam](
+		"os", "windows", "mac os", "linux", "android", "ios",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsParam](
+		"state", "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "VI", "WA", "WV", "WI", "WY",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamBrowserUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractBatchsParamBrowserString)
+	OfExtractBatchsParamBrowserString param.Opt[string]                     `json:",omitzero,inline"`
+	OfExtractBatchsParamBrowserObject *ExtractBatchParamsParamBrowserObject `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamBrowserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractBatchsParamBrowserString, u.OfExtractBatchsParamBrowserObject)
+}
+func (u *ExtractBatchParamsParamBrowserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamBrowserUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractBatchsParamBrowserString) {
+		return &u.OfExtractBatchsParamBrowserString
+	} else if !param.IsOmitted(u.OfExtractBatchsParamBrowserObject) {
+		return u.OfExtractBatchsParamBrowserObject
+	}
+	return nil
+}
+
+// Browser type to emulate
+type ExtractBatchParamsParamBrowserString string
+
+const (
+	ExtractBatchParamsParamBrowserStringChrome  ExtractBatchParamsParamBrowserString = "chrome"
+	ExtractBatchParamsParamBrowserStringFirefox ExtractBatchParamsParamBrowserString = "firefox"
+)
+
+// The property Name is required.
+type ExtractBatchParamsParamBrowserObject struct {
+	// Any of "chrome", "firefox".
+	Name string `json:"name,omitzero" api:"required"`
+	// Specific browser version to emulate
+	Version param.Opt[string] `json:"version,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParamBrowserObject) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParamBrowserObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsParamBrowserObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractBatchParamsParamBrowserObject](
+		"name", "chrome", "firefox",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamBrowserActionUnion struct {
+	OfAutoScrollAction        *shared.AutoScrollActionParam        `json:",omitzero,inline"`
+	OfClickAction             *shared.ClickActionParam             `json:",omitzero,inline"`
+	OfEvalAction              *shared.EvalActionParam              `json:",omitzero,inline"`
+	OfFetchAction             *shared.FetchActionParam             `json:",omitzero,inline"`
+	OfFillAction              *shared.FillActionParam              `json:",omitzero,inline"`
+	OfGetCookiesAction        *shared.GetCookiesActionParam        `json:",omitzero,inline"`
+	OfGotoAction              *shared.GotoActionParam              `json:",omitzero,inline"`
+	OfPressAction             *shared.PressActionParam             `json:",omitzero,inline"`
+	OfScreenshotAction        *shared.ScreenshotActionParam        `json:",omitzero,inline"`
+	OfScrollAction            *shared.ScrollActionParam            `json:",omitzero,inline"`
+	OfWaitAction              *shared.WaitActionParam              `json:",omitzero,inline"`
+	OfWaitForElementAction    *shared.WaitForElementActionParam    `json:",omitzero,inline"`
+	OfWaitForNavigationAction *shared.WaitForNavigationActionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamBrowserActionUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAutoScrollAction,
+		u.OfClickAction,
+		u.OfEvalAction,
+		u.OfFetchAction,
+		u.OfFillAction,
+		u.OfGetCookiesAction,
+		u.OfGotoAction,
+		u.OfPressAction,
+		u.OfScreenshotAction,
+		u.OfScrollAction,
+		u.OfWaitAction,
+		u.OfWaitForElementAction,
+		u.OfWaitForNavigationAction)
+}
+func (u *ExtractBatchParamsParamBrowserActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamBrowserActionUnion) asAny() any {
+	if !param.IsOmitted(u.OfAutoScrollAction) {
+		return u.OfAutoScrollAction
+	} else if !param.IsOmitted(u.OfClickAction) {
+		return u.OfClickAction
+	} else if !param.IsOmitted(u.OfEvalAction) {
+		return u.OfEvalAction
+	} else if !param.IsOmitted(u.OfFetchAction) {
+		return u.OfFetchAction
+	} else if !param.IsOmitted(u.OfFillAction) {
+		return u.OfFillAction
+	} else if !param.IsOmitted(u.OfGetCookiesAction) {
+		return u.OfGetCookiesAction
+	} else if !param.IsOmitted(u.OfGotoAction) {
+		return u.OfGotoAction
+	} else if !param.IsOmitted(u.OfPressAction) {
+		return u.OfPressAction
+	} else if !param.IsOmitted(u.OfScreenshotAction) {
+		return u.OfScreenshotAction
+	} else if !param.IsOmitted(u.OfScrollAction) {
+		return u.OfScrollAction
+	} else if !param.IsOmitted(u.OfWaitAction) {
+		return u.OfWaitAction
+	} else if !param.IsOmitted(u.OfWaitForElementAction) {
+		return u.OfWaitForElementAction
+	} else if !param.IsOmitted(u.OfWaitForNavigationAction) {
+		return u.OfWaitForNavigationAction
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamCookiesUnion struct {
+	OfExtractBatchsParamCookiesArray []ExtractBatchParamsParamCookiesArrayItem `json:",omitzero,inline"`
+	OfString                         param.Opt[string]                         `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamCookiesUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractBatchsParamCookiesArray, u.OfString)
+}
+func (u *ExtractBatchParamsParamCookiesUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamCookiesUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractBatchsParamCookiesArray) {
+		return &u.OfExtractBatchsParamCookiesArray
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+type ExtractBatchParamsParamCookiesArrayItem struct {
+	Creation      param.Opt[string]                                  `json:"creation,omitzero"`
+	Domain        param.Opt[string]                                  `json:"domain,omitzero"`
+	HostOnly      param.Opt[bool]                                    `json:"hostOnly,omitzero"`
+	HTTPOnly      param.Opt[bool]                                    `json:"httpOnly,omitzero"`
+	LastAccessed  param.Opt[string]                                  `json:"lastAccessed,omitzero"`
+	Path          param.Opt[string]                                  `json:"path,omitzero"`
+	PathIsDefault param.Opt[bool]                                    `json:"pathIsDefault,omitzero"`
+	Expires       param.Opt[string]                                  `json:"expires,omitzero"`
+	Name          param.Opt[string]                                  `json:"name,omitzero"`
+	Secure        param.Opt[bool]                                    `json:"secure,omitzero"`
+	Value         param.Opt[string]                                  `json:"value,omitzero"`
+	Extensions    []string                                           `json:"extensions,omitzero"`
+	MaxAge        ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion `json:"maxAge,omitzero"`
+	// Any of "strict", "lax", "none".
+	SameSite    string         `json:"sameSite,omitzero"`
+	ExtraFields map[string]any `json:"-"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParamCookiesArrayItem) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParamCookiesArrayItem
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *ExtractBatchParamsParamCookiesArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractBatchParamsParamCookiesArrayItem](
+		"sameSite", "strict", "lax", "none",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfExtractBatchsParamCookiesArrayItemMaxAgeString)
+	OfExtractBatchsParamCookiesArrayItemMaxAgeString param.Opt[ExtractBatchParamsParamCookiesArrayItemMaxAgeString] `json:",omitzero,inline"`
+	OfFloat                                          param.Opt[float64]                                             `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExtractBatchsParamCookiesArrayItemMaxAgeString, u.OfFloat)
+}
+func (u *ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion) asAny() any {
+	if !param.IsOmitted(u.OfExtractBatchsParamCookiesArrayItemMaxAgeString) {
+		return &u.OfExtractBatchsParamCookiesArrayItemMaxAgeString
+	} else if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	}
+	return nil
+}
+
+type ExtractBatchParamsParamCookiesArrayItemMaxAgeString string
+
+const (
+	ExtractBatchParamsParamCookiesArrayItemMaxAgeStringInfinity      ExtractBatchParamsParamCookiesArrayItemMaxAgeString = "Infinity"
+	ExtractBatchParamsParamCookiesArrayItemMaxAgeStringMinusInfinity ExtractBatchParamsParamCookiesArrayItemMaxAgeString = "-Infinity"
+)
+
+// Country code for geolocation and proxy selection
+type ExtractBatchParamsParamCountry string
+
+const (
+	ExtractBatchParamsParamCountryAd  ExtractBatchParamsParamCountry = "AD"
+	ExtractBatchParamsParamCountryAe  ExtractBatchParamsParamCountry = "AE"
+	ExtractBatchParamsParamCountryAf  ExtractBatchParamsParamCountry = "AF"
+	ExtractBatchParamsParamCountryAg  ExtractBatchParamsParamCountry = "AG"
+	ExtractBatchParamsParamCountryAI  ExtractBatchParamsParamCountry = "AI"
+	ExtractBatchParamsParamCountryAl  ExtractBatchParamsParamCountry = "AL"
+	ExtractBatchParamsParamCountryAm  ExtractBatchParamsParamCountry = "AM"
+	ExtractBatchParamsParamCountryAo  ExtractBatchParamsParamCountry = "AO"
+	ExtractBatchParamsParamCountryAq  ExtractBatchParamsParamCountry = "AQ"
+	ExtractBatchParamsParamCountryAr  ExtractBatchParamsParamCountry = "AR"
+	ExtractBatchParamsParamCountryAs  ExtractBatchParamsParamCountry = "AS"
+	ExtractBatchParamsParamCountryAt  ExtractBatchParamsParamCountry = "AT"
+	ExtractBatchParamsParamCountryAu  ExtractBatchParamsParamCountry = "AU"
+	ExtractBatchParamsParamCountryAw  ExtractBatchParamsParamCountry = "AW"
+	ExtractBatchParamsParamCountryAx  ExtractBatchParamsParamCountry = "AX"
+	ExtractBatchParamsParamCountryAz  ExtractBatchParamsParamCountry = "AZ"
+	ExtractBatchParamsParamCountryBa  ExtractBatchParamsParamCountry = "BA"
+	ExtractBatchParamsParamCountryBb  ExtractBatchParamsParamCountry = "BB"
+	ExtractBatchParamsParamCountryBd  ExtractBatchParamsParamCountry = "BD"
+	ExtractBatchParamsParamCountryBe  ExtractBatchParamsParamCountry = "BE"
+	ExtractBatchParamsParamCountryBf  ExtractBatchParamsParamCountry = "BF"
+	ExtractBatchParamsParamCountryBg  ExtractBatchParamsParamCountry = "BG"
+	ExtractBatchParamsParamCountryBh  ExtractBatchParamsParamCountry = "BH"
+	ExtractBatchParamsParamCountryBi  ExtractBatchParamsParamCountry = "BI"
+	ExtractBatchParamsParamCountryBj  ExtractBatchParamsParamCountry = "BJ"
+	ExtractBatchParamsParamCountryBl  ExtractBatchParamsParamCountry = "BL"
+	ExtractBatchParamsParamCountryBm  ExtractBatchParamsParamCountry = "BM"
+	ExtractBatchParamsParamCountryBn  ExtractBatchParamsParamCountry = "BN"
+	ExtractBatchParamsParamCountryBo  ExtractBatchParamsParamCountry = "BO"
+	ExtractBatchParamsParamCountryBq  ExtractBatchParamsParamCountry = "BQ"
+	ExtractBatchParamsParamCountryBr  ExtractBatchParamsParamCountry = "BR"
+	ExtractBatchParamsParamCountryBs  ExtractBatchParamsParamCountry = "BS"
+	ExtractBatchParamsParamCountryBt  ExtractBatchParamsParamCountry = "BT"
+	ExtractBatchParamsParamCountryBv  ExtractBatchParamsParamCountry = "BV"
+	ExtractBatchParamsParamCountryBw  ExtractBatchParamsParamCountry = "BW"
+	ExtractBatchParamsParamCountryBy  ExtractBatchParamsParamCountry = "BY"
+	ExtractBatchParamsParamCountryBz  ExtractBatchParamsParamCountry = "BZ"
+	ExtractBatchParamsParamCountryCa  ExtractBatchParamsParamCountry = "CA"
+	ExtractBatchParamsParamCountryCc  ExtractBatchParamsParamCountry = "CC"
+	ExtractBatchParamsParamCountryCd  ExtractBatchParamsParamCountry = "CD"
+	ExtractBatchParamsParamCountryCf  ExtractBatchParamsParamCountry = "CF"
+	ExtractBatchParamsParamCountryCg  ExtractBatchParamsParamCountry = "CG"
+	ExtractBatchParamsParamCountryCh  ExtractBatchParamsParamCountry = "CH"
+	ExtractBatchParamsParamCountryCi  ExtractBatchParamsParamCountry = "CI"
+	ExtractBatchParamsParamCountryCk  ExtractBatchParamsParamCountry = "CK"
+	ExtractBatchParamsParamCountryCl  ExtractBatchParamsParamCountry = "CL"
+	ExtractBatchParamsParamCountryCm  ExtractBatchParamsParamCountry = "CM"
+	ExtractBatchParamsParamCountryCn  ExtractBatchParamsParamCountry = "CN"
+	ExtractBatchParamsParamCountryCo  ExtractBatchParamsParamCountry = "CO"
+	ExtractBatchParamsParamCountryCr  ExtractBatchParamsParamCountry = "CR"
+	ExtractBatchParamsParamCountryCu  ExtractBatchParamsParamCountry = "CU"
+	ExtractBatchParamsParamCountryCv  ExtractBatchParamsParamCountry = "CV"
+	ExtractBatchParamsParamCountryCw  ExtractBatchParamsParamCountry = "CW"
+	ExtractBatchParamsParamCountryCx  ExtractBatchParamsParamCountry = "CX"
+	ExtractBatchParamsParamCountryCy  ExtractBatchParamsParamCountry = "CY"
+	ExtractBatchParamsParamCountryCz  ExtractBatchParamsParamCountry = "CZ"
+	ExtractBatchParamsParamCountryDe  ExtractBatchParamsParamCountry = "DE"
+	ExtractBatchParamsParamCountryDj  ExtractBatchParamsParamCountry = "DJ"
+	ExtractBatchParamsParamCountryDk  ExtractBatchParamsParamCountry = "DK"
+	ExtractBatchParamsParamCountryDm  ExtractBatchParamsParamCountry = "DM"
+	ExtractBatchParamsParamCountryDo  ExtractBatchParamsParamCountry = "DO"
+	ExtractBatchParamsParamCountryDz  ExtractBatchParamsParamCountry = "DZ"
+	ExtractBatchParamsParamCountryEc  ExtractBatchParamsParamCountry = "EC"
+	ExtractBatchParamsParamCountryEe  ExtractBatchParamsParamCountry = "EE"
+	ExtractBatchParamsParamCountryEg  ExtractBatchParamsParamCountry = "EG"
+	ExtractBatchParamsParamCountryEh  ExtractBatchParamsParamCountry = "EH"
+	ExtractBatchParamsParamCountryEr  ExtractBatchParamsParamCountry = "ER"
+	ExtractBatchParamsParamCountryEs  ExtractBatchParamsParamCountry = "ES"
+	ExtractBatchParamsParamCountryEt  ExtractBatchParamsParamCountry = "ET"
+	ExtractBatchParamsParamCountryFi  ExtractBatchParamsParamCountry = "FI"
+	ExtractBatchParamsParamCountryFj  ExtractBatchParamsParamCountry = "FJ"
+	ExtractBatchParamsParamCountryFk  ExtractBatchParamsParamCountry = "FK"
+	ExtractBatchParamsParamCountryFm  ExtractBatchParamsParamCountry = "FM"
+	ExtractBatchParamsParamCountryFo  ExtractBatchParamsParamCountry = "FO"
+	ExtractBatchParamsParamCountryFr  ExtractBatchParamsParamCountry = "FR"
+	ExtractBatchParamsParamCountryGa  ExtractBatchParamsParamCountry = "GA"
+	ExtractBatchParamsParamCountryGB  ExtractBatchParamsParamCountry = "GB"
+	ExtractBatchParamsParamCountryGd  ExtractBatchParamsParamCountry = "GD"
+	ExtractBatchParamsParamCountryGe  ExtractBatchParamsParamCountry = "GE"
+	ExtractBatchParamsParamCountryGf  ExtractBatchParamsParamCountry = "GF"
+	ExtractBatchParamsParamCountryGg  ExtractBatchParamsParamCountry = "GG"
+	ExtractBatchParamsParamCountryGh  ExtractBatchParamsParamCountry = "GH"
+	ExtractBatchParamsParamCountryGi  ExtractBatchParamsParamCountry = "GI"
+	ExtractBatchParamsParamCountryGl  ExtractBatchParamsParamCountry = "GL"
+	ExtractBatchParamsParamCountryGm  ExtractBatchParamsParamCountry = "GM"
+	ExtractBatchParamsParamCountryGn  ExtractBatchParamsParamCountry = "GN"
+	ExtractBatchParamsParamCountryGp  ExtractBatchParamsParamCountry = "GP"
+	ExtractBatchParamsParamCountryGq  ExtractBatchParamsParamCountry = "GQ"
+	ExtractBatchParamsParamCountryGr  ExtractBatchParamsParamCountry = "GR"
+	ExtractBatchParamsParamCountryGs  ExtractBatchParamsParamCountry = "GS"
+	ExtractBatchParamsParamCountryGt  ExtractBatchParamsParamCountry = "GT"
+	ExtractBatchParamsParamCountryGu  ExtractBatchParamsParamCountry = "GU"
+	ExtractBatchParamsParamCountryGw  ExtractBatchParamsParamCountry = "GW"
+	ExtractBatchParamsParamCountryGy  ExtractBatchParamsParamCountry = "GY"
+	ExtractBatchParamsParamCountryHk  ExtractBatchParamsParamCountry = "HK"
+	ExtractBatchParamsParamCountryHm  ExtractBatchParamsParamCountry = "HM"
+	ExtractBatchParamsParamCountryHn  ExtractBatchParamsParamCountry = "HN"
+	ExtractBatchParamsParamCountryHr  ExtractBatchParamsParamCountry = "HR"
+	ExtractBatchParamsParamCountryHt  ExtractBatchParamsParamCountry = "HT"
+	ExtractBatchParamsParamCountryHu  ExtractBatchParamsParamCountry = "HU"
+	ExtractBatchParamsParamCountryID  ExtractBatchParamsParamCountry = "ID"
+	ExtractBatchParamsParamCountryIe  ExtractBatchParamsParamCountry = "IE"
+	ExtractBatchParamsParamCountryIl  ExtractBatchParamsParamCountry = "IL"
+	ExtractBatchParamsParamCountryIm  ExtractBatchParamsParamCountry = "IM"
+	ExtractBatchParamsParamCountryIn  ExtractBatchParamsParamCountry = "IN"
+	ExtractBatchParamsParamCountryIo  ExtractBatchParamsParamCountry = "IO"
+	ExtractBatchParamsParamCountryIq  ExtractBatchParamsParamCountry = "IQ"
+	ExtractBatchParamsParamCountryIr  ExtractBatchParamsParamCountry = "IR"
+	ExtractBatchParamsParamCountryIs  ExtractBatchParamsParamCountry = "IS"
+	ExtractBatchParamsParamCountryIt  ExtractBatchParamsParamCountry = "IT"
+	ExtractBatchParamsParamCountryJe  ExtractBatchParamsParamCountry = "JE"
+	ExtractBatchParamsParamCountryJm  ExtractBatchParamsParamCountry = "JM"
+	ExtractBatchParamsParamCountryJo  ExtractBatchParamsParamCountry = "JO"
+	ExtractBatchParamsParamCountryJp  ExtractBatchParamsParamCountry = "JP"
+	ExtractBatchParamsParamCountryKe  ExtractBatchParamsParamCountry = "KE"
+	ExtractBatchParamsParamCountryKg  ExtractBatchParamsParamCountry = "KG"
+	ExtractBatchParamsParamCountryKh  ExtractBatchParamsParamCountry = "KH"
+	ExtractBatchParamsParamCountryKi  ExtractBatchParamsParamCountry = "KI"
+	ExtractBatchParamsParamCountryKm  ExtractBatchParamsParamCountry = "KM"
+	ExtractBatchParamsParamCountryKn  ExtractBatchParamsParamCountry = "KN"
+	ExtractBatchParamsParamCountryKp  ExtractBatchParamsParamCountry = "KP"
+	ExtractBatchParamsParamCountryKr  ExtractBatchParamsParamCountry = "KR"
+	ExtractBatchParamsParamCountryKw  ExtractBatchParamsParamCountry = "KW"
+	ExtractBatchParamsParamCountryKy  ExtractBatchParamsParamCountry = "KY"
+	ExtractBatchParamsParamCountryKz  ExtractBatchParamsParamCountry = "KZ"
+	ExtractBatchParamsParamCountryLa  ExtractBatchParamsParamCountry = "LA"
+	ExtractBatchParamsParamCountryLb  ExtractBatchParamsParamCountry = "LB"
+	ExtractBatchParamsParamCountryLc  ExtractBatchParamsParamCountry = "LC"
+	ExtractBatchParamsParamCountryLi  ExtractBatchParamsParamCountry = "LI"
+	ExtractBatchParamsParamCountryLk  ExtractBatchParamsParamCountry = "LK"
+	ExtractBatchParamsParamCountryLr  ExtractBatchParamsParamCountry = "LR"
+	ExtractBatchParamsParamCountryLs  ExtractBatchParamsParamCountry = "LS"
+	ExtractBatchParamsParamCountryLt  ExtractBatchParamsParamCountry = "LT"
+	ExtractBatchParamsParamCountryLu  ExtractBatchParamsParamCountry = "LU"
+	ExtractBatchParamsParamCountryLv  ExtractBatchParamsParamCountry = "LV"
+	ExtractBatchParamsParamCountryLy  ExtractBatchParamsParamCountry = "LY"
+	ExtractBatchParamsParamCountryMa  ExtractBatchParamsParamCountry = "MA"
+	ExtractBatchParamsParamCountryMc  ExtractBatchParamsParamCountry = "MC"
+	ExtractBatchParamsParamCountryMd  ExtractBatchParamsParamCountry = "MD"
+	ExtractBatchParamsParamCountryMe  ExtractBatchParamsParamCountry = "ME"
+	ExtractBatchParamsParamCountryMf  ExtractBatchParamsParamCountry = "MF"
+	ExtractBatchParamsParamCountryMg  ExtractBatchParamsParamCountry = "MG"
+	ExtractBatchParamsParamCountryMh  ExtractBatchParamsParamCountry = "MH"
+	ExtractBatchParamsParamCountryMk  ExtractBatchParamsParamCountry = "MK"
+	ExtractBatchParamsParamCountryMl  ExtractBatchParamsParamCountry = "ML"
+	ExtractBatchParamsParamCountryMm  ExtractBatchParamsParamCountry = "MM"
+	ExtractBatchParamsParamCountryMn  ExtractBatchParamsParamCountry = "MN"
+	ExtractBatchParamsParamCountryMo  ExtractBatchParamsParamCountry = "MO"
+	ExtractBatchParamsParamCountryMp  ExtractBatchParamsParamCountry = "MP"
+	ExtractBatchParamsParamCountryMq  ExtractBatchParamsParamCountry = "MQ"
+	ExtractBatchParamsParamCountryMr  ExtractBatchParamsParamCountry = "MR"
+	ExtractBatchParamsParamCountryMs  ExtractBatchParamsParamCountry = "MS"
+	ExtractBatchParamsParamCountryMt  ExtractBatchParamsParamCountry = "MT"
+	ExtractBatchParamsParamCountryMu  ExtractBatchParamsParamCountry = "MU"
+	ExtractBatchParamsParamCountryMv  ExtractBatchParamsParamCountry = "MV"
+	ExtractBatchParamsParamCountryMw  ExtractBatchParamsParamCountry = "MW"
+	ExtractBatchParamsParamCountryMx  ExtractBatchParamsParamCountry = "MX"
+	ExtractBatchParamsParamCountryMy  ExtractBatchParamsParamCountry = "MY"
+	ExtractBatchParamsParamCountryMz  ExtractBatchParamsParamCountry = "MZ"
+	ExtractBatchParamsParamCountryNa  ExtractBatchParamsParamCountry = "NA"
+	ExtractBatchParamsParamCountryNc  ExtractBatchParamsParamCountry = "NC"
+	ExtractBatchParamsParamCountryNe  ExtractBatchParamsParamCountry = "NE"
+	ExtractBatchParamsParamCountryNf  ExtractBatchParamsParamCountry = "NF"
+	ExtractBatchParamsParamCountryNg  ExtractBatchParamsParamCountry = "NG"
+	ExtractBatchParamsParamCountryNi  ExtractBatchParamsParamCountry = "NI"
+	ExtractBatchParamsParamCountryNl  ExtractBatchParamsParamCountry = "NL"
+	ExtractBatchParamsParamCountryNo  ExtractBatchParamsParamCountry = "NO"
+	ExtractBatchParamsParamCountryNp  ExtractBatchParamsParamCountry = "NP"
+	ExtractBatchParamsParamCountryNr  ExtractBatchParamsParamCountry = "NR"
+	ExtractBatchParamsParamCountryNu  ExtractBatchParamsParamCountry = "NU"
+	ExtractBatchParamsParamCountryNz  ExtractBatchParamsParamCountry = "NZ"
+	ExtractBatchParamsParamCountryOm  ExtractBatchParamsParamCountry = "OM"
+	ExtractBatchParamsParamCountryPa  ExtractBatchParamsParamCountry = "PA"
+	ExtractBatchParamsParamCountryPe  ExtractBatchParamsParamCountry = "PE"
+	ExtractBatchParamsParamCountryPf  ExtractBatchParamsParamCountry = "PF"
+	ExtractBatchParamsParamCountryPg  ExtractBatchParamsParamCountry = "PG"
+	ExtractBatchParamsParamCountryPh  ExtractBatchParamsParamCountry = "PH"
+	ExtractBatchParamsParamCountryPk  ExtractBatchParamsParamCountry = "PK"
+	ExtractBatchParamsParamCountryPl  ExtractBatchParamsParamCountry = "PL"
+	ExtractBatchParamsParamCountryPm  ExtractBatchParamsParamCountry = "PM"
+	ExtractBatchParamsParamCountryPn  ExtractBatchParamsParamCountry = "PN"
+	ExtractBatchParamsParamCountryPr  ExtractBatchParamsParamCountry = "PR"
+	ExtractBatchParamsParamCountryPs  ExtractBatchParamsParamCountry = "PS"
+	ExtractBatchParamsParamCountryPt  ExtractBatchParamsParamCountry = "PT"
+	ExtractBatchParamsParamCountryPw  ExtractBatchParamsParamCountry = "PW"
+	ExtractBatchParamsParamCountryPy  ExtractBatchParamsParamCountry = "PY"
+	ExtractBatchParamsParamCountryQa  ExtractBatchParamsParamCountry = "QA"
+	ExtractBatchParamsParamCountryRe  ExtractBatchParamsParamCountry = "RE"
+	ExtractBatchParamsParamCountryRo  ExtractBatchParamsParamCountry = "RO"
+	ExtractBatchParamsParamCountryRs  ExtractBatchParamsParamCountry = "RS"
+	ExtractBatchParamsParamCountryRu  ExtractBatchParamsParamCountry = "RU"
+	ExtractBatchParamsParamCountryRw  ExtractBatchParamsParamCountry = "RW"
+	ExtractBatchParamsParamCountrySa  ExtractBatchParamsParamCountry = "SA"
+	ExtractBatchParamsParamCountrySb  ExtractBatchParamsParamCountry = "SB"
+	ExtractBatchParamsParamCountrySc  ExtractBatchParamsParamCountry = "SC"
+	ExtractBatchParamsParamCountrySd  ExtractBatchParamsParamCountry = "SD"
+	ExtractBatchParamsParamCountrySe  ExtractBatchParamsParamCountry = "SE"
+	ExtractBatchParamsParamCountrySg  ExtractBatchParamsParamCountry = "SG"
+	ExtractBatchParamsParamCountrySh  ExtractBatchParamsParamCountry = "SH"
+	ExtractBatchParamsParamCountrySi  ExtractBatchParamsParamCountry = "SI"
+	ExtractBatchParamsParamCountrySj  ExtractBatchParamsParamCountry = "SJ"
+	ExtractBatchParamsParamCountrySk  ExtractBatchParamsParamCountry = "SK"
+	ExtractBatchParamsParamCountrySl  ExtractBatchParamsParamCountry = "SL"
+	ExtractBatchParamsParamCountrySm  ExtractBatchParamsParamCountry = "SM"
+	ExtractBatchParamsParamCountrySn  ExtractBatchParamsParamCountry = "SN"
+	ExtractBatchParamsParamCountrySo  ExtractBatchParamsParamCountry = "SO"
+	ExtractBatchParamsParamCountrySr  ExtractBatchParamsParamCountry = "SR"
+	ExtractBatchParamsParamCountrySS  ExtractBatchParamsParamCountry = "SS"
+	ExtractBatchParamsParamCountrySt  ExtractBatchParamsParamCountry = "ST"
+	ExtractBatchParamsParamCountrySv  ExtractBatchParamsParamCountry = "SV"
+	ExtractBatchParamsParamCountrySx  ExtractBatchParamsParamCountry = "SX"
+	ExtractBatchParamsParamCountrySy  ExtractBatchParamsParamCountry = "SY"
+	ExtractBatchParamsParamCountrySz  ExtractBatchParamsParamCountry = "SZ"
+	ExtractBatchParamsParamCountryTc  ExtractBatchParamsParamCountry = "TC"
+	ExtractBatchParamsParamCountryTd  ExtractBatchParamsParamCountry = "TD"
+	ExtractBatchParamsParamCountryTf  ExtractBatchParamsParamCountry = "TF"
+	ExtractBatchParamsParamCountryTg  ExtractBatchParamsParamCountry = "TG"
+	ExtractBatchParamsParamCountryTh  ExtractBatchParamsParamCountry = "TH"
+	ExtractBatchParamsParamCountryTj  ExtractBatchParamsParamCountry = "TJ"
+	ExtractBatchParamsParamCountryTk  ExtractBatchParamsParamCountry = "TK"
+	ExtractBatchParamsParamCountryTl  ExtractBatchParamsParamCountry = "TL"
+	ExtractBatchParamsParamCountryTm  ExtractBatchParamsParamCountry = "TM"
+	ExtractBatchParamsParamCountryTn  ExtractBatchParamsParamCountry = "TN"
+	ExtractBatchParamsParamCountryTo  ExtractBatchParamsParamCountry = "TO"
+	ExtractBatchParamsParamCountryTr  ExtractBatchParamsParamCountry = "TR"
+	ExtractBatchParamsParamCountryTt  ExtractBatchParamsParamCountry = "TT"
+	ExtractBatchParamsParamCountryTv  ExtractBatchParamsParamCountry = "TV"
+	ExtractBatchParamsParamCountryTw  ExtractBatchParamsParamCountry = "TW"
+	ExtractBatchParamsParamCountryTz  ExtractBatchParamsParamCountry = "TZ"
+	ExtractBatchParamsParamCountryUa  ExtractBatchParamsParamCountry = "UA"
+	ExtractBatchParamsParamCountryUg  ExtractBatchParamsParamCountry = "UG"
+	ExtractBatchParamsParamCountryUm  ExtractBatchParamsParamCountry = "UM"
+	ExtractBatchParamsParamCountryUs  ExtractBatchParamsParamCountry = "US"
+	ExtractBatchParamsParamCountryUy  ExtractBatchParamsParamCountry = "UY"
+	ExtractBatchParamsParamCountryUz  ExtractBatchParamsParamCountry = "UZ"
+	ExtractBatchParamsParamCountryVa  ExtractBatchParamsParamCountry = "VA"
+	ExtractBatchParamsParamCountryVc  ExtractBatchParamsParamCountry = "VC"
+	ExtractBatchParamsParamCountryVe  ExtractBatchParamsParamCountry = "VE"
+	ExtractBatchParamsParamCountryVg  ExtractBatchParamsParamCountry = "VG"
+	ExtractBatchParamsParamCountryVi  ExtractBatchParamsParamCountry = "VI"
+	ExtractBatchParamsParamCountryVn  ExtractBatchParamsParamCountry = "VN"
+	ExtractBatchParamsParamCountryVu  ExtractBatchParamsParamCountry = "VU"
+	ExtractBatchParamsParamCountryWf  ExtractBatchParamsParamCountry = "WF"
+	ExtractBatchParamsParamCountryWs  ExtractBatchParamsParamCountry = "WS"
+	ExtractBatchParamsParamCountryXk  ExtractBatchParamsParamCountry = "XK"
+	ExtractBatchParamsParamCountryYe  ExtractBatchParamsParamCountry = "YE"
+	ExtractBatchParamsParamCountryYt  ExtractBatchParamsParamCountry = "YT"
+	ExtractBatchParamsParamCountryZa  ExtractBatchParamsParamCountry = "ZA"
+	ExtractBatchParamsParamCountryZm  ExtractBatchParamsParamCountry = "ZM"
+	ExtractBatchParamsParamCountryZw  ExtractBatchParamsParamCountry = "ZW"
+	ExtractBatchParamsParamCountryAll ExtractBatchParamsParamCountry = "ALL"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamHeaderUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamHeaderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractBatchParamsParamHeaderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamHeaderUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Locale for browser language and region settings
+type ExtractBatchParamsParamLocale string
+
+const (
+	ExtractBatchParamsParamLocaleAaDj      ExtractBatchParamsParamLocale = "aa-DJ"
+	ExtractBatchParamsParamLocaleAaEr      ExtractBatchParamsParamLocale = "aa-ER"
+	ExtractBatchParamsParamLocaleAaEt      ExtractBatchParamsParamLocale = "aa-ET"
+	ExtractBatchParamsParamLocaleAf        ExtractBatchParamsParamLocale = "af"
+	ExtractBatchParamsParamLocaleAfNa      ExtractBatchParamsParamLocale = "af-NA"
+	ExtractBatchParamsParamLocaleAfZa      ExtractBatchParamsParamLocale = "af-ZA"
+	ExtractBatchParamsParamLocaleAk        ExtractBatchParamsParamLocale = "ak"
+	ExtractBatchParamsParamLocaleAkGh      ExtractBatchParamsParamLocale = "ak-GH"
+	ExtractBatchParamsParamLocaleAm        ExtractBatchParamsParamLocale = "am"
+	ExtractBatchParamsParamLocaleAmEt      ExtractBatchParamsParamLocale = "am-ET"
+	ExtractBatchParamsParamLocaleAnEs      ExtractBatchParamsParamLocale = "an-ES"
+	ExtractBatchParamsParamLocaleAr        ExtractBatchParamsParamLocale = "ar"
+	ExtractBatchParamsParamLocaleArAe      ExtractBatchParamsParamLocale = "ar-AE"
+	ExtractBatchParamsParamLocaleArBh      ExtractBatchParamsParamLocale = "ar-BH"
+	ExtractBatchParamsParamLocaleArDz      ExtractBatchParamsParamLocale = "ar-DZ"
+	ExtractBatchParamsParamLocaleArEg      ExtractBatchParamsParamLocale = "ar-EG"
+	ExtractBatchParamsParamLocaleArIn      ExtractBatchParamsParamLocale = "ar-IN"
+	ExtractBatchParamsParamLocaleArIq      ExtractBatchParamsParamLocale = "ar-IQ"
+	ExtractBatchParamsParamLocaleArJo      ExtractBatchParamsParamLocale = "ar-JO"
+	ExtractBatchParamsParamLocaleArKw      ExtractBatchParamsParamLocale = "ar-KW"
+	ExtractBatchParamsParamLocaleArLb      ExtractBatchParamsParamLocale = "ar-LB"
+	ExtractBatchParamsParamLocaleArLy      ExtractBatchParamsParamLocale = "ar-LY"
+	ExtractBatchParamsParamLocaleArMa      ExtractBatchParamsParamLocale = "ar-MA"
+	ExtractBatchParamsParamLocaleArOm      ExtractBatchParamsParamLocale = "ar-OM"
+	ExtractBatchParamsParamLocaleArQa      ExtractBatchParamsParamLocale = "ar-QA"
+	ExtractBatchParamsParamLocaleArSa      ExtractBatchParamsParamLocale = "ar-SA"
+	ExtractBatchParamsParamLocaleArSd      ExtractBatchParamsParamLocale = "ar-SD"
+	ExtractBatchParamsParamLocaleArSy      ExtractBatchParamsParamLocale = "ar-SY"
+	ExtractBatchParamsParamLocaleArTn      ExtractBatchParamsParamLocale = "ar-TN"
+	ExtractBatchParamsParamLocaleArYe      ExtractBatchParamsParamLocale = "ar-YE"
+	ExtractBatchParamsParamLocaleAs        ExtractBatchParamsParamLocale = "as"
+	ExtractBatchParamsParamLocaleAsIn      ExtractBatchParamsParamLocale = "as-IN"
+	ExtractBatchParamsParamLocaleAsa       ExtractBatchParamsParamLocale = "asa"
+	ExtractBatchParamsParamLocaleAsaTz     ExtractBatchParamsParamLocale = "asa-TZ"
+	ExtractBatchParamsParamLocaleAstEs     ExtractBatchParamsParamLocale = "ast-ES"
+	ExtractBatchParamsParamLocaleAz        ExtractBatchParamsParamLocale = "az"
+	ExtractBatchParamsParamLocaleAzAz      ExtractBatchParamsParamLocale = "az-AZ"
+	ExtractBatchParamsParamLocaleAzCyrl    ExtractBatchParamsParamLocale = "az-Cyrl"
+	ExtractBatchParamsParamLocaleAzCyrlAz  ExtractBatchParamsParamLocale = "az-Cyrl-AZ"
+	ExtractBatchParamsParamLocaleAzLatn    ExtractBatchParamsParamLocale = "az-Latn"
+	ExtractBatchParamsParamLocaleAzLatnAz  ExtractBatchParamsParamLocale = "az-Latn-AZ"
+	ExtractBatchParamsParamLocaleBe        ExtractBatchParamsParamLocale = "be"
+	ExtractBatchParamsParamLocaleBeBy      ExtractBatchParamsParamLocale = "be-BY"
+	ExtractBatchParamsParamLocaleBem       ExtractBatchParamsParamLocale = "bem"
+	ExtractBatchParamsParamLocaleBemZm     ExtractBatchParamsParamLocale = "bem-ZM"
+	ExtractBatchParamsParamLocaleBerDz     ExtractBatchParamsParamLocale = "ber-DZ"
+	ExtractBatchParamsParamLocaleBerMa     ExtractBatchParamsParamLocale = "ber-MA"
+	ExtractBatchParamsParamLocaleBez       ExtractBatchParamsParamLocale = "bez"
+	ExtractBatchParamsParamLocaleBezTz     ExtractBatchParamsParamLocale = "bez-TZ"
+	ExtractBatchParamsParamLocaleBg        ExtractBatchParamsParamLocale = "bg"
+	ExtractBatchParamsParamLocaleBgBg      ExtractBatchParamsParamLocale = "bg-BG"
+	ExtractBatchParamsParamLocaleBhoIn     ExtractBatchParamsParamLocale = "bho-IN"
+	ExtractBatchParamsParamLocaleBm        ExtractBatchParamsParamLocale = "bm"
+	ExtractBatchParamsParamLocaleBmMl      ExtractBatchParamsParamLocale = "bm-ML"
+	ExtractBatchParamsParamLocaleBn        ExtractBatchParamsParamLocale = "bn"
+	ExtractBatchParamsParamLocaleBnBd      ExtractBatchParamsParamLocale = "bn-BD"
+	ExtractBatchParamsParamLocaleBnIn      ExtractBatchParamsParamLocale = "bn-IN"
+	ExtractBatchParamsParamLocaleBo        ExtractBatchParamsParamLocale = "bo"
+	ExtractBatchParamsParamLocaleBoCn      ExtractBatchParamsParamLocale = "bo-CN"
+	ExtractBatchParamsParamLocaleBoIn      ExtractBatchParamsParamLocale = "bo-IN"
+	ExtractBatchParamsParamLocaleBrFr      ExtractBatchParamsParamLocale = "br-FR"
+	ExtractBatchParamsParamLocaleBrxIn     ExtractBatchParamsParamLocale = "brx-IN"
+	ExtractBatchParamsParamLocaleBs        ExtractBatchParamsParamLocale = "bs"
+	ExtractBatchParamsParamLocaleBsBa      ExtractBatchParamsParamLocale = "bs-BA"
+	ExtractBatchParamsParamLocaleBynEr     ExtractBatchParamsParamLocale = "byn-ER"
+	ExtractBatchParamsParamLocaleCa        ExtractBatchParamsParamLocale = "ca"
+	ExtractBatchParamsParamLocaleCaAd      ExtractBatchParamsParamLocale = "ca-AD"
+	ExtractBatchParamsParamLocaleCaEs      ExtractBatchParamsParamLocale = "ca-ES"
+	ExtractBatchParamsParamLocaleCaFr      ExtractBatchParamsParamLocale = "ca-FR"
+	ExtractBatchParamsParamLocaleCaIt      ExtractBatchParamsParamLocale = "ca-IT"
+	ExtractBatchParamsParamLocaleCgg       ExtractBatchParamsParamLocale = "cgg"
+	ExtractBatchParamsParamLocaleCggUg     ExtractBatchParamsParamLocale = "cgg-UG"
+	ExtractBatchParamsParamLocaleChr       ExtractBatchParamsParamLocale = "chr"
+	ExtractBatchParamsParamLocaleChrUs     ExtractBatchParamsParamLocale = "chr-US"
+	ExtractBatchParamsParamLocaleCrhUa     ExtractBatchParamsParamLocale = "crh-UA"
+	ExtractBatchParamsParamLocaleCs        ExtractBatchParamsParamLocale = "cs"
+	ExtractBatchParamsParamLocaleCsCz      ExtractBatchParamsParamLocale = "cs-CZ"
+	ExtractBatchParamsParamLocaleCsbPl     ExtractBatchParamsParamLocale = "csb-PL"
+	ExtractBatchParamsParamLocaleCvRu      ExtractBatchParamsParamLocale = "cv-RU"
+	ExtractBatchParamsParamLocaleCy        ExtractBatchParamsParamLocale = "cy"
+	ExtractBatchParamsParamLocaleCyGB      ExtractBatchParamsParamLocale = "cy-GB"
+	ExtractBatchParamsParamLocaleDa        ExtractBatchParamsParamLocale = "da"
+	ExtractBatchParamsParamLocaleDaDk      ExtractBatchParamsParamLocale = "da-DK"
+	ExtractBatchParamsParamLocaleDav       ExtractBatchParamsParamLocale = "dav"
+	ExtractBatchParamsParamLocaleDavKe     ExtractBatchParamsParamLocale = "dav-KE"
+	ExtractBatchParamsParamLocaleDe        ExtractBatchParamsParamLocale = "de"
+	ExtractBatchParamsParamLocaleDeAt      ExtractBatchParamsParamLocale = "de-AT"
+	ExtractBatchParamsParamLocaleDeBe      ExtractBatchParamsParamLocale = "de-BE"
+	ExtractBatchParamsParamLocaleDeCh      ExtractBatchParamsParamLocale = "de-CH"
+	ExtractBatchParamsParamLocaleDeDe      ExtractBatchParamsParamLocale = "de-DE"
+	ExtractBatchParamsParamLocaleDeLi      ExtractBatchParamsParamLocale = "de-LI"
+	ExtractBatchParamsParamLocaleDeLu      ExtractBatchParamsParamLocale = "de-LU"
+	ExtractBatchParamsParamLocaleDvMv      ExtractBatchParamsParamLocale = "dv-MV"
+	ExtractBatchParamsParamLocaleDzBt      ExtractBatchParamsParamLocale = "dz-BT"
+	ExtractBatchParamsParamLocaleEbu       ExtractBatchParamsParamLocale = "ebu"
+	ExtractBatchParamsParamLocaleEbuKe     ExtractBatchParamsParamLocale = "ebu-KE"
+	ExtractBatchParamsParamLocaleEe        ExtractBatchParamsParamLocale = "ee"
+	ExtractBatchParamsParamLocaleEeGh      ExtractBatchParamsParamLocale = "ee-GH"
+	ExtractBatchParamsParamLocaleEeTg      ExtractBatchParamsParamLocale = "ee-TG"
+	ExtractBatchParamsParamLocaleEl        ExtractBatchParamsParamLocale = "el"
+	ExtractBatchParamsParamLocaleElCy      ExtractBatchParamsParamLocale = "el-CY"
+	ExtractBatchParamsParamLocaleElGr      ExtractBatchParamsParamLocale = "el-GR"
+	ExtractBatchParamsParamLocaleEn        ExtractBatchParamsParamLocale = "en"
+	ExtractBatchParamsParamLocaleEnAg      ExtractBatchParamsParamLocale = "en-AG"
+	ExtractBatchParamsParamLocaleEnAs      ExtractBatchParamsParamLocale = "en-AS"
+	ExtractBatchParamsParamLocaleEnAu      ExtractBatchParamsParamLocale = "en-AU"
+	ExtractBatchParamsParamLocaleEnBe      ExtractBatchParamsParamLocale = "en-BE"
+	ExtractBatchParamsParamLocaleEnBw      ExtractBatchParamsParamLocale = "en-BW"
+	ExtractBatchParamsParamLocaleEnBz      ExtractBatchParamsParamLocale = "en-BZ"
+	ExtractBatchParamsParamLocaleEnCa      ExtractBatchParamsParamLocale = "en-CA"
+	ExtractBatchParamsParamLocaleEnDk      ExtractBatchParamsParamLocale = "en-DK"
+	ExtractBatchParamsParamLocaleEnGB      ExtractBatchParamsParamLocale = "en-GB"
+	ExtractBatchParamsParamLocaleEnGu      ExtractBatchParamsParamLocale = "en-GU"
+	ExtractBatchParamsParamLocaleEnHk      ExtractBatchParamsParamLocale = "en-HK"
+	ExtractBatchParamsParamLocaleEnIe      ExtractBatchParamsParamLocale = "en-IE"
+	ExtractBatchParamsParamLocaleEnIn      ExtractBatchParamsParamLocale = "en-IN"
+	ExtractBatchParamsParamLocaleEnJm      ExtractBatchParamsParamLocale = "en-JM"
+	ExtractBatchParamsParamLocaleEnMh      ExtractBatchParamsParamLocale = "en-MH"
+	ExtractBatchParamsParamLocaleEnMp      ExtractBatchParamsParamLocale = "en-MP"
+	ExtractBatchParamsParamLocaleEnMt      ExtractBatchParamsParamLocale = "en-MT"
+	ExtractBatchParamsParamLocaleEnMu      ExtractBatchParamsParamLocale = "en-MU"
+	ExtractBatchParamsParamLocaleEnNa      ExtractBatchParamsParamLocale = "en-NA"
+	ExtractBatchParamsParamLocaleEnNg      ExtractBatchParamsParamLocale = "en-NG"
+	ExtractBatchParamsParamLocaleEnNz      ExtractBatchParamsParamLocale = "en-NZ"
+	ExtractBatchParamsParamLocaleEnPh      ExtractBatchParamsParamLocale = "en-PH"
+	ExtractBatchParamsParamLocaleEnPk      ExtractBatchParamsParamLocale = "en-PK"
+	ExtractBatchParamsParamLocaleEnSg      ExtractBatchParamsParamLocale = "en-SG"
+	ExtractBatchParamsParamLocaleEnTt      ExtractBatchParamsParamLocale = "en-TT"
+	ExtractBatchParamsParamLocaleEnUm      ExtractBatchParamsParamLocale = "en-UM"
+	ExtractBatchParamsParamLocaleEnUs      ExtractBatchParamsParamLocale = "en-US"
+	ExtractBatchParamsParamLocaleEnVi      ExtractBatchParamsParamLocale = "en-VI"
+	ExtractBatchParamsParamLocaleEnZa      ExtractBatchParamsParamLocale = "en-ZA"
+	ExtractBatchParamsParamLocaleEnZm      ExtractBatchParamsParamLocale = "en-ZM"
+	ExtractBatchParamsParamLocaleEnZw      ExtractBatchParamsParamLocale = "en-ZW"
+	ExtractBatchParamsParamLocaleEo        ExtractBatchParamsParamLocale = "eo"
+	ExtractBatchParamsParamLocaleEs        ExtractBatchParamsParamLocale = "es"
+	ExtractBatchParamsParamLocaleEs419     ExtractBatchParamsParamLocale = "es-419"
+	ExtractBatchParamsParamLocaleEsAr      ExtractBatchParamsParamLocale = "es-AR"
+	ExtractBatchParamsParamLocaleEsBo      ExtractBatchParamsParamLocale = "es-BO"
+	ExtractBatchParamsParamLocaleEsCl      ExtractBatchParamsParamLocale = "es-CL"
+	ExtractBatchParamsParamLocaleEsCo      ExtractBatchParamsParamLocale = "es-CO"
+	ExtractBatchParamsParamLocaleEsCr      ExtractBatchParamsParamLocale = "es-CR"
+	ExtractBatchParamsParamLocaleEsCu      ExtractBatchParamsParamLocale = "es-CU"
+	ExtractBatchParamsParamLocaleEsDo      ExtractBatchParamsParamLocale = "es-DO"
+	ExtractBatchParamsParamLocaleEsEc      ExtractBatchParamsParamLocale = "es-EC"
+	ExtractBatchParamsParamLocaleEsEs      ExtractBatchParamsParamLocale = "es-ES"
+	ExtractBatchParamsParamLocaleEsGq      ExtractBatchParamsParamLocale = "es-GQ"
+	ExtractBatchParamsParamLocaleEsGt      ExtractBatchParamsParamLocale = "es-GT"
+	ExtractBatchParamsParamLocaleEsHn      ExtractBatchParamsParamLocale = "es-HN"
+	ExtractBatchParamsParamLocaleEsMx      ExtractBatchParamsParamLocale = "es-MX"
+	ExtractBatchParamsParamLocaleEsNi      ExtractBatchParamsParamLocale = "es-NI"
+	ExtractBatchParamsParamLocaleEsPa      ExtractBatchParamsParamLocale = "es-PA"
+	ExtractBatchParamsParamLocaleEsPe      ExtractBatchParamsParamLocale = "es-PE"
+	ExtractBatchParamsParamLocaleEsPr      ExtractBatchParamsParamLocale = "es-PR"
+	ExtractBatchParamsParamLocaleEsPy      ExtractBatchParamsParamLocale = "es-PY"
+	ExtractBatchParamsParamLocaleEsSv      ExtractBatchParamsParamLocale = "es-SV"
+	ExtractBatchParamsParamLocaleEsUs      ExtractBatchParamsParamLocale = "es-US"
+	ExtractBatchParamsParamLocaleEsUy      ExtractBatchParamsParamLocale = "es-UY"
+	ExtractBatchParamsParamLocaleEsVe      ExtractBatchParamsParamLocale = "es-VE"
+	ExtractBatchParamsParamLocaleEt        ExtractBatchParamsParamLocale = "et"
+	ExtractBatchParamsParamLocaleEtEe      ExtractBatchParamsParamLocale = "et-EE"
+	ExtractBatchParamsParamLocaleEu        ExtractBatchParamsParamLocale = "eu"
+	ExtractBatchParamsParamLocaleEuEs      ExtractBatchParamsParamLocale = "eu-ES"
+	ExtractBatchParamsParamLocaleFa        ExtractBatchParamsParamLocale = "fa"
+	ExtractBatchParamsParamLocaleFaAf      ExtractBatchParamsParamLocale = "fa-AF"
+	ExtractBatchParamsParamLocaleFaIr      ExtractBatchParamsParamLocale = "fa-IR"
+	ExtractBatchParamsParamLocaleFf        ExtractBatchParamsParamLocale = "ff"
+	ExtractBatchParamsParamLocaleFfSn      ExtractBatchParamsParamLocale = "ff-SN"
+	ExtractBatchParamsParamLocaleFi        ExtractBatchParamsParamLocale = "fi"
+	ExtractBatchParamsParamLocaleFiFi      ExtractBatchParamsParamLocale = "fi-FI"
+	ExtractBatchParamsParamLocaleFil       ExtractBatchParamsParamLocale = "fil"
+	ExtractBatchParamsParamLocaleFilPh     ExtractBatchParamsParamLocale = "fil-PH"
+	ExtractBatchParamsParamLocaleFo        ExtractBatchParamsParamLocale = "fo"
+	ExtractBatchParamsParamLocaleFoFo      ExtractBatchParamsParamLocale = "fo-FO"
+	ExtractBatchParamsParamLocaleFr        ExtractBatchParamsParamLocale = "fr"
+	ExtractBatchParamsParamLocaleFrBe      ExtractBatchParamsParamLocale = "fr-BE"
+	ExtractBatchParamsParamLocaleFrBf      ExtractBatchParamsParamLocale = "fr-BF"
+	ExtractBatchParamsParamLocaleFrBi      ExtractBatchParamsParamLocale = "fr-BI"
+	ExtractBatchParamsParamLocaleFrBj      ExtractBatchParamsParamLocale = "fr-BJ"
+	ExtractBatchParamsParamLocaleFrBl      ExtractBatchParamsParamLocale = "fr-BL"
+	ExtractBatchParamsParamLocaleFrCa      ExtractBatchParamsParamLocale = "fr-CA"
+	ExtractBatchParamsParamLocaleFrCd      ExtractBatchParamsParamLocale = "fr-CD"
+	ExtractBatchParamsParamLocaleFrCf      ExtractBatchParamsParamLocale = "fr-CF"
+	ExtractBatchParamsParamLocaleFrCg      ExtractBatchParamsParamLocale = "fr-CG"
+	ExtractBatchParamsParamLocaleFrCh      ExtractBatchParamsParamLocale = "fr-CH"
+	ExtractBatchParamsParamLocaleFrCi      ExtractBatchParamsParamLocale = "fr-CI"
+	ExtractBatchParamsParamLocaleFrCm      ExtractBatchParamsParamLocale = "fr-CM"
+	ExtractBatchParamsParamLocaleFrDj      ExtractBatchParamsParamLocale = "fr-DJ"
+	ExtractBatchParamsParamLocaleFrFr      ExtractBatchParamsParamLocale = "fr-FR"
+	ExtractBatchParamsParamLocaleFrGa      ExtractBatchParamsParamLocale = "fr-GA"
+	ExtractBatchParamsParamLocaleFrGn      ExtractBatchParamsParamLocale = "fr-GN"
+	ExtractBatchParamsParamLocaleFrGp      ExtractBatchParamsParamLocale = "fr-GP"
+	ExtractBatchParamsParamLocaleFrGq      ExtractBatchParamsParamLocale = "fr-GQ"
+	ExtractBatchParamsParamLocaleFrKm      ExtractBatchParamsParamLocale = "fr-KM"
+	ExtractBatchParamsParamLocaleFrLu      ExtractBatchParamsParamLocale = "fr-LU"
+	ExtractBatchParamsParamLocaleFrMc      ExtractBatchParamsParamLocale = "fr-MC"
+	ExtractBatchParamsParamLocaleFrMf      ExtractBatchParamsParamLocale = "fr-MF"
+	ExtractBatchParamsParamLocaleFrMg      ExtractBatchParamsParamLocale = "fr-MG"
+	ExtractBatchParamsParamLocaleFrMl      ExtractBatchParamsParamLocale = "fr-ML"
+	ExtractBatchParamsParamLocaleFrMq      ExtractBatchParamsParamLocale = "fr-MQ"
+	ExtractBatchParamsParamLocaleFrNe      ExtractBatchParamsParamLocale = "fr-NE"
+	ExtractBatchParamsParamLocaleFrRe      ExtractBatchParamsParamLocale = "fr-RE"
+	ExtractBatchParamsParamLocaleFrRw      ExtractBatchParamsParamLocale = "fr-RW"
+	ExtractBatchParamsParamLocaleFrSn      ExtractBatchParamsParamLocale = "fr-SN"
+	ExtractBatchParamsParamLocaleFrTd      ExtractBatchParamsParamLocale = "fr-TD"
+	ExtractBatchParamsParamLocaleFrTg      ExtractBatchParamsParamLocale = "fr-TG"
+	ExtractBatchParamsParamLocaleFurIt     ExtractBatchParamsParamLocale = "fur-IT"
+	ExtractBatchParamsParamLocaleFyDe      ExtractBatchParamsParamLocale = "fy-DE"
+	ExtractBatchParamsParamLocaleFyNl      ExtractBatchParamsParamLocale = "fy-NL"
+	ExtractBatchParamsParamLocaleGa        ExtractBatchParamsParamLocale = "ga"
+	ExtractBatchParamsParamLocaleGaIe      ExtractBatchParamsParamLocale = "ga-IE"
+	ExtractBatchParamsParamLocaleGdGB      ExtractBatchParamsParamLocale = "gd-GB"
+	ExtractBatchParamsParamLocaleGezEr     ExtractBatchParamsParamLocale = "gez-ER"
+	ExtractBatchParamsParamLocaleGezEt     ExtractBatchParamsParamLocale = "gez-ET"
+	ExtractBatchParamsParamLocaleGl        ExtractBatchParamsParamLocale = "gl"
+	ExtractBatchParamsParamLocaleGlEs      ExtractBatchParamsParamLocale = "gl-ES"
+	ExtractBatchParamsParamLocaleGsw       ExtractBatchParamsParamLocale = "gsw"
+	ExtractBatchParamsParamLocaleGswCh     ExtractBatchParamsParamLocale = "gsw-CH"
+	ExtractBatchParamsParamLocaleGu        ExtractBatchParamsParamLocale = "gu"
+	ExtractBatchParamsParamLocaleGuIn      ExtractBatchParamsParamLocale = "gu-IN"
+	ExtractBatchParamsParamLocaleGuz       ExtractBatchParamsParamLocale = "guz"
+	ExtractBatchParamsParamLocaleGuzKe     ExtractBatchParamsParamLocale = "guz-KE"
+	ExtractBatchParamsParamLocaleGv        ExtractBatchParamsParamLocale = "gv"
+	ExtractBatchParamsParamLocaleGvGB      ExtractBatchParamsParamLocale = "gv-GB"
+	ExtractBatchParamsParamLocaleHa        ExtractBatchParamsParamLocale = "ha"
+	ExtractBatchParamsParamLocaleHaLatn    ExtractBatchParamsParamLocale = "ha-Latn"
+	ExtractBatchParamsParamLocaleHaLatnGh  ExtractBatchParamsParamLocale = "ha-Latn-GH"
+	ExtractBatchParamsParamLocaleHaLatnNe  ExtractBatchParamsParamLocale = "ha-Latn-NE"
+	ExtractBatchParamsParamLocaleHaLatnNg  ExtractBatchParamsParamLocale = "ha-Latn-NG"
+	ExtractBatchParamsParamLocaleHaNg      ExtractBatchParamsParamLocale = "ha-NG"
+	ExtractBatchParamsParamLocaleHaw       ExtractBatchParamsParamLocale = "haw"
+	ExtractBatchParamsParamLocaleHawUs     ExtractBatchParamsParamLocale = "haw-US"
+	ExtractBatchParamsParamLocaleHe        ExtractBatchParamsParamLocale = "he"
+	ExtractBatchParamsParamLocaleHeIl      ExtractBatchParamsParamLocale = "he-IL"
+	ExtractBatchParamsParamLocaleHi        ExtractBatchParamsParamLocale = "hi"
+	ExtractBatchParamsParamLocaleHiIn      ExtractBatchParamsParamLocale = "hi-IN"
+	ExtractBatchParamsParamLocaleHneIn     ExtractBatchParamsParamLocale = "hne-IN"
+	ExtractBatchParamsParamLocaleHr        ExtractBatchParamsParamLocale = "hr"
+	ExtractBatchParamsParamLocaleHrHr      ExtractBatchParamsParamLocale = "hr-HR"
+	ExtractBatchParamsParamLocaleHsbDe     ExtractBatchParamsParamLocale = "hsb-DE"
+	ExtractBatchParamsParamLocaleHtHt      ExtractBatchParamsParamLocale = "ht-HT"
+	ExtractBatchParamsParamLocaleHu        ExtractBatchParamsParamLocale = "hu"
+	ExtractBatchParamsParamLocaleHuHu      ExtractBatchParamsParamLocale = "hu-HU"
+	ExtractBatchParamsParamLocaleHy        ExtractBatchParamsParamLocale = "hy"
+	ExtractBatchParamsParamLocaleHyAm      ExtractBatchParamsParamLocale = "hy-AM"
+	ExtractBatchParamsParamLocaleID        ExtractBatchParamsParamLocale = "id"
+	ExtractBatchParamsParamLocaleIDID      ExtractBatchParamsParamLocale = "id-ID"
+	ExtractBatchParamsParamLocaleIg        ExtractBatchParamsParamLocale = "ig"
+	ExtractBatchParamsParamLocaleIgNg      ExtractBatchParamsParamLocale = "ig-NG"
+	ExtractBatchParamsParamLocaleIi        ExtractBatchParamsParamLocale = "ii"
+	ExtractBatchParamsParamLocaleIiCn      ExtractBatchParamsParamLocale = "ii-CN"
+	ExtractBatchParamsParamLocaleIkCa      ExtractBatchParamsParamLocale = "ik-CA"
+	ExtractBatchParamsParamLocaleIs        ExtractBatchParamsParamLocale = "is"
+	ExtractBatchParamsParamLocaleIsIs      ExtractBatchParamsParamLocale = "is-IS"
+	ExtractBatchParamsParamLocaleIt        ExtractBatchParamsParamLocale = "it"
+	ExtractBatchParamsParamLocaleItCh      ExtractBatchParamsParamLocale = "it-CH"
+	ExtractBatchParamsParamLocaleItIt      ExtractBatchParamsParamLocale = "it-IT"
+	ExtractBatchParamsParamLocaleIuCa      ExtractBatchParamsParamLocale = "iu-CA"
+	ExtractBatchParamsParamLocaleIwIl      ExtractBatchParamsParamLocale = "iw-IL"
+	ExtractBatchParamsParamLocaleJa        ExtractBatchParamsParamLocale = "ja"
+	ExtractBatchParamsParamLocaleJaJp      ExtractBatchParamsParamLocale = "ja-JP"
+	ExtractBatchParamsParamLocaleJmc       ExtractBatchParamsParamLocale = "jmc"
+	ExtractBatchParamsParamLocaleJmcTz     ExtractBatchParamsParamLocale = "jmc-TZ"
+	ExtractBatchParamsParamLocaleKa        ExtractBatchParamsParamLocale = "ka"
+	ExtractBatchParamsParamLocaleKaGe      ExtractBatchParamsParamLocale = "ka-GE"
+	ExtractBatchParamsParamLocaleKab       ExtractBatchParamsParamLocale = "kab"
+	ExtractBatchParamsParamLocaleKabDz     ExtractBatchParamsParamLocale = "kab-DZ"
+	ExtractBatchParamsParamLocaleKam       ExtractBatchParamsParamLocale = "kam"
+	ExtractBatchParamsParamLocaleKamKe     ExtractBatchParamsParamLocale = "kam-KE"
+	ExtractBatchParamsParamLocaleKde       ExtractBatchParamsParamLocale = "kde"
+	ExtractBatchParamsParamLocaleKdeTz     ExtractBatchParamsParamLocale = "kde-TZ"
+	ExtractBatchParamsParamLocaleKea       ExtractBatchParamsParamLocale = "kea"
+	ExtractBatchParamsParamLocaleKeaCv     ExtractBatchParamsParamLocale = "kea-CV"
+	ExtractBatchParamsParamLocaleKhq       ExtractBatchParamsParamLocale = "khq"
+	ExtractBatchParamsParamLocaleKhqMl     ExtractBatchParamsParamLocale = "khq-ML"
+	ExtractBatchParamsParamLocaleKi        ExtractBatchParamsParamLocale = "ki"
+	ExtractBatchParamsParamLocaleKiKe      ExtractBatchParamsParamLocale = "ki-KE"
+	ExtractBatchParamsParamLocaleKk        ExtractBatchParamsParamLocale = "kk"
+	ExtractBatchParamsParamLocaleKkCyrl    ExtractBatchParamsParamLocale = "kk-Cyrl"
+	ExtractBatchParamsParamLocaleKkCyrlKz  ExtractBatchParamsParamLocale = "kk-Cyrl-KZ"
+	ExtractBatchParamsParamLocaleKkKz      ExtractBatchParamsParamLocale = "kk-KZ"
+	ExtractBatchParamsParamLocaleKl        ExtractBatchParamsParamLocale = "kl"
+	ExtractBatchParamsParamLocaleKlGl      ExtractBatchParamsParamLocale = "kl-GL"
+	ExtractBatchParamsParamLocaleKln       ExtractBatchParamsParamLocale = "kln"
+	ExtractBatchParamsParamLocaleKlnKe     ExtractBatchParamsParamLocale = "kln-KE"
+	ExtractBatchParamsParamLocaleKm        ExtractBatchParamsParamLocale = "km"
+	ExtractBatchParamsParamLocaleKmKh      ExtractBatchParamsParamLocale = "km-KH"
+	ExtractBatchParamsParamLocaleKn        ExtractBatchParamsParamLocale = "kn"
+	ExtractBatchParamsParamLocaleKnIn      ExtractBatchParamsParamLocale = "kn-IN"
+	ExtractBatchParamsParamLocaleKo        ExtractBatchParamsParamLocale = "ko"
+	ExtractBatchParamsParamLocaleKoKr      ExtractBatchParamsParamLocale = "ko-KR"
+	ExtractBatchParamsParamLocaleKok       ExtractBatchParamsParamLocale = "kok"
+	ExtractBatchParamsParamLocaleKokIn     ExtractBatchParamsParamLocale = "kok-IN"
+	ExtractBatchParamsParamLocaleKsIn      ExtractBatchParamsParamLocale = "ks-IN"
+	ExtractBatchParamsParamLocaleKuTr      ExtractBatchParamsParamLocale = "ku-TR"
+	ExtractBatchParamsParamLocaleKw        ExtractBatchParamsParamLocale = "kw"
+	ExtractBatchParamsParamLocaleKwGB      ExtractBatchParamsParamLocale = "kw-GB"
+	ExtractBatchParamsParamLocaleKyKg      ExtractBatchParamsParamLocale = "ky-KG"
+	ExtractBatchParamsParamLocaleLag       ExtractBatchParamsParamLocale = "lag"
+	ExtractBatchParamsParamLocaleLagTz     ExtractBatchParamsParamLocale = "lag-TZ"
+	ExtractBatchParamsParamLocaleLbLu      ExtractBatchParamsParamLocale = "lb-LU"
+	ExtractBatchParamsParamLocaleLg        ExtractBatchParamsParamLocale = "lg"
+	ExtractBatchParamsParamLocaleLgUg      ExtractBatchParamsParamLocale = "lg-UG"
+	ExtractBatchParamsParamLocaleLiBe      ExtractBatchParamsParamLocale = "li-BE"
+	ExtractBatchParamsParamLocaleLiNl      ExtractBatchParamsParamLocale = "li-NL"
+	ExtractBatchParamsParamLocaleLijIt     ExtractBatchParamsParamLocale = "lij-IT"
+	ExtractBatchParamsParamLocaleLoLa      ExtractBatchParamsParamLocale = "lo-LA"
+	ExtractBatchParamsParamLocaleLt        ExtractBatchParamsParamLocale = "lt"
+	ExtractBatchParamsParamLocaleLtLt      ExtractBatchParamsParamLocale = "lt-LT"
+	ExtractBatchParamsParamLocaleLuo       ExtractBatchParamsParamLocale = "luo"
+	ExtractBatchParamsParamLocaleLuoKe     ExtractBatchParamsParamLocale = "luo-KE"
+	ExtractBatchParamsParamLocaleLuy       ExtractBatchParamsParamLocale = "luy"
+	ExtractBatchParamsParamLocaleLuyKe     ExtractBatchParamsParamLocale = "luy-KE"
+	ExtractBatchParamsParamLocaleLv        ExtractBatchParamsParamLocale = "lv"
+	ExtractBatchParamsParamLocaleLvLv      ExtractBatchParamsParamLocale = "lv-LV"
+	ExtractBatchParamsParamLocaleMagIn     ExtractBatchParamsParamLocale = "mag-IN"
+	ExtractBatchParamsParamLocaleMaiIn     ExtractBatchParamsParamLocale = "mai-IN"
+	ExtractBatchParamsParamLocaleMas       ExtractBatchParamsParamLocale = "mas"
+	ExtractBatchParamsParamLocaleMasKe     ExtractBatchParamsParamLocale = "mas-KE"
+	ExtractBatchParamsParamLocaleMasTz     ExtractBatchParamsParamLocale = "mas-TZ"
+	ExtractBatchParamsParamLocaleMer       ExtractBatchParamsParamLocale = "mer"
+	ExtractBatchParamsParamLocaleMerKe     ExtractBatchParamsParamLocale = "mer-KE"
+	ExtractBatchParamsParamLocaleMfe       ExtractBatchParamsParamLocale = "mfe"
+	ExtractBatchParamsParamLocaleMfeMu     ExtractBatchParamsParamLocale = "mfe-MU"
+	ExtractBatchParamsParamLocaleMg        ExtractBatchParamsParamLocale = "mg"
+	ExtractBatchParamsParamLocaleMgMg      ExtractBatchParamsParamLocale = "mg-MG"
+	ExtractBatchParamsParamLocaleMhrRu     ExtractBatchParamsParamLocale = "mhr-RU"
+	ExtractBatchParamsParamLocaleMiNz      ExtractBatchParamsParamLocale = "mi-NZ"
+	ExtractBatchParamsParamLocaleMk        ExtractBatchParamsParamLocale = "mk"
+	ExtractBatchParamsParamLocaleMkMk      ExtractBatchParamsParamLocale = "mk-MK"
+	ExtractBatchParamsParamLocaleMl        ExtractBatchParamsParamLocale = "ml"
+	ExtractBatchParamsParamLocaleMlIn      ExtractBatchParamsParamLocale = "ml-IN"
+	ExtractBatchParamsParamLocaleMnMn      ExtractBatchParamsParamLocale = "mn-MN"
+	ExtractBatchParamsParamLocaleMr        ExtractBatchParamsParamLocale = "mr"
+	ExtractBatchParamsParamLocaleMrIn      ExtractBatchParamsParamLocale = "mr-IN"
+	ExtractBatchParamsParamLocaleMs        ExtractBatchParamsParamLocale = "ms"
+	ExtractBatchParamsParamLocaleMsBn      ExtractBatchParamsParamLocale = "ms-BN"
+	ExtractBatchParamsParamLocaleMsMy      ExtractBatchParamsParamLocale = "ms-MY"
+	ExtractBatchParamsParamLocaleMt        ExtractBatchParamsParamLocale = "mt"
+	ExtractBatchParamsParamLocaleMtMt      ExtractBatchParamsParamLocale = "mt-MT"
+	ExtractBatchParamsParamLocaleMy        ExtractBatchParamsParamLocale = "my"
+	ExtractBatchParamsParamLocaleMyMm      ExtractBatchParamsParamLocale = "my-MM"
+	ExtractBatchParamsParamLocaleNanTw     ExtractBatchParamsParamLocale = "nan-TW"
+	ExtractBatchParamsParamLocaleNaq       ExtractBatchParamsParamLocale = "naq"
+	ExtractBatchParamsParamLocaleNaqNa     ExtractBatchParamsParamLocale = "naq-NA"
+	ExtractBatchParamsParamLocaleNb        ExtractBatchParamsParamLocale = "nb"
+	ExtractBatchParamsParamLocaleNbNo      ExtractBatchParamsParamLocale = "nb-NO"
+	ExtractBatchParamsParamLocaleNd        ExtractBatchParamsParamLocale = "nd"
+	ExtractBatchParamsParamLocaleNdZw      ExtractBatchParamsParamLocale = "nd-ZW"
+	ExtractBatchParamsParamLocaleNdsDe     ExtractBatchParamsParamLocale = "nds-DE"
+	ExtractBatchParamsParamLocaleNdsNl     ExtractBatchParamsParamLocale = "nds-NL"
+	ExtractBatchParamsParamLocaleNe        ExtractBatchParamsParamLocale = "ne"
+	ExtractBatchParamsParamLocaleNeIn      ExtractBatchParamsParamLocale = "ne-IN"
+	ExtractBatchParamsParamLocaleNeNp      ExtractBatchParamsParamLocale = "ne-NP"
+	ExtractBatchParamsParamLocaleNl        ExtractBatchParamsParamLocale = "nl"
+	ExtractBatchParamsParamLocaleNlAw      ExtractBatchParamsParamLocale = "nl-AW"
+	ExtractBatchParamsParamLocaleNlBe      ExtractBatchParamsParamLocale = "nl-BE"
+	ExtractBatchParamsParamLocaleNlNl      ExtractBatchParamsParamLocale = "nl-NL"
+	ExtractBatchParamsParamLocaleNn        ExtractBatchParamsParamLocale = "nn"
+	ExtractBatchParamsParamLocaleNnNo      ExtractBatchParamsParamLocale = "nn-NO"
+	ExtractBatchParamsParamLocaleNrZa      ExtractBatchParamsParamLocale = "nr-ZA"
+	ExtractBatchParamsParamLocaleNsoZa     ExtractBatchParamsParamLocale = "nso-ZA"
+	ExtractBatchParamsParamLocaleNyn       ExtractBatchParamsParamLocale = "nyn"
+	ExtractBatchParamsParamLocaleNynUg     ExtractBatchParamsParamLocale = "nyn-UG"
+	ExtractBatchParamsParamLocaleOcFr      ExtractBatchParamsParamLocale = "oc-FR"
+	ExtractBatchParamsParamLocaleOm        ExtractBatchParamsParamLocale = "om"
+	ExtractBatchParamsParamLocaleOmEt      ExtractBatchParamsParamLocale = "om-ET"
+	ExtractBatchParamsParamLocaleOmKe      ExtractBatchParamsParamLocale = "om-KE"
+	ExtractBatchParamsParamLocaleOr        ExtractBatchParamsParamLocale = "or"
+	ExtractBatchParamsParamLocaleOrIn      ExtractBatchParamsParamLocale = "or-IN"
+	ExtractBatchParamsParamLocaleOsRu      ExtractBatchParamsParamLocale = "os-RU"
+	ExtractBatchParamsParamLocalePa        ExtractBatchParamsParamLocale = "pa"
+	ExtractBatchParamsParamLocalePaArab    ExtractBatchParamsParamLocale = "pa-Arab"
+	ExtractBatchParamsParamLocalePaArabPk  ExtractBatchParamsParamLocale = "pa-Arab-PK"
+	ExtractBatchParamsParamLocalePaGuru    ExtractBatchParamsParamLocale = "pa-Guru"
+	ExtractBatchParamsParamLocalePaGuruIn  ExtractBatchParamsParamLocale = "pa-Guru-IN"
+	ExtractBatchParamsParamLocalePaIn      ExtractBatchParamsParamLocale = "pa-IN"
+	ExtractBatchParamsParamLocalePaPk      ExtractBatchParamsParamLocale = "pa-PK"
+	ExtractBatchParamsParamLocalePapAn     ExtractBatchParamsParamLocale = "pap-AN"
+	ExtractBatchParamsParamLocalePl        ExtractBatchParamsParamLocale = "pl"
+	ExtractBatchParamsParamLocalePlPl      ExtractBatchParamsParamLocale = "pl-PL"
+	ExtractBatchParamsParamLocalePs        ExtractBatchParamsParamLocale = "ps"
+	ExtractBatchParamsParamLocalePsAf      ExtractBatchParamsParamLocale = "ps-AF"
+	ExtractBatchParamsParamLocalePt        ExtractBatchParamsParamLocale = "pt"
+	ExtractBatchParamsParamLocalePtBr      ExtractBatchParamsParamLocale = "pt-BR"
+	ExtractBatchParamsParamLocalePtGw      ExtractBatchParamsParamLocale = "pt-GW"
+	ExtractBatchParamsParamLocalePtMz      ExtractBatchParamsParamLocale = "pt-MZ"
+	ExtractBatchParamsParamLocalePtPt      ExtractBatchParamsParamLocale = "pt-PT"
+	ExtractBatchParamsParamLocaleRm        ExtractBatchParamsParamLocale = "rm"
+	ExtractBatchParamsParamLocaleRmCh      ExtractBatchParamsParamLocale = "rm-CH"
+	ExtractBatchParamsParamLocaleRo        ExtractBatchParamsParamLocale = "ro"
+	ExtractBatchParamsParamLocaleRoMd      ExtractBatchParamsParamLocale = "ro-MD"
+	ExtractBatchParamsParamLocaleRoRo      ExtractBatchParamsParamLocale = "ro-RO"
+	ExtractBatchParamsParamLocaleRof       ExtractBatchParamsParamLocale = "rof"
+	ExtractBatchParamsParamLocaleRofTz     ExtractBatchParamsParamLocale = "rof-TZ"
+	ExtractBatchParamsParamLocaleRu        ExtractBatchParamsParamLocale = "ru"
+	ExtractBatchParamsParamLocaleRuMd      ExtractBatchParamsParamLocale = "ru-MD"
+	ExtractBatchParamsParamLocaleRuRu      ExtractBatchParamsParamLocale = "ru-RU"
+	ExtractBatchParamsParamLocaleRuUa      ExtractBatchParamsParamLocale = "ru-UA"
+	ExtractBatchParamsParamLocaleRw        ExtractBatchParamsParamLocale = "rw"
+	ExtractBatchParamsParamLocaleRwRw      ExtractBatchParamsParamLocale = "rw-RW"
+	ExtractBatchParamsParamLocaleRwk       ExtractBatchParamsParamLocale = "rwk"
+	ExtractBatchParamsParamLocaleRwkTz     ExtractBatchParamsParamLocale = "rwk-TZ"
+	ExtractBatchParamsParamLocaleSaIn      ExtractBatchParamsParamLocale = "sa-IN"
+	ExtractBatchParamsParamLocaleSaq       ExtractBatchParamsParamLocale = "saq"
+	ExtractBatchParamsParamLocaleSaqKe     ExtractBatchParamsParamLocale = "saq-KE"
+	ExtractBatchParamsParamLocaleScIt      ExtractBatchParamsParamLocale = "sc-IT"
+	ExtractBatchParamsParamLocaleSdIn      ExtractBatchParamsParamLocale = "sd-IN"
+	ExtractBatchParamsParamLocaleSeNo      ExtractBatchParamsParamLocale = "se-NO"
+	ExtractBatchParamsParamLocaleSeh       ExtractBatchParamsParamLocale = "seh"
+	ExtractBatchParamsParamLocaleSehMz     ExtractBatchParamsParamLocale = "seh-MZ"
+	ExtractBatchParamsParamLocaleSes       ExtractBatchParamsParamLocale = "ses"
+	ExtractBatchParamsParamLocaleSesMl     ExtractBatchParamsParamLocale = "ses-ML"
+	ExtractBatchParamsParamLocaleSg        ExtractBatchParamsParamLocale = "sg"
+	ExtractBatchParamsParamLocaleSgCf      ExtractBatchParamsParamLocale = "sg-CF"
+	ExtractBatchParamsParamLocaleShi       ExtractBatchParamsParamLocale = "shi"
+	ExtractBatchParamsParamLocaleShiLatn   ExtractBatchParamsParamLocale = "shi-Latn"
+	ExtractBatchParamsParamLocaleShiLatnMa ExtractBatchParamsParamLocale = "shi-Latn-MA"
+	ExtractBatchParamsParamLocaleShiTfng   ExtractBatchParamsParamLocale = "shi-Tfng"
+	ExtractBatchParamsParamLocaleShiTfngMa ExtractBatchParamsParamLocale = "shi-Tfng-MA"
+	ExtractBatchParamsParamLocaleShsCa     ExtractBatchParamsParamLocale = "shs-CA"
+	ExtractBatchParamsParamLocaleSi        ExtractBatchParamsParamLocale = "si"
+	ExtractBatchParamsParamLocaleSiLk      ExtractBatchParamsParamLocale = "si-LK"
+	ExtractBatchParamsParamLocaleSidEt     ExtractBatchParamsParamLocale = "sid-ET"
+	ExtractBatchParamsParamLocaleSk        ExtractBatchParamsParamLocale = "sk"
+	ExtractBatchParamsParamLocaleSkSk      ExtractBatchParamsParamLocale = "sk-SK"
+	ExtractBatchParamsParamLocaleSl        ExtractBatchParamsParamLocale = "sl"
+	ExtractBatchParamsParamLocaleSlSi      ExtractBatchParamsParamLocale = "sl-SI"
+	ExtractBatchParamsParamLocaleSn        ExtractBatchParamsParamLocale = "sn"
+	ExtractBatchParamsParamLocaleSnZw      ExtractBatchParamsParamLocale = "sn-ZW"
+	ExtractBatchParamsParamLocaleSo        ExtractBatchParamsParamLocale = "so"
+	ExtractBatchParamsParamLocaleSoDj      ExtractBatchParamsParamLocale = "so-DJ"
+	ExtractBatchParamsParamLocaleSoEt      ExtractBatchParamsParamLocale = "so-ET"
+	ExtractBatchParamsParamLocaleSoKe      ExtractBatchParamsParamLocale = "so-KE"
+	ExtractBatchParamsParamLocaleSoSo      ExtractBatchParamsParamLocale = "so-SO"
+	ExtractBatchParamsParamLocaleSq        ExtractBatchParamsParamLocale = "sq"
+	ExtractBatchParamsParamLocaleSqAl      ExtractBatchParamsParamLocale = "sq-AL"
+	ExtractBatchParamsParamLocaleSqMk      ExtractBatchParamsParamLocale = "sq-MK"
+	ExtractBatchParamsParamLocaleSr        ExtractBatchParamsParamLocale = "sr"
+	ExtractBatchParamsParamLocaleSrCyrl    ExtractBatchParamsParamLocale = "sr-Cyrl"
+	ExtractBatchParamsParamLocaleSrCyrlBa  ExtractBatchParamsParamLocale = "sr-Cyrl-BA"
+	ExtractBatchParamsParamLocaleSrCyrlMe  ExtractBatchParamsParamLocale = "sr-Cyrl-ME"
+	ExtractBatchParamsParamLocaleSrCyrlRs  ExtractBatchParamsParamLocale = "sr-Cyrl-RS"
+	ExtractBatchParamsParamLocaleSrLatn    ExtractBatchParamsParamLocale = "sr-Latn"
+	ExtractBatchParamsParamLocaleSrLatnBa  ExtractBatchParamsParamLocale = "sr-Latn-BA"
+	ExtractBatchParamsParamLocaleSrLatnMe  ExtractBatchParamsParamLocale = "sr-Latn-ME"
+	ExtractBatchParamsParamLocaleSrLatnRs  ExtractBatchParamsParamLocale = "sr-Latn-RS"
+	ExtractBatchParamsParamLocaleSrMe      ExtractBatchParamsParamLocale = "sr-ME"
+	ExtractBatchParamsParamLocaleSrRs      ExtractBatchParamsParamLocale = "sr-RS"
+	ExtractBatchParamsParamLocaleSSZa      ExtractBatchParamsParamLocale = "ss-ZA"
+	ExtractBatchParamsParamLocaleStZa      ExtractBatchParamsParamLocale = "st-ZA"
+	ExtractBatchParamsParamLocaleSv        ExtractBatchParamsParamLocale = "sv"
+	ExtractBatchParamsParamLocaleSvFi      ExtractBatchParamsParamLocale = "sv-FI"
+	ExtractBatchParamsParamLocaleSvSe      ExtractBatchParamsParamLocale = "sv-SE"
+	ExtractBatchParamsParamLocaleSw        ExtractBatchParamsParamLocale = "sw"
+	ExtractBatchParamsParamLocaleSwKe      ExtractBatchParamsParamLocale = "sw-KE"
+	ExtractBatchParamsParamLocaleSwTz      ExtractBatchParamsParamLocale = "sw-TZ"
+	ExtractBatchParamsParamLocaleTa        ExtractBatchParamsParamLocale = "ta"
+	ExtractBatchParamsParamLocaleTaIn      ExtractBatchParamsParamLocale = "ta-IN"
+	ExtractBatchParamsParamLocaleTaLk      ExtractBatchParamsParamLocale = "ta-LK"
+	ExtractBatchParamsParamLocaleTe        ExtractBatchParamsParamLocale = "te"
+	ExtractBatchParamsParamLocaleTeIn      ExtractBatchParamsParamLocale = "te-IN"
+	ExtractBatchParamsParamLocaleTeo       ExtractBatchParamsParamLocale = "teo"
+	ExtractBatchParamsParamLocaleTeoKe     ExtractBatchParamsParamLocale = "teo-KE"
+	ExtractBatchParamsParamLocaleTeoUg     ExtractBatchParamsParamLocale = "teo-UG"
+	ExtractBatchParamsParamLocaleTgTj      ExtractBatchParamsParamLocale = "tg-TJ"
+	ExtractBatchParamsParamLocaleTh        ExtractBatchParamsParamLocale = "th"
+	ExtractBatchParamsParamLocaleThTh      ExtractBatchParamsParamLocale = "th-TH"
+	ExtractBatchParamsParamLocaleTi        ExtractBatchParamsParamLocale = "ti"
+	ExtractBatchParamsParamLocaleTiEr      ExtractBatchParamsParamLocale = "ti-ER"
+	ExtractBatchParamsParamLocaleTiEt      ExtractBatchParamsParamLocale = "ti-ET"
+	ExtractBatchParamsParamLocaleTigEr     ExtractBatchParamsParamLocale = "tig-ER"
+	ExtractBatchParamsParamLocaleTkTm      ExtractBatchParamsParamLocale = "tk-TM"
+	ExtractBatchParamsParamLocaleTlPh      ExtractBatchParamsParamLocale = "tl-PH"
+	ExtractBatchParamsParamLocaleTnZa      ExtractBatchParamsParamLocale = "tn-ZA"
+	ExtractBatchParamsParamLocaleTo        ExtractBatchParamsParamLocale = "to"
+	ExtractBatchParamsParamLocaleToTo      ExtractBatchParamsParamLocale = "to-TO"
+	ExtractBatchParamsParamLocaleTr        ExtractBatchParamsParamLocale = "tr"
+	ExtractBatchParamsParamLocaleTrCy      ExtractBatchParamsParamLocale = "tr-CY"
+	ExtractBatchParamsParamLocaleTrTr      ExtractBatchParamsParamLocale = "tr-TR"
+	ExtractBatchParamsParamLocaleTsZa      ExtractBatchParamsParamLocale = "ts-ZA"
+	ExtractBatchParamsParamLocaleTtRu      ExtractBatchParamsParamLocale = "tt-RU"
+	ExtractBatchParamsParamLocaleTzm       ExtractBatchParamsParamLocale = "tzm"
+	ExtractBatchParamsParamLocaleTzmLatn   ExtractBatchParamsParamLocale = "tzm-Latn"
+	ExtractBatchParamsParamLocaleTzmLatnMa ExtractBatchParamsParamLocale = "tzm-Latn-MA"
+	ExtractBatchParamsParamLocaleUgCn      ExtractBatchParamsParamLocale = "ug-CN"
+	ExtractBatchParamsParamLocaleUk        ExtractBatchParamsParamLocale = "uk"
+	ExtractBatchParamsParamLocaleUkUa      ExtractBatchParamsParamLocale = "uk-UA"
+	ExtractBatchParamsParamLocaleUnmUs     ExtractBatchParamsParamLocale = "unm-US"
+	ExtractBatchParamsParamLocaleUr        ExtractBatchParamsParamLocale = "ur"
+	ExtractBatchParamsParamLocaleUrIn      ExtractBatchParamsParamLocale = "ur-IN"
+	ExtractBatchParamsParamLocaleUrPk      ExtractBatchParamsParamLocale = "ur-PK"
+	ExtractBatchParamsParamLocaleUz        ExtractBatchParamsParamLocale = "uz"
+	ExtractBatchParamsParamLocaleUzArab    ExtractBatchParamsParamLocale = "uz-Arab"
+	ExtractBatchParamsParamLocaleUzArabAf  ExtractBatchParamsParamLocale = "uz-Arab-AF"
+	ExtractBatchParamsParamLocaleUzCyrl    ExtractBatchParamsParamLocale = "uz-Cyrl"
+	ExtractBatchParamsParamLocaleUzCyrlUz  ExtractBatchParamsParamLocale = "uz-Cyrl-UZ"
+	ExtractBatchParamsParamLocaleUzLatn    ExtractBatchParamsParamLocale = "uz-Latn"
+	ExtractBatchParamsParamLocaleUzLatnUz  ExtractBatchParamsParamLocale = "uz-Latn-UZ"
+	ExtractBatchParamsParamLocaleUzUz      ExtractBatchParamsParamLocale = "uz-UZ"
+	ExtractBatchParamsParamLocaleVeZa      ExtractBatchParamsParamLocale = "ve-ZA"
+	ExtractBatchParamsParamLocaleVi        ExtractBatchParamsParamLocale = "vi"
+	ExtractBatchParamsParamLocaleViVn      ExtractBatchParamsParamLocale = "vi-VN"
+	ExtractBatchParamsParamLocaleVun       ExtractBatchParamsParamLocale = "vun"
+	ExtractBatchParamsParamLocaleVunTz     ExtractBatchParamsParamLocale = "vun-TZ"
+	ExtractBatchParamsParamLocaleWaBe      ExtractBatchParamsParamLocale = "wa-BE"
+	ExtractBatchParamsParamLocaleWaeCh     ExtractBatchParamsParamLocale = "wae-CH"
+	ExtractBatchParamsParamLocaleWalEt     ExtractBatchParamsParamLocale = "wal-ET"
+	ExtractBatchParamsParamLocaleWoSn      ExtractBatchParamsParamLocale = "wo-SN"
+	ExtractBatchParamsParamLocaleXhZa      ExtractBatchParamsParamLocale = "xh-ZA"
+	ExtractBatchParamsParamLocaleXog       ExtractBatchParamsParamLocale = "xog"
+	ExtractBatchParamsParamLocaleXogUg     ExtractBatchParamsParamLocale = "xog-UG"
+	ExtractBatchParamsParamLocaleYiUs      ExtractBatchParamsParamLocale = "yi-US"
+	ExtractBatchParamsParamLocaleYo        ExtractBatchParamsParamLocale = "yo"
+	ExtractBatchParamsParamLocaleYoNg      ExtractBatchParamsParamLocale = "yo-NG"
+	ExtractBatchParamsParamLocaleYueHk     ExtractBatchParamsParamLocale = "yue-HK"
+	ExtractBatchParamsParamLocaleZh        ExtractBatchParamsParamLocale = "zh"
+	ExtractBatchParamsParamLocaleZhCn      ExtractBatchParamsParamLocale = "zh-CN"
+	ExtractBatchParamsParamLocaleZhHk      ExtractBatchParamsParamLocale = "zh-HK"
+	ExtractBatchParamsParamLocaleZhHans    ExtractBatchParamsParamLocale = "zh-Hans"
+	ExtractBatchParamsParamLocaleZhHansCn  ExtractBatchParamsParamLocale = "zh-Hans-CN"
+	ExtractBatchParamsParamLocaleZhHansHk  ExtractBatchParamsParamLocale = "zh-Hans-HK"
+	ExtractBatchParamsParamLocaleZhHansMo  ExtractBatchParamsParamLocale = "zh-Hans-MO"
+	ExtractBatchParamsParamLocaleZhHansSg  ExtractBatchParamsParamLocale = "zh-Hans-SG"
+	ExtractBatchParamsParamLocaleZhHant    ExtractBatchParamsParamLocale = "zh-Hant"
+	ExtractBatchParamsParamLocaleZhHantHk  ExtractBatchParamsParamLocale = "zh-Hant-HK"
+	ExtractBatchParamsParamLocaleZhHantMo  ExtractBatchParamsParamLocale = "zh-Hant-MO"
+	ExtractBatchParamsParamLocaleZhHantTw  ExtractBatchParamsParamLocale = "zh-Hant-TW"
+	ExtractBatchParamsParamLocaleZhSg      ExtractBatchParamsParamLocale = "zh-SG"
+	ExtractBatchParamsParamLocaleZhTw      ExtractBatchParamsParamLocale = "zh-TW"
+	ExtractBatchParamsParamLocaleZu        ExtractBatchParamsParamLocale = "zu"
+	ExtractBatchParamsParamLocaleZuZa      ExtractBatchParamsParamLocale = "zu-ZA"
+	ExtractBatchParamsParamLocaleAuto      ExtractBatchParamsParamLocale = "auto"
+)
+
+type ExtractBatchParamsParamNetworkCapture struct {
+	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
+	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
+	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
+	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
+	// "PATCH".
+	Method string `json:"method,omitzero"`
+	// Resource type for network capture filtering
+	ResourceType ExtractBatchParamsParamNetworkCaptureResourceTypeUnion `json:"resource_type,omitzero"`
+	StatusCode   ExtractBatchParamsParamNetworkCaptureStatusCodeUnion   `json:"status_code,omitzero"`
+	URL          ExtractBatchParamsParamNetworkCaptureURL               `json:"url,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParamNetworkCapture) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParamNetworkCapture
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsParamNetworkCapture) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractBatchParamsParamNetworkCapture](
+		"method", "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamNetworkCaptureResourceTypeUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamNetworkCaptureResourceTypeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractBatchParamsParamNetworkCaptureResourceTypeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamNetworkCaptureResourceTypeUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamNetworkCaptureStatusCodeUnion struct {
+	OfFloat      param.Opt[float64] `json:",omitzero,inline"`
+	OfFloatArray []float64          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamNetworkCaptureStatusCodeUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfFloat, u.OfFloatArray)
+}
+func (u *ExtractBatchParamsParamNetworkCaptureStatusCodeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamNetworkCaptureStatusCodeUnion) asAny() any {
+	if !param.IsOmitted(u.OfFloat) {
+		return &u.OfFloat.Value
+	} else if !param.IsOmitted(u.OfFloatArray) {
+		return &u.OfFloatArray
+	}
+	return nil
+}
+
+// The property Value is required.
+type ExtractBatchParamsParamNetworkCaptureURL struct {
+	Value string `json:"value" api:"required"`
+	// Any of "exact", "contains".
+	Type string `json:"type,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParamNetworkCaptureURL) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParamNetworkCaptureURL
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsParamNetworkCaptureURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[ExtractBatchParamsParamNetworkCaptureURL](
+		"type", "exact", "contains",
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamParserUnion struct {
+	OfAnyMap map[string]any    `json:",omitzero,inline"`
+	OfString param.Opt[string] `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamParserUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAnyMap, u.OfString)
+}
+func (u *ExtractBatchParamsParamParserUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamParserUnion) asAny() any {
+	if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Referrer policy for the request
+type ExtractBatchParamsParamReferrerType string
+
+const (
+	ExtractBatchParamsParamReferrerTypeRandom     ExtractBatchParamsParamReferrerType = "random"
+	ExtractBatchParamsParamReferrerTypeNoReferer  ExtractBatchParamsParamReferrerType = "no-referer"
+	ExtractBatchParamsParamReferrerTypeSameOrigin ExtractBatchParamsParamReferrerType = "same-origin"
+	ExtractBatchParamsParamReferrerTypeGoogle     ExtractBatchParamsParamReferrerType = "google"
+	ExtractBatchParamsParamReferrerTypeBing       ExtractBatchParamsParamReferrerType = "bing"
+	ExtractBatchParamsParamReferrerTypeFacebook   ExtractBatchParamsParamReferrerType = "facebook"
+	ExtractBatchParamsParamReferrerTypeTwitter    ExtractBatchParamsParamReferrerType = "twitter"
+	ExtractBatchParamsParamReferrerTypeInstagram  ExtractBatchParamsParamReferrerType = "instagram"
+)
+
+type ExtractBatchParamsParamSession struct {
+	ID                  param.Opt[string]  `json:"id,omitzero"`
+	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	Retry               param.Opt[bool]    `json:"retry,omitzero"`
+	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsParamSession) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsParamSession
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsParamSession) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsParamSkillUnion struct {
+	OfString      param.Opt[string] `json:",omitzero,inline"`
+	OfStringArray []string          `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsParamSkillUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfStringArray)
+}
+func (u *ExtractBatchParamsParamSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsParamSkillUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Shared parameters applied to the entire batch, such as storage and callback
+// configuration.
+type ExtractBatchParamsSharedParams struct {
+	// URL to call back when async operation completes
+	CallbackURL param.Opt[string] `json:"callback_url,omitzero"`
+	// Whether to compress stored data
+	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
+	// Custom name for the stored object
+	StorageObjectName param.Opt[string] `json:"storage_object_name,omitzero"`
+	// Type of storage to use for results
+	StorageType param.Opt[string] `json:"storage_type,omitzero"`
+	// URL for storage location
+	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
+	paramObj
+}
+
+func (r ExtractBatchParamsSharedParams) MarshalJSON() (data []byte, err error) {
+	type shadow ExtractBatchParamsSharedParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ExtractBatchParamsSharedParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type MapParams struct {
 	// Url to map.
