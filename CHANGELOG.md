@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.0 (2026-03-18)
+
+Full Changelog: [v0.8.0...v0.9.0](https://github.com/Nimbleway/nimble-go/compare/v0.8.0...v0.9.0)
+
+### Features
+
+* **api:** manual updates ([69282d1](https://github.com/Nimbleway/nimble-go/commit/69282d1be59b9d51f2eec12d2539a1f48a64e91e))
+
+
+### Chores
+
+* **internal:** tweak CI branches ([b8d7a33](https://github.com/Nimbleway/nimble-go/commit/b8d7a33d5caa26053bd2a2b4e53fdfa14e8f0723))
+
 ## 0.8.0 (2026-03-11)
 
 Full Changelog: [v0.7.0...v0.8.0](https://github.com/Nimbleway/nimble-go/compare/v0.7.0...v0.8.0)
