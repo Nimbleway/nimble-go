@@ -417,6 +417,214 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 	}
 }
 
+func TestExtractBatchWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.ExtractBatch(context.TODO(), githubcomnimblewaynimblego.ExtractBatchParams{
+		Params: []githubcomnimblewaynimblego.ExtractBatchParamsParam{{
+			URL: "url",
+			Browser: githubcomnimblewaynimblego.ExtractBatchParamsParamBrowserUnion{
+				OfExtractBatchsParamBrowserString: githubcomnimblewaynimblego.String("chrome"),
+			},
+			BrowserActions: []githubcomnimblewaynimblego.ExtractBatchParamsParamBrowserActionUnion{{
+				OfGotoAction: &shared.GotoActionParam{
+					Goto: shared.GotoActionGotoUnionParam{
+						OfString: githubcomnimblewaynimblego.String("https://example.com/login"),
+					},
+				},
+			}, {
+				OfWaitForElementAction: &shared.WaitForElementActionParam{
+					WaitForElement: shared.WaitForElementActionWaitForElementUnionParam{
+						OfString: githubcomnimblewaynimblego.String("#login-form"),
+					},
+				},
+			}, {
+				OfFillAction: &shared.FillActionParam{
+					Fill: shared.FillActionFillUnionParam{
+						OfType: &shared.FillActionFillTypeParam{
+							Selector: shared.FillActionFillTypeSelectorUnionParam{
+								OfString: githubcomnimblewaynimblego.String("#username"),
+							},
+							Value:          "user@example.com",
+							ClickOnElement: githubcomnimblewaynimblego.Bool(true),
+							Delay: shared.FillActionFillTypeDelayUnionParam{
+								OfFloat: githubcomnimblewaynimblego.Float(1000),
+							},
+							Mode:                  "type",
+							MouseMovementStrategy: "linear",
+							Required: shared.FillActionFillTypeRequiredUnionParam{
+								OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
+							},
+							Scroll: githubcomnimblewaynimblego.Bool(true),
+							Skip: shared.FillActionFillTypeSkipUnionParam{
+								OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
+							},
+							Timeout: githubcomnimblewaynimblego.Float(0),
+							TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
+								OfFloat: githubcomnimblewaynimblego.Float(1000),
+							},
+							TypingStrategy: "simple",
+							Visible:        githubcomnimblewaynimblego.Bool(true),
+						},
+					},
+				},
+			}, {
+				OfFillAction: &shared.FillActionParam{
+					Fill: shared.FillActionFillUnionParam{
+						OfType: &shared.FillActionFillTypeParam{
+							Selector: shared.FillActionFillTypeSelectorUnionParam{
+								OfString: githubcomnimblewaynimblego.String("#password"),
+							},
+							Value:          "password123",
+							ClickOnElement: githubcomnimblewaynimblego.Bool(true),
+							Delay: shared.FillActionFillTypeDelayUnionParam{
+								OfFloat: githubcomnimblewaynimblego.Float(1000),
+							},
+							Mode:                  "type",
+							MouseMovementStrategy: "linear",
+							Required: shared.FillActionFillTypeRequiredUnionParam{
+								OfFillActionFillTypeRequiredString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeRequiredStringTrue),
+							},
+							Scroll: githubcomnimblewaynimblego.Bool(true),
+							Skip: shared.FillActionFillTypeSkipUnionParam{
+								OfFillActionFillTypeSkipString: githubcomnimblewaynimblego.Opt(shared.FillActionFillTypeSkipStringTrue),
+							},
+							Timeout: githubcomnimblewaynimblego.Float(0),
+							TypingInterval: shared.FillActionFillTypeTypingIntervalUnionParam{
+								OfFloat: githubcomnimblewaynimblego.Float(1000),
+							},
+							TypingStrategy: "simple",
+							Visible:        githubcomnimblewaynimblego.Bool(true),
+						},
+					},
+				},
+			}, {
+				OfClickAction: &shared.ClickActionParam{
+					Click: shared.ClickActionClickUnionParam{
+						OfString: githubcomnimblewaynimblego.String("#submit"),
+					},
+				},
+			}, {
+				OfScreenshotAction: &shared.ScreenshotActionParam{
+					Screenshot: shared.ScreenshotActionScreenshotUnionParam{
+						OfScreenshotActionScreenshotObject: &shared.ScreenshotActionScreenshotObjectParam{
+							Format:   "png",
+							FullPage: githubcomnimblewaynimblego.Bool(true),
+							Quality:  githubcomnimblewaynimblego.Float(0),
+							Required: shared.ScreenshotActionScreenshotObjectRequiredUnionParam{
+								OfScreenshotActionScreenshotObjectRequiredString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectRequiredStringTrue),
+							},
+							Skip: shared.ScreenshotActionScreenshotObjectSkipUnionParam{
+								OfScreenshotActionScreenshotObjectSkipString: githubcomnimblewaynimblego.Opt(shared.ScreenshotActionScreenshotObjectSkipStringTrue),
+							},
+						},
+					},
+				},
+			}},
+			City:          githubcomnimblewaynimblego.String("Los Angeles"),
+			ConsentHeader: githubcomnimblewaynimblego.Bool(true),
+			Cookies: githubcomnimblewaynimblego.ExtractBatchParamsParamCookiesUnion{
+				OfExtractBatchsParamCookiesArray: []githubcomnimblewaynimblego.ExtractBatchParamsParamCookiesArrayItem{{
+					Creation:     githubcomnimblewaynimblego.String("creation"),
+					Domain:       githubcomnimblewaynimblego.String("domain"),
+					Expires:      githubcomnimblewaynimblego.String("expires"),
+					Extensions:   []string{"string"},
+					HostOnly:     githubcomnimblewaynimblego.Bool(true),
+					HTTPOnly:     githubcomnimblewaynimblego.Bool(true),
+					LastAccessed: githubcomnimblewaynimblego.String("lastAccessed"),
+					MaxAge: githubcomnimblewaynimblego.ExtractBatchParamsParamCookiesArrayItemMaxAgeUnion{
+						OfExtractBatchsParamCookiesArrayItemMaxAgeString: githubcomnimblewaynimblego.Opt(githubcomnimblewaynimblego.ExtractBatchParamsParamCookiesArrayItemMaxAgeStringInfinity),
+					},
+					Name:          githubcomnimblewaynimblego.String("name"),
+					Path:          githubcomnimblewaynimblego.String("path"),
+					PathIsDefault: githubcomnimblewaynimblego.Bool(true),
+					SameSite:      "strict",
+					Secure:        githubcomnimblewaynimblego.Bool(true),
+					Value:         githubcomnimblewaynimblego.String("value"),
+				}},
+			},
+			Country:             githubcomnimblewaynimblego.ExtractBatchParamsParamCountryUs,
+			Device:              "desktop",
+			Driver:              "vx8",
+			ExpectedStatusCodes: []int64{200, 201},
+			Formats:             []string{"html"},
+			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsParamHeaderUnion{
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
+				"Accept-Language": {
+					OfString: githubcomnimblewaynimblego.String("en-US"),
+				},
+			},
+			Http2:  githubcomnimblewaynimblego.Bool(true),
+			IsXhr:  githubcomnimblewaynimblego.Bool(true),
+			Locale: githubcomnimblewaynimblego.ExtractBatchParamsParamLocaleEnUs,
+			Method: "GET",
+			NetworkCapture: []githubcomnimblewaynimblego.ExtractBatchParamsParamNetworkCapture{{
+				Method: "GET",
+				ResourceType: githubcomnimblewaynimblego.ExtractBatchParamsParamNetworkCaptureResourceTypeUnion{
+					OfString: githubcomnimblewaynimblego.String("document"),
+				},
+				StatusCode: githubcomnimblewaynimblego.ExtractBatchParamsParamNetworkCaptureStatusCodeUnion{
+					OfFloat: githubcomnimblewaynimblego.Float(100),
+				},
+				URL: githubcomnimblewaynimblego.ExtractBatchParamsParamNetworkCaptureURL{
+					Value: "value",
+					Type:  "exact",
+				},
+				Validation:                  githubcomnimblewaynimblego.Bool(true),
+				WaitForRequestsCount:        githubcomnimblewaynimblego.Float(0),
+				WaitForRequestsCountTimeout: githubcomnimblewaynimblego.Float(1),
+			}},
+			Os:    "windows",
+			Parse: githubcomnimblewaynimblego.Bool(true),
+			Parser: githubcomnimblewaynimblego.ExtractBatchParamsParamParserUnion{
+				OfAnyMap: map[string]any{
+					"myParser": "bar",
+				},
+			},
+			ReferrerType:   githubcomnimblewaynimblego.ExtractBatchParamsParamReferrerTypeRandom,
+			Render:         githubcomnimblewaynimblego.Bool(true),
+			RequestTimeout: githubcomnimblewaynimblego.Float(30000),
+			Session: githubcomnimblewaynimblego.ExtractBatchParamsParamSession{
+				ID:                  githubcomnimblewaynimblego.String("id"),
+				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				Retry:               githubcomnimblewaynimblego.Bool(true),
+				Timeout:             githubcomnimblewaynimblego.Float(1),
+			},
+			Skill: githubcomnimblewaynimblego.ExtractBatchParamsParamSkillUnion{
+				OfString: githubcomnimblewaynimblego.String("dynamic-content"),
+			},
+			State: "CA",
+			Tag:   githubcomnimblewaynimblego.String("campaign-2024-q1"),
+		}},
+		SharedParams: githubcomnimblewaynimblego.ExtractBatchParamsSharedParams{
+			CallbackURL:       githubcomnimblewaynimblego.String("https://example.com/webhook/callback"),
+			StorageCompress:   githubcomnimblewaynimblego.Bool(true),
+			StorageObjectName: githubcomnimblewaynimblego.String("result-2024-01-15.json"),
+			StorageType:       githubcomnimblewaynimblego.String("s3"),
+			StorageURL:        githubcomnimblewaynimblego.String("s3://bucket-name/path/to/object"),
+		},
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestMapWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
