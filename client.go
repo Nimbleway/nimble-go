@@ -20,6 +20,7 @@ type Client struct {
 	Agent   AgentService
 	Crawl   CrawlService
 	Tasks   TaskService
+	Batches BatchService
 }
 
 // DefaultClientOptions read from the environment (NIMBLE_API_KEY,
@@ -47,6 +48,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Agent = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 	r.Tasks = NewTaskService(opts...)
+	r.Batches = NewBatchService(opts...)
 
 	return
 }
