@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.11.0 (2026-03-25)
+
+Full Changelog: [v0.10.0...v0.11.0](https://github.com/Nimbleway/nimble-go/compare/v0.10.0...v0.11.0)
+
+### Features
+
+* **api:** api update ([f76461b](https://github.com/Nimbleway/nimble-go/commit/f76461b241bbbb447714bbcee7292b020cfe584b))
+
+
+### Chores
+
+* **ci:** skip lint on metadata-only changes ([a2c4398](https://github.com/Nimbleway/nimble-go/commit/a2c43989ae526bb845c14984d872f008e2db455e))
+
 ## 0.10.0 (2026-03-24)
 
 Full Changelog: [v0.9.0...v0.10.0](https://github.com/Nimbleway/nimble-go/compare/v0.9.0...v0.10.0)
