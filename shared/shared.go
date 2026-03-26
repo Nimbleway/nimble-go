@@ -1276,7 +1276,7 @@ type FillActionFillPasteParam struct {
 	// false.
 	Skip FillActionFillPasteSkipUnionParam `json:"skip,omitzero"`
 	// This field can be elided, and will marshal its zero value as "paste".
-	Mode constant.Paste `json:"mode" api:"required"`
+	Mode constant.Paste `json:"mode" default:"paste"`
 	paramObj
 }
 
