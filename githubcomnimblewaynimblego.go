@@ -441,7 +441,7 @@ func (r *ExtractResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
 
 type ExtractResponseDataParsingParsingSuccessResult struct {
 	Entities map[string]any   `json:"entities" api:"required"`
-	Status   constant.Success `json:"status" api:"required"`
+	Status   constant.Success `json:"status" default:"success"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
@@ -459,7 +459,7 @@ func (r *ExtractResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []by
 
 type ExtractResponseDataParsingParsingErrorResult struct {
 	Error  string         `json:"error" api:"required"`
-	Status constant.Error `json:"status" api:"required"`
+	Status constant.Error `json:"status" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -641,7 +641,7 @@ func (r *ExtractResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 // Response when an async extract task is created successfully.
 type ExtractAsyncResponse struct {
 	// Status indicating the async task was created successfully.
-	Status constant.Success `json:"status" api:"required"`
+	Status constant.Success `json:"status" default:"success"`
 	// The created async task details.
 	Task ExtractAsyncResponseTask `json:"task" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

@@ -81,7 +81,7 @@ type BatchGetResponse struct {
 	CreatedAt string `json:"created_at" api:"required"`
 	// Completion ratio between 0 and 1.
 	Progress float64          `json:"progress" api:"required"`
-	Status   constant.Success `json:"status" api:"required"`
+	Status   constant.Success `json:"status" default:"success"`
 	// List of tasks in the batch.
 	Tasks []BatchGetResponseTask `json:"tasks" api:"required"`
 	// ISO timestamp when the batch completed.
@@ -177,7 +177,7 @@ type BatchProgressResponse struct {
 	CompletedCount float64 `json:"completed_count" api:"required"`
 	// Completion ratio between 0 and 1.
 	Progress float64          `json:"progress" api:"required"`
-	Status   constant.Success `json:"status" api:"required"`
+	Status   constant.Success `json:"status" default:"success"`
 	// ISO timestamp when the batch completed.
 	CompletedAt string `json:"completed_at"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
