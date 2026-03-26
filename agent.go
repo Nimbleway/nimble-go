@@ -620,7 +620,7 @@ func (r *AgentRunResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
 
 type AgentRunResponseDataParsingParsingSuccessResult struct {
 	Entities map[string]any   `json:"entities" api:"required"`
-	Status   constant.Success `json:"status" api:"required"`
+	Status   constant.Success `json:"status" default:"success"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Entities    respjson.Field
@@ -638,7 +638,7 @@ func (r *AgentRunResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []b
 
 type AgentRunResponseDataParsingParsingErrorResult struct {
 	Error  string         `json:"error" api:"required"`
-	Status constant.Error `json:"status" api:"required"`
+	Status constant.Error `json:"status" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -818,7 +818,7 @@ func (r *AgentRunResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
 }
 
 type AgentRunAsyncResponse struct {
-	Status constant.Success `json:"status" api:"required"`
+	Status constant.Success `json:"status" default:"success"`
 	Task   map[string]any   `json:"task" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
