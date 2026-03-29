@@ -129,3 +129,42 @@ func TestAgentRunAsyncWithOptionalParams(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
+
+func TestAgentRunBatchWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agent.RunBatch(context.TODO(), githubcomnimblewaynimblego.AgentRunBatchParams{
+		Inputs: []githubcomnimblewaynimblego.AgentRunBatchParamsInput{{
+			Formats:      []string{"html", "markdown"},
+			Localization: githubcomnimblewaynimblego.Bool(true),
+			Params: map[string]any{
+				"foo": "bar",
+			},
+		}},
+		SharedInputs: githubcomnimblewaynimblego.AgentRunBatchParamsSharedInputs{
+			Agent:        "agent",
+			Formats:      []string{"html", "markdown"},
+			Localization: githubcomnimblewaynimblego.Bool(true),
+			Params: map[string]any{
+				"foo": "bar",
+			},
+		},
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
