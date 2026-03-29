@@ -75,6 +75,14 @@ func (r *AgentService) RunAsync(ctx context.Context, body AgentRunAsyncParams, o
 	return res, err
 }
 
+// Execute WSA Batch Endpoint
+func (r *AgentService) RunBatch(ctx context.Context, body AgentRunBatchParams, opts ...option.RequestOption) (res *AgentRunBatchResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/agents/batch"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 type AgentListResponse struct {
 	DisplayName string `json:"display_name" api:"required"`
 	IsPublic    bool   `json:"is_public" api:"required"`
@@ -838,6 +846,90 @@ func (r *AgentRunAsyncResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response when a batch of extract tasks is created successfully.
+type AgentRunBatchResponse struct {
+	// Unique identifier for the batch.
+	BatchID string `json:"batch_id" api:"required"`
+	// Number of tasks in the batch.
+	BatchSize float64 `json:"batch_size" api:"required"`
+	// List of created tasks.
+	Tasks []AgentRunBatchResponseTask `json:"tasks" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BatchID     respjson.Field
+		BatchSize   respjson.Field
+		Tasks       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentRunBatchResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentRunBatchResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentRunBatchResponseTask struct {
+	// Unique task identifier.
+	ID    string `json:"id" api:"required"`
+	Query any    `json:"_query" api:"required"`
+	// Timestamp when the task was created.
+	CreatedAt string `json:"created_at" api:"required"`
+	// Original input data for the task.
+	Input any `json:"input" api:"required"`
+	// Current state of the task.
+	//
+	// Any of "pending", "success", "error".
+	State string `json:"state" api:"required"`
+	// URL for checking the task status.
+	StatusURL string `json:"status_url" api:"required" format:"uri"`
+	// Account name that owns the task.
+	AccountName string `json:"account_name"`
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	APIType string `json:"api_type"`
+	// Batch ID if this task is part of a batch.
+	BatchID string `json:"batch_id"`
+	// URL for downloading the task results.
+	DownloadURL string `json:"download_url" format:"uri"`
+	// Error message if the task failed.
+	Error string `json:"error"`
+	// Classification of the error type.
+	ErrorType string `json:"error_type"`
+	// Timestamp when the task was last modified.
+	ModifiedAt string `json:"modified_at"`
+	// Storage location of the output data.
+	OutputURL string `json:"output_url"`
+	// HTTP status code from the task execution.
+	StatusCode float64 `json:"status_code"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Query       respjson.Field
+		CreatedAt   respjson.Field
+		Input       respjson.Field
+		State       respjson.Field
+		StatusURL   respjson.Field
+		AccountName respjson.Field
+		APIType     respjson.Field
+		BatchID     respjson.Field
+		DownloadURL respjson.Field
+		Error       respjson.Field
+		ErrorType   respjson.Field
+		ModifiedAt  respjson.Field
+		OutputURL   respjson.Field
+		StatusCode  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentRunBatchResponseTask) RawJSON() string { return r.JSON.raw }
+func (r *AgentRunBatchResponseTask) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type AgentListParams struct {
 	// Search templates by name, domain, or vertical
 	Search param.Opt[string] `query:"search,omitzero" json:"-"`
@@ -927,5 +1019,57 @@ func (r AgentRunAsyncParams) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *AgentRunAsyncParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentRunBatchParams struct {
+	Inputs       []AgentRunBatchParamsInput      `json:"inputs,omitzero" api:"required"`
+	SharedInputs AgentRunBatchParamsSharedInputs `json:"shared_inputs,omitzero" api:"required"`
+	paramObj
+}
+
+func (r AgentRunBatchParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunBatchParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunBatchParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentRunBatchParamsInput struct {
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	// Response formats to include. All disabled by default.
+	//
+	// Any of "html", "markdown", "screenshot", "headers".
+	Formats []string       `json:"formats,omitzero"`
+	Params  map[string]any `json:"params,omitzero"`
+	paramObj
+}
+
+func (r AgentRunBatchParamsInput) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunBatchParamsInput
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunBatchParamsInput) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property Agent is required.
+type AgentRunBatchParamsSharedInputs struct {
+	Agent        string          `json:"agent" api:"required"`
+	Localization param.Opt[bool] `json:"localization,omitzero"`
+	// Response formats to include. All disabled by default.
+	//
+	// Any of "html", "markdown", "screenshot", "headers".
+	Formats []string       `json:"formats,omitzero"`
+	Params  map[string]any `json:"params,omitzero"`
+	paramObj
+}
+
+func (r AgentRunBatchParamsSharedInputs) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunBatchParamsSharedInputs
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunBatchParamsSharedInputs) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
