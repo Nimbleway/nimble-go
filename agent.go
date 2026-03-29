@@ -248,6 +248,8 @@ type AgentRunResponseData struct {
 	Markdown string `json:"markdown"`
 	// The network capture data collected during the task.
 	NetworkCapture []AgentRunResponseDataNetworkCapture `json:"network_capture"`
+	// Individual HTML content of each pagination page, before merging.
+	PagesHTML []string `json:"pages_html"`
 	// The parsing results extracted from the HTML & network content.
 	Parsing AgentRunResponseDataParsingUnion `json:"parsing"`
 	// The list of redirects that occurred during the task.
@@ -265,6 +267,7 @@ type AgentRunResponseData struct {
 		HTML           respjson.Field
 		Markdown       respjson.Field
 		NetworkCapture respjson.Field
+		PagesHTML      respjson.Field
 		Parsing        respjson.Field
 		Redirects      respjson.Field
 		Screenshots    respjson.Field
@@ -883,6 +886,10 @@ type AgentRunParams struct {
 	Agent        string          `json:"agent" api:"required"`
 	Params       map[string]any  `json:"params,omitzero" api:"required"`
 	Localization param.Opt[bool] `json:"localization,omitzero"`
+	// Response formats to include. All disabled by default.
+	//
+	// Any of "html", "markdown", "screenshot", "headers".
+	Formats []string `json:"formats,omitzero"`
 	paramObj
 }
 
@@ -908,6 +915,10 @@ type AgentRunAsyncParams struct {
 	StorageType param.Opt[string] `json:"storage_type,omitzero"`
 	// URL for storage location
 	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
+	// Response formats to include. All disabled by default.
+	//
+	// Any of "html", "markdown", "screenshot", "headers".
+	Formats []string `json:"formats,omitzero"`
 	paramObj
 }
 
