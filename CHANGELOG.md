@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.12.0 (2026-03-29)
+
+Full Changelog: [v0.11.0...v0.12.0](https://github.com/Nimbleway/nimble-go/compare/v0.11.0...v0.12.0)
+
+### Features
+
+* **api:** api update ([102052e](https://github.com/Nimbleway/nimble-go/commit/102052e584b6b4e07653e08cdce3957e77bb23de))
+* **api:** manual updates ([a89983f](https://github.com/Nimbleway/nimble-go/commit/a89983f5fc4d4dc4cdb31edf66f3f76d7cce1434))
+* **internal:** support comma format in multipart form encoding ([9a76de3](https://github.com/Nimbleway/nimble-go/commit/9a76de3ca74c066dec93d4be3038d1c3e2063684))
+
+
+### Bug Fixes
+
+* prevent duplicate ? in query params ([39abcef](https://github.com/Nimbleway/nimble-go/commit/39abcef070ff3aba0fe3f2b934437b7d2a2a8b15))
+
+
+### Chores
+
+* **ci:** support opting out of skipping builds on metadata-only commits ([a04daae](https://github.com/Nimbleway/nimble-go/commit/a04daae029d64a17e8466ecbd04ab947211be8a3))
+* **client:** fix multipart serialisation of Default() fields ([61163b3](https://github.com/Nimbleway/nimble-go/commit/61163b3218defe9ae68deb104a743efb22028c8e))
+* **internal:** support default value struct tag ([fab96e8](https://github.com/Nimbleway/nimble-go/commit/fab96e8f31987dce8cbd0752f2e905d7e4f3e1f9))
+* remove unnecessary error check for url parsing ([6e99f1f](https://github.com/Nimbleway/nimble-go/commit/6e99f1ff026489e7d8af2fd0543910087050baa2))
+* update docs for api:"required" ([e293496](https://github.com/Nimbleway/nimble-go/commit/e29349697ff0e94f0c1fa2f986080304ba58bb4f))
+
 ## 0.11.0 (2026-03-25)
 
 Full Changelog: [v0.10.0...v0.11.0](https://github.com/Nimbleway/nimble-go/compare/v0.10.0...v0.11.0)
