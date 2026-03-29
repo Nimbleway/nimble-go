@@ -83,6 +83,7 @@ func TestAgentRunWithOptionalParams(t *testing.T) {
 		Params: map[string]any{
 			"foo": "bar",
 		},
+		Formats:      []string{"html", "markdown"},
 		Localization: githubcomnimblewaynimblego.Bool(true),
 	})
 	if err != nil {
@@ -113,6 +114,7 @@ func TestAgentRunAsyncWithOptionalParams(t *testing.T) {
 			"foo": "bar",
 		},
 		CallbackURL:       githubcomnimblewaynimblego.String("https://example.com/webhook/callback"),
+		Formats:           []string{"html", "markdown"},
 		Localization:      githubcomnimblewaynimblego.Bool(true),
 		StorageCompress:   githubcomnimblewaynimblego.Bool(true),
 		StorageObjectName: githubcomnimblewaynimblego.String("result-2024-01-15.json"),

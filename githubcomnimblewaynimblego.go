@@ -71,6 +71,8 @@ type ExtractResponseData struct {
 	Markdown string `json:"markdown"`
 	// The network capture data collected during the task.
 	NetworkCapture []ExtractResponseDataNetworkCapture `json:"network_capture"`
+	// Individual HTML content of each pagination page, before merging.
+	PagesHTML []string `json:"pages_html"`
 	// The parsing results extracted from the HTML & network content.
 	Parsing ExtractResponseDataParsingUnion `json:"parsing"`
 	// The list of redirects that occurred during the task.
@@ -88,6 +90,7 @@ type ExtractResponseData struct {
 		HTML           respjson.Field
 		Markdown       respjson.Field
 		NetworkCapture respjson.Field
+		PagesHTML      respjson.Field
 		Parsing        respjson.Field
 		Redirects      respjson.Field
 		Screenshots    respjson.Field
