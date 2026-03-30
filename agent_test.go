@@ -42,6 +42,38 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 	}
 }
 
+func TestAgentGenerateWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agent.Generate(context.TODO(), githubcomnimblewaynimblego.AgentGenerateParams{
+		OfCreateAgentGenerationRequest: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateAgentGenerationRequest{
+			AgentName:    "agent_name",
+			Prompt:       "prompt",
+			URL:          "url",
+			InputSchema:  map[string]any{},
+			Metadata:     map[string]any{},
+			OutputSchema: map[string]any{},
+		},
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestAgentGet(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
@@ -56,6 +88,29 @@ func TestAgentGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agent.Get(context.TODO(), "template_name")
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentGetGeneration(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agent.GetGeneration(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
