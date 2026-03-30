@@ -26,7 +26,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
+	_, err := client.Agent.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
 		Limit:     githubcomnimblewaynimblego.Int(1),
 		ManagedBy: githubcomnimblewaynimblego.AgentListParamsManagedByNimble,
 		Offset:    githubcomnimblewaynimblego.Int(0),
@@ -55,7 +55,7 @@ func TestAgentGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Get(context.TODO(), "template_name")
+	_, err := client.Agent.Get(context.TODO(), "template_name")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
@@ -78,7 +78,7 @@ func TestAgentPublish(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Publish(
+	_, err := client.Agent.Publish(
 		context.TODO(),
 		"agent_name",
 		githubcomnimblewaynimblego.AgentPublishParams{
@@ -107,7 +107,7 @@ func TestAgentRunWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Run(context.TODO(), githubcomnimblewaynimblego.AgentRunParams{
+	_, err := client.Agent.Run(context.TODO(), githubcomnimblewaynimblego.AgentRunParams{
 		Agent: "agent",
 		Params: map[string]any{
 			"foo": "bar",
@@ -137,7 +137,7 @@ func TestAgentRunAsyncWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.RunAsync(context.TODO(), githubcomnimblewaynimblego.AgentRunAsyncParams{
+	_, err := client.Agent.RunAsync(context.TODO(), githubcomnimblewaynimblego.AgentRunAsyncParams{
 		Agent: "agent",
 		Params: map[string]any{
 			"foo": "bar",
@@ -172,7 +172,7 @@ func TestAgentRunBatchWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.RunBatch(context.TODO(), githubcomnimblewaynimblego.AgentRunBatchParams{
+	_, err := client.Agent.RunBatch(context.TODO(), githubcomnimblewaynimblego.AgentRunBatchParams{
 		Inputs: []githubcomnimblewaynimblego.AgentRunBatchParamsInput{{
 			Formats:      []string{"html", "markdown"},
 			Localization: githubcomnimblewaynimblego.Bool(true),
