@@ -39,7 +39,7 @@ func NewAgentService(opts ...option.RequestOption) (r AgentService) {
 	return
 }
 
-// List Templates
+// List Agent Templates
 func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...option.RequestOption) (res *[]AgentListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents"
@@ -47,7 +47,7 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 	return res, err
 }
 
-// Get Template
+// Get Agent Template
 func (r *AgentService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if templateName == "" {
