@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"time"
 
 	"github.com/Nimbleway/nimble-go/internal/apijson"
 	"github.com/Nimbleway/nimble-go/internal/apiquery"
@@ -27,8 +28,7 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAgentService] method instead.
 type AgentService struct {
-	Options     []option.RequestOption
-	Generations AgentGenerationService
+	Options []option.RequestOption
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -37,7 +37,6 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r AgentService) {
 	r = AgentService{}
 	r.Options = opts
-	r.Generations = NewAgentGenerationService(opts...)
 	return
 }
 
@@ -49,6 +48,14 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 	return res, err
 }
 
+// Create Agent Generation
+func (r *AgentService) Generate(ctx context.Context, body AgentGenerateParams, opts ...option.RequestOption) (res *AgentGenerateResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/agents/generations"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // Get Agent Template
 func (r *AgentService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -57,6 +64,18 @@ func (r *AgentService) Get(ctx context.Context, templateName string, opts ...opt
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s", templateName)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// Get Agent Generation
+func (r *AgentService) GetGeneration(ctx context.Context, generationID string, opts ...option.RequestOption) (res *AgentGetGenerationResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if generationID == "" {
+		err = errors.New("missing required generation_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agents/generations/%s", generationID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -124,6 +143,42 @@ type AgentListResponse struct {
 // Returns the unmodified JSON received from the API
 func (r AgentListResponse) RawJSON() string { return r.JSON.raw }
 func (r *AgentListResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGenerateResponse struct {
+	ID                 string    `json:"id" api:"required" format:"uuid"`
+	Status             string    `json:"status" api:"required"`
+	AgentName          string    `json:"agent_name" api:"nullable"`
+	CompletedAt        time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	CreatedAt          time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Error              string    `json:"error" api:"nullable"`
+	GeneratedVersion   any       `json:"generated_version" api:"nullable"`
+	GeneratedVersionID string    `json:"generated_version_id" api:"nullable" format:"uuid"`
+	SourceVersionID    string    `json:"source_version_id" api:"nullable" format:"uuid"`
+	StartedAt          time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	Summary            string    `json:"summary" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                 respjson.Field
+		Status             respjson.Field
+		AgentName          respjson.Field
+		CompletedAt        respjson.Field
+		CreatedAt          respjson.Field
+		Error              respjson.Field
+		GeneratedVersion   respjson.Field
+		GeneratedVersionID respjson.Field
+		SourceVersionID    respjson.Field
+		StartedAt          respjson.Field
+		Summary            respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGenerateResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentGenerateResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -208,6 +263,42 @@ type AgentGetResponseInputProperty struct {
 // Returns the unmodified JSON received from the API
 func (r AgentGetResponseInputProperty) RawJSON() string { return r.JSON.raw }
 func (r *AgentGetResponseInputProperty) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGetGenerationResponse struct {
+	ID                 string    `json:"id" api:"required" format:"uuid"`
+	Status             string    `json:"status" api:"required"`
+	AgentName          string    `json:"agent_name" api:"nullable"`
+	CompletedAt        time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	CreatedAt          time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Error              string    `json:"error" api:"nullable"`
+	GeneratedVersion   any       `json:"generated_version" api:"nullable"`
+	GeneratedVersionID string    `json:"generated_version_id" api:"nullable" format:"uuid"`
+	SourceVersionID    string    `json:"source_version_id" api:"nullable" format:"uuid"`
+	StartedAt          time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	Summary            string    `json:"summary" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                 respjson.Field
+		Status             respjson.Field
+		AgentName          respjson.Field
+		CompletedAt        respjson.Field
+		CreatedAt          respjson.Field
+		Error              respjson.Field
+		GeneratedVersion   respjson.Field
+		GeneratedVersionID respjson.Field
+		SourceVersionID    respjson.Field
+		StartedAt          respjson.Field
+		Summary            respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGetGenerationResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetGenerationResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1005,6 +1096,61 @@ const (
 	AgentListParamsPrivacyPrivate AgentListParamsPrivacy = "private"
 	AgentListParamsPrivacyAll     AgentListParamsPrivacy = "all"
 )
+
+type AgentGenerateParams struct {
+
+	//
+	// Request body variants
+	//
+
+	// This field is a request body variant, only one variant field can be set.
+	OfCreateAgentGenerationRequest *AgentGenerateParamsBodyCreateAgentGenerationRequest `json:",inline"`
+	// This field is a request body variant, only one variant field can be set.
+	OfCreateAgentRefinementRequest *AgentGenerateParamsBodyCreateAgentRefinementRequest `json:",inline"`
+
+	paramObj
+}
+
+func (u AgentGenerateParams) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCreateAgentGenerationRequest, u.OfCreateAgentRefinementRequest)
+}
+func (r *AgentGenerateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties AgentName, Prompt, URL are required.
+type AgentGenerateParamsBodyCreateAgentGenerationRequest struct {
+	AgentName    string `json:"agent_name" api:"required"`
+	Prompt       string `json:"prompt" api:"required"`
+	URL          string `json:"url" api:"required"`
+	Metadata     any    `json:"metadata,omitzero"`
+	InputSchema  any    `json:"input_schema,omitzero"`
+	OutputSchema any    `json:"output_schema,omitzero"`
+	paramObj
+}
+
+func (r AgentGenerateParamsBodyCreateAgentGenerationRequest) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCreateAgentGenerationRequest
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentGenerateParamsBodyCreateAgentGenerationRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties FromAgent, Prompt are required.
+type AgentGenerateParamsBodyCreateAgentRefinementRequest struct {
+	FromAgent string `json:"from_agent" api:"required"`
+	Prompt    string `json:"prompt" api:"required"`
+	paramObj
+}
+
+func (r AgentGenerateParamsBodyCreateAgentRefinementRequest) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCreateAgentRefinementRequest
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentGenerateParamsBodyCreateAgentRefinementRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type AgentPublishParams struct {
 	VersionID string `json:"version_id" api:"required" format:"uuid"`
