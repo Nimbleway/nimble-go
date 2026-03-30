@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.13.0 (2026-03-30)
+
+Full Changelog: [v0.12.0...v0.13.0](https://github.com/Nimbleway/nimble-go/compare/v0.12.0...v0.13.0)
+
+### Features
+
+* **api:** api update ([13964c5](https://github.com/Nimbleway/nimble-go/commit/13964c56b55241a18f7213b09bf88952fdb0338c))
+* **api:** manual updates ([edbd63c](https://github.com/Nimbleway/nimble-go/commit/edbd63c414eaae787b9d5d81931cb55c8e0eebed))
+* **api:** manual updates ([bc8f422](https://github.com/Nimbleway/nimble-go/commit/bc8f42253f80b6ad9985b292ed7befc847df0051))
+* **api:** manual updates ([dcf321a](https://github.com/Nimbleway/nimble-go/commit/dcf321a5164c420fcdc0f5a90010c5fca86a3c64))
+* **api:** rename agent resource -&gt; agents ([a59cf61](https://github.com/Nimbleway/nimble-go/commit/a59cf618f67bdbb2e3b02ac7b72dd30b49e16281))
+
 ## 0.12.0 (2026-03-29)
 
 Full Changelog: [v0.11.0...v0.12.0](https://github.com/Nimbleway/nimble-go/compare/v0.11.0...v0.12.0)
