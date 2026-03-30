@@ -27,7 +27,8 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAgentService] method instead.
 type AgentService struct {
-	Options []option.RequestOption
+	Options     []option.RequestOption
+	Generations AgentGenerationService
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -36,6 +37,7 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r AgentService) {
 	r = AgentService{}
 	r.Options = opts
+	r.Generations = NewAgentGenerationService(opts...)
 	return
 }
 
@@ -56,6 +58,18 @@ func (r *AgentService) Get(ctx context.Context, templateName string, opts ...opt
 	}
 	path := fmt.Sprintf("v1/agents/%s", templateName)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// Publish Agent Version
+func (r *AgentService) Publish(ctx context.Context, agentName string, body AgentPublishParams, opts ...option.RequestOption) (res *AgentPublishResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentName == "" {
+		err = errors.New("missing required agent_name parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agents/%s/publish", agentName)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -194,6 +208,24 @@ type AgentGetResponseInputProperty struct {
 // Returns the unmodified JSON received from the API
 func (r AgentGetResponseInputProperty) RawJSON() string { return r.JSON.raw }
 func (r *AgentGetResponseInputProperty) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentPublishResponse struct {
+	AgentName          string `json:"agent_name" api:"required"`
+	PublishedVersionID string `json:"published_version_id" api:"required" format:"uuid"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AgentName          respjson.Field
+		PublishedVersionID respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentPublishResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentPublishResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -973,6 +1005,19 @@ const (
 	AgentListParamsPrivacyPrivate AgentListParamsPrivacy = "private"
 	AgentListParamsPrivacyAll     AgentListParamsPrivacy = "all"
 )
+
+type AgentPublishParams struct {
+	VersionID string `json:"version_id" api:"required" format:"uuid"`
+	paramObj
+}
+
+func (r AgentPublishParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentPublishParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentPublishParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type AgentRunParams struct {
 	Agent        string          `json:"agent" api:"required"`
