@@ -26,7 +26,7 @@ func TestAgentGenerationNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agent.Generations.New(context.TODO(), githubcomnimblewaynimblego.AgentGenerationNewParams{
+	_, err := client.Agents.Generations.New(context.TODO(), githubcomnimblewaynimblego.AgentGenerationNewParams{
 		OfCreateAgentGenerationRequest: &githubcomnimblewaynimblego.AgentGenerationNewParamsBodyCreateAgentGenerationRequest{
 			AgentName:    "agent_name",
 			Prompt:       "prompt",
@@ -58,7 +58,7 @@ func TestAgentGenerationGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agent.Generations.Get(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
+	_, err := client.Agents.Generations.Get(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {

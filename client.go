@@ -17,7 +17,7 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
-	Agent   AgentService
+	Agents  AgentService
 	Crawl   CrawlService
 	Tasks   TaskService
 	Batches BatchService
@@ -45,7 +45,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Agent = NewAgentService(opts...)
+	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 	r.Tasks = NewTaskService(opts...)
 	r.Batches = NewBatchService(opts...)
