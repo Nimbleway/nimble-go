@@ -174,6 +174,7 @@ func TestExtractWithOptionalParams(t *testing.T) {
 			StatusCode: githubcomnimblewaynimblego.ExtractParamsNetworkCaptureStatusCodeUnion{
 				OfFloat: githubcomnimblewaynimblego.Float(100),
 			},
+			StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 			URL: githubcomnimblewaynimblego.ExtractParamsNetworkCaptureURL{
 				Value: "value",
 				Type:  "exact",
@@ -374,6 +375,7 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 			StatusCode: githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCaptureStatusCodeUnion{
 				OfFloat: githubcomnimblewaynimblego.Float(100),
 			},
+			StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 			URL: githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCaptureURL{
 				Value: "value",
 				Type:  "exact",
@@ -578,6 +580,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
+				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",
@@ -760,6 +763,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
+				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",

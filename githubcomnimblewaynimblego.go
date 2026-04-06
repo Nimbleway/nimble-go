@@ -184,6 +184,7 @@ type ExtractResponseDataNetworkCaptureFilter struct {
 	// Resource type for network capture filtering
 	ResourceType                ExtractResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
 	StatusCode                  ExtractResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
+	StopOnRenderFlowFailure     bool                                                     `json:"stop_on_render_flow_failure"`
 	URL                         ExtractResponseDataNetworkCaptureFilterURL               `json:"url"`
 	WaitForRequestsCountTimeout float64                                                  `json:"wait_for_requests_count_timeout"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -193,6 +194,7 @@ type ExtractResponseDataNetworkCaptureFilter struct {
 		Method                      respjson.Field
 		ResourceType                respjson.Field
 		StatusCode                  respjson.Field
+		StopOnRenderFlowFailure     respjson.Field
 		URL                         respjson.Field
 		WaitForRequestsCountTimeout respjson.Field
 		ExtraFields                 map[string]respjson.Field
@@ -1078,7 +1080,8 @@ type ExtractParams struct {
 	Device ExtractParamsDevice `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6".
 	Driver ExtractParamsDriver `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -1682,13 +1685,14 @@ const (
 type ExtractParamsDriver string
 
 const (
-	ExtractParamsDriverVx6     ExtractParamsDriver = "vx6"
-	ExtractParamsDriverVx8     ExtractParamsDriver = "vx8"
-	ExtractParamsDriverVx8Pro  ExtractParamsDriver = "vx8-pro"
-	ExtractParamsDriverVx10    ExtractParamsDriver = "vx10"
-	ExtractParamsDriverVx10Pro ExtractParamsDriver = "vx10-pro"
-	ExtractParamsDriverVx12    ExtractParamsDriver = "vx12"
-	ExtractParamsDriverVx12Pro ExtractParamsDriver = "vx12-pro"
+	ExtractParamsDriverVx6      ExtractParamsDriver = "vx6"
+	ExtractParamsDriverVx8      ExtractParamsDriver = "vx8"
+	ExtractParamsDriverVx8Pro   ExtractParamsDriver = "vx8-pro"
+	ExtractParamsDriverVx10     ExtractParamsDriver = "vx10"
+	ExtractParamsDriverVx10Pro  ExtractParamsDriver = "vx10-pro"
+	ExtractParamsDriverVx12     ExtractParamsDriver = "vx12"
+	ExtractParamsDriverVx12Pro  ExtractParamsDriver = "vx12-pro"
+	ExtractParamsDriverMediaVx6 ExtractParamsDriver = "media-vx6"
 )
 
 // Only one field can be non-zero.
@@ -2267,6 +2271,7 @@ const (
 )
 
 type ExtractParamsNetworkCapture struct {
+	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -2583,7 +2588,8 @@ type ExtractAsyncParams struct {
 	Device ExtractAsyncParamsDevice `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6".
 	Driver ExtractAsyncParamsDriver `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -3187,13 +3193,14 @@ const (
 type ExtractAsyncParamsDriver string
 
 const (
-	ExtractAsyncParamsDriverVx6     ExtractAsyncParamsDriver = "vx6"
-	ExtractAsyncParamsDriverVx8     ExtractAsyncParamsDriver = "vx8"
-	ExtractAsyncParamsDriverVx8Pro  ExtractAsyncParamsDriver = "vx8-pro"
-	ExtractAsyncParamsDriverVx10    ExtractAsyncParamsDriver = "vx10"
-	ExtractAsyncParamsDriverVx10Pro ExtractAsyncParamsDriver = "vx10-pro"
-	ExtractAsyncParamsDriverVx12    ExtractAsyncParamsDriver = "vx12"
-	ExtractAsyncParamsDriverVx12Pro ExtractAsyncParamsDriver = "vx12-pro"
+	ExtractAsyncParamsDriverVx6      ExtractAsyncParamsDriver = "vx6"
+	ExtractAsyncParamsDriverVx8      ExtractAsyncParamsDriver = "vx8"
+	ExtractAsyncParamsDriverVx8Pro   ExtractAsyncParamsDriver = "vx8-pro"
+	ExtractAsyncParamsDriverVx10     ExtractAsyncParamsDriver = "vx10"
+	ExtractAsyncParamsDriverVx10Pro  ExtractAsyncParamsDriver = "vx10-pro"
+	ExtractAsyncParamsDriverVx12     ExtractAsyncParamsDriver = "vx12"
+	ExtractAsyncParamsDriverVx12Pro  ExtractAsyncParamsDriver = "vx12-pro"
+	ExtractAsyncParamsDriverMediaVx6 ExtractAsyncParamsDriver = "media-vx6"
 )
 
 // Only one field can be non-zero.
@@ -3772,6 +3779,7 @@ const (
 )
 
 type ExtractAsyncParamsNetworkCapture struct {
+	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -4106,7 +4114,8 @@ type ExtractBatchParamsInput struct {
 	Device string `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -4224,7 +4233,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
@@ -5280,6 +5289,7 @@ const (
 )
 
 type ExtractBatchParamsInputNetworkCapture struct {
+	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -5525,7 +5535,8 @@ type ExtractBatchParamsSharedInputs struct {
 	Device string `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -5643,7 +5654,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
@@ -6699,6 +6710,7 @@ const (
 )
 
 type ExtractBatchParamsSharedInputsNetworkCapture struct {
+	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`

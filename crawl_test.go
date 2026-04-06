@@ -218,6 +218,7 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
+				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",
