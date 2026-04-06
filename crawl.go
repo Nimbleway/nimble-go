@@ -1173,7 +1173,8 @@ type CrawlRunParamsExtractOptions struct {
 	Device string `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro".
+	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -1291,7 +1292,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
@@ -2347,6 +2348,7 @@ const (
 )
 
 type CrawlRunParamsExtractOptionsNetworkCapture struct {
+	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
