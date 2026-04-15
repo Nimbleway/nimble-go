@@ -182,17 +182,18 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
 			},
-			Http2:  githubcomnimblewaynimblego.Bool(true),
-			IsXhr:  githubcomnimblewaynimblego.Bool(true),
-			Locale: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsLocaleEnUs,
-			Method: "GET",
+			Http2:           githubcomnimblewaynimblego.Bool(true),
+			IsXhr:           githubcomnimblewaynimblego.Bool(true),
+			Locale:          githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsLocaleEnUs,
+			MarkdownBackend: "full_page",
+			Method:          "GET",
 			NetworkCapture: []githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCapture{{
 				Method: "GET",
 				ResourceType: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCaptureResourceTypeUnion{
