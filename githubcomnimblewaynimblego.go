@@ -67,6 +67,8 @@ type ExtractResponseData struct {
 	Headers map[string]string `json:"headers"`
 	// The HTML content of the page.
 	HTML string `json:"html"`
+	// List of all unique URLs found on the page.
+	Links []string `json:"links"`
 	// The Markdown version of the HTML content.
 	Markdown string `json:"markdown"`
 	// The network capture data collected during the task.
@@ -88,6 +90,7 @@ type ExtractResponseData struct {
 		Fetch          respjson.Field
 		Headers        respjson.Field
 		HTML           respjson.Field
+		Links          respjson.Field
 		Markdown       respjson.Field
 		NetworkCapture respjson.Field
 		PagesHTML      respjson.Field
@@ -1087,7 +1090,7 @@ type ExtractParams struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown", "screenshot", "headers".
+	// Any of "html", "markdown", "screenshot", "headers", "links".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractParamsHeaderUnion `json:"headers,omitzero"`
@@ -1155,6 +1158,12 @@ type ExtractParams struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale ExtractParamsLocale `json:"locale,omitzero"`
+	// Selects which markdown conversion strategy to use. "full_page" converts the
+	// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+	// article content before converting.
+	//
+	// Any of "full_page", "main_content".
+	MarkdownBackend ExtractParamsMarkdownBackend `json:"markdown_backend,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
@@ -2259,6 +2268,16 @@ const (
 	ExtractParamsLocaleAuto      ExtractParamsLocale = "auto"
 )
 
+// Selects which markdown conversion strategy to use. "full_page" converts the
+// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+// article content before converting.
+type ExtractParamsMarkdownBackend string
+
+const (
+	ExtractParamsMarkdownBackendFullPage    ExtractParamsMarkdownBackend = "full_page"
+	ExtractParamsMarkdownBackendMainContent ExtractParamsMarkdownBackend = "main_content"
+)
+
 // HTTP method for the request
 type ExtractParamsMethod string
 
@@ -2595,7 +2614,7 @@ type ExtractAsyncParams struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown", "screenshot", "headers".
+	// Any of "html", "markdown", "screenshot", "headers", "links".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractAsyncParamsHeaderUnion `json:"headers,omitzero"`
@@ -2663,6 +2682,12 @@ type ExtractAsyncParams struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale ExtractAsyncParamsLocale `json:"locale,omitzero"`
+	// Selects which markdown conversion strategy to use. "full_page" converts the
+	// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+	// article content before converting.
+	//
+	// Any of "full_page", "main_content".
+	MarkdownBackend ExtractAsyncParamsMarkdownBackend `json:"markdown_backend,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
@@ -3767,6 +3792,16 @@ const (
 	ExtractAsyncParamsLocaleAuto      ExtractAsyncParamsLocale = "auto"
 )
 
+// Selects which markdown conversion strategy to use. "full_page" converts the
+// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+// article content before converting.
+type ExtractAsyncParamsMarkdownBackend string
+
+const (
+	ExtractAsyncParamsMarkdownBackendFullPage    ExtractAsyncParamsMarkdownBackend = "full_page"
+	ExtractAsyncParamsMarkdownBackendMainContent ExtractAsyncParamsMarkdownBackend = "main_content"
+)
+
 // HTTP method for the request
 type ExtractAsyncParamsMethod string
 
@@ -4121,7 +4156,7 @@ type ExtractBatchParamsInput struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown", "screenshot", "headers".
+	// Any of "html", "markdown", "screenshot", "headers", "links".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractBatchParamsInputHeaderUnion `json:"headers,omitzero"`
@@ -4189,6 +4224,12 @@ type ExtractBatchParamsInput struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale ExtractBatchParamsInputLocale `json:"locale,omitzero"`
+	// Selects which markdown conversion strategy to use. "full_page" converts the
+	// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+	// article content before converting.
+	//
+	// Any of "full_page", "main_content".
+	MarkdownBackend string `json:"markdown_backend,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
@@ -4234,6 +4275,9 @@ func init() {
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
 		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
+		"markdown_backend", "full_page", "main_content",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
@@ -5542,7 +5586,7 @@ type ExtractBatchParamsSharedInputs struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown", "screenshot", "headers".
+	// Any of "html", "markdown", "screenshot", "headers", "links".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]ExtractBatchParamsSharedInputsHeaderUnion `json:"headers,omitzero"`
@@ -5610,6 +5654,12 @@ type ExtractBatchParamsSharedInputs struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale ExtractBatchParamsSharedInputsLocale `json:"locale,omitzero"`
+	// Selects which markdown conversion strategy to use. "full_page" converts the
+	// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+	// article content before converting.
+	//
+	// Any of "full_page", "main_content".
+	MarkdownBackend string `json:"markdown_backend,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
@@ -5655,6 +5705,9 @@ func init() {
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
 		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+	)
+	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
+		"markdown_backend", "full_page", "main_content",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
