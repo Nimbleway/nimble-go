@@ -57,11 +57,15 @@ func TestAgentGenerateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agent.Generate(context.TODO(), githubcomnimblewaynimblego.AgentGenerateParams{
 		OfCreateAgentGenerationRequest: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateAgentGenerationRequest{
-			AgentName:    "agent_name",
-			Prompt:       "prompt",
-			URL:          "url",
-			InputSchema:  map[string]any{},
-			Metadata:     map[string]any{},
+			Prompt:      "prompt",
+			URL:         "url",
+			AgentName:   githubcomnimblewaynimblego.String("agent_name"),
+			InputSchema: map[string]any{},
+			Metadata: githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata{
+				Description: githubcomnimblewaynimblego.String("description"),
+				DisplayName: githubcomnimblewaynimblego.String("display_name"),
+				Tags:        []string{"string"},
+			},
 			OutputSchema: map[string]any{},
 		},
 	})

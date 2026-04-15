@@ -138,17 +138,18 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractParamsHeaderUnion{
-			"User-Agent": {
-				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-			},
 			"Accept-Language": {
 				OfString: githubcomnimblewaynimblego.String("en-US"),
 			},
+			"User-Agent": {
+				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+			},
 		},
-		Http2:  githubcomnimblewaynimblego.Bool(true),
-		IsXhr:  githubcomnimblewaynimblego.Bool(true),
-		Locale: githubcomnimblewaynimblego.ExtractParamsLocaleEnUs,
-		Method: githubcomnimblewaynimblego.ExtractParamsMethodGet,
+		Http2:           githubcomnimblewaynimblego.Bool(true),
+		IsXhr:           githubcomnimblewaynimblego.Bool(true),
+		Locale:          githubcomnimblewaynimblego.ExtractParamsLocaleEnUs,
+		MarkdownBackend: githubcomnimblewaynimblego.ExtractParamsMarkdownBackendFullPage,
+		Method:          githubcomnimblewaynimblego.ExtractParamsMethodGet,
 		NetworkCapture: []githubcomnimblewaynimblego.ExtractParamsNetworkCapture{{
 			Method: "GET",
 			ResourceType: githubcomnimblewaynimblego.ExtractParamsNetworkCaptureResourceTypeUnion{
@@ -322,17 +323,18 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractAsyncParamsHeaderUnion{
-			"User-Agent": {
-				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-			},
 			"Accept-Language": {
 				OfString: githubcomnimblewaynimblego.String("en-US"),
 			},
+			"User-Agent": {
+				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+			},
 		},
-		Http2:  githubcomnimblewaynimblego.Bool(true),
-		IsXhr:  githubcomnimblewaynimblego.Bool(true),
-		Locale: githubcomnimblewaynimblego.ExtractAsyncParamsLocaleEnUs,
-		Method: githubcomnimblewaynimblego.ExtractAsyncParamsMethodGet,
+		Http2:           githubcomnimblewaynimblego.Bool(true),
+		IsXhr:           githubcomnimblewaynimblego.Bool(true),
+		Locale:          githubcomnimblewaynimblego.ExtractAsyncParamsLocaleEnUs,
+		MarkdownBackend: githubcomnimblewaynimblego.ExtractAsyncParamsMarkdownBackendFullPage,
+		Method:          githubcomnimblewaynimblego.ExtractAsyncParamsMethodGet,
 		NetworkCapture: []githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCapture{{
 			Method: "GET",
 			ResourceType: githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCaptureResourceTypeUnion{
@@ -510,17 +512,18 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsInputHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
 			},
-			Http2:  githubcomnimblewaynimblego.Bool(true),
-			IsXhr:  githubcomnimblewaynimblego.Bool(true),
-			Locale: githubcomnimblewaynimblego.ExtractBatchParamsInputLocaleEnUs,
-			Method: "GET",
+			Http2:           githubcomnimblewaynimblego.Bool(true),
+			IsXhr:           githubcomnimblewaynimblego.Bool(true),
+			Locale:          githubcomnimblewaynimblego.ExtractBatchParamsInputLocaleEnUs,
+			MarkdownBackend: "full_page",
+			Method:          "GET",
 			NetworkCapture: []githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCapture{{
 				Method: "GET",
 				ResourceType: githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCaptureResourceTypeUnion{
@@ -676,17 +679,18 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
 			},
-			Http2:  githubcomnimblewaynimblego.Bool(true),
-			IsXhr:  githubcomnimblewaynimblego.Bool(true),
-			Locale: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsLocaleEnUs,
-			Method: "GET",
+			Http2:           githubcomnimblewaynimblego.Bool(true),
+			IsXhr:           githubcomnimblewaynimblego.Bool(true),
+			Locale:          githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsLocaleEnUs,
+			MarkdownBackend: "full_page",
+			Method:          "GET",
 			NetworkCapture: []githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCapture{{
 				Method: "GET",
 				ResourceType: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCaptureResourceTypeUnion{

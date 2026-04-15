@@ -1180,7 +1180,7 @@ type CrawlRunParamsExtractOptions struct {
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
 	// List of acceptable response formats in order of preference
 	//
-	// Any of "html", "markdown", "screenshot", "headers".
+	// Any of "html", "markdown", "screenshot", "headers", "links".
 	Formats []string `json:"formats,omitzero"`
 	// Custom HTTP headers to include in the request
 	Headers map[string]CrawlRunParamsExtractOptionsHeaderUnion `json:"headers,omitzero"`
@@ -1248,6 +1248,12 @@ type CrawlRunParamsExtractOptions struct {
 	// "zh-Hans-SG", "zh-Hant", "zh-Hant-HK", "zh-Hant-MO", "zh-Hant-TW", "zh-SG",
 	// "zh-TW", "zu", "zu-ZA", "auto".
 	Locale CrawlRunParamsExtractOptionsLocale `json:"locale,omitzero"`
+	// Selects which markdown conversion strategy to use. "full_page" converts the
+	// entire HTML page. "main_content" uses Mozilla Readability to extract the main
+	// article content before converting.
+	//
+	// Any of "full_page", "main_content".
+	MarkdownBackend string `json:"markdown_backend,omitzero"`
 	// HTTP method for the request
 	//
 	// Any of "GET", "POST", "PUT", "PATCH", "DELETE".
@@ -1293,6 +1299,9 @@ func init() {
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+	)
+	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
+		"markdown_backend", "full_page", "main_content",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"method", "GET", "POST", "PUT", "PATCH", "DELETE",
