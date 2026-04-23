@@ -663,7 +663,6 @@ type AgentRunResponseDataNetworkCaptureFilter struct {
 	// Resource type for network capture filtering
 	ResourceType                AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
 	StatusCode                  AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
-	StopOnRenderFlowFailure     bool                                                      `json:"stop_on_render_flow_failure"`
 	URL                         AgentRunResponseDataNetworkCaptureFilterURL               `json:"url"`
 	WaitForRequestsCountTimeout float64                                                   `json:"wait_for_requests_count_timeout"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -673,7 +672,6 @@ type AgentRunResponseDataNetworkCaptureFilter struct {
 		Method                      respjson.Field
 		ResourceType                respjson.Field
 		StatusCode                  respjson.Field
-		StopOnRenderFlowFailure     respjson.Field
 		URL                         respjson.Field
 		WaitForRequestsCountTimeout respjson.Field
 		ExtraFields                 map[string]respjson.Field

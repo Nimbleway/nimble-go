@@ -182,11 +182,11 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsHeaderUnion{
-				"Accept-Language": {
-					OfString: githubcomnimblewaynimblego.String("en-US"),
-				},
 				"User-Agent": {
 					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
+				"Accept-Language": {
+					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -202,7 +202,6 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
-				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",
