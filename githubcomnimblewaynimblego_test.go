@@ -138,11 +138,11 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractParamsHeaderUnion{
-			"Accept-Language": {
-				OfString: githubcomnimblewaynimblego.String("en-US"),
-			},
 			"User-Agent": {
 				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+			},
+			"Accept-Language": {
+				OfString: githubcomnimblewaynimblego.String("en-US"),
 			},
 		},
 		Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -158,7 +158,6 @@ func TestExtractWithOptionalParams(t *testing.T) {
 			StatusCode: githubcomnimblewaynimblego.ExtractParamsNetworkCaptureStatusCodeUnion{
 				OfFloat: githubcomnimblewaynimblego.Float(100),
 			},
-			StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 			URL: githubcomnimblewaynimblego.ExtractParamsNetworkCaptureURL{
 				Value: "value",
 				Type:  "exact",
@@ -323,11 +322,11 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractAsyncParamsHeaderUnion{
-			"Accept-Language": {
-				OfString: githubcomnimblewaynimblego.String("en-US"),
-			},
 			"User-Agent": {
 				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+			},
+			"Accept-Language": {
+				OfString: githubcomnimblewaynimblego.String("en-US"),
 			},
 		},
 		Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -343,7 +342,6 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 			StatusCode: githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCaptureStatusCodeUnion{
 				OfFloat: githubcomnimblewaynimblego.Float(100),
 			},
-			StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 			URL: githubcomnimblewaynimblego.ExtractAsyncParamsNetworkCaptureURL{
 				Value: "value",
 				Type:  "exact",
@@ -512,11 +510,11 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsInputHeaderUnion{
-				"Accept-Language": {
-					OfString: githubcomnimblewaynimblego.String("en-US"),
-				},
 				"User-Agent": {
 					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
+				"Accept-Language": {
+					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -532,7 +530,6 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
-				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.ExtractBatchParamsInputNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",
@@ -679,11 +676,11 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsHeaderUnion{
-				"Accept-Language": {
-					OfString: githubcomnimblewaynimblego.String("en-US"),
-				},
 				"User-Agent": {
 					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
+				},
+				"Accept-Language": {
+					OfString: githubcomnimblewaynimblego.String("en-US"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -699,7 +696,6 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 				StatusCode: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCaptureStatusCodeUnion{
 					OfFloat: githubcomnimblewaynimblego.Float(100),
 				},
-				StopOnRenderFlowFailure: githubcomnimblewaynimblego.Bool(true),
 				URL: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsNetworkCaptureURL{
 					Value: "value",
 					Type:  "exact",

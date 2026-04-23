@@ -2357,7 +2357,6 @@ const (
 )
 
 type CrawlRunParamsExtractOptionsNetworkCapture struct {
-	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
