@@ -187,7 +187,6 @@ type ExtractResponseDataNetworkCaptureFilter struct {
 	// Resource type for network capture filtering
 	ResourceType                ExtractResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
 	StatusCode                  ExtractResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
-	StopOnRenderFlowFailure     bool                                                     `json:"stop_on_render_flow_failure"`
 	URL                         ExtractResponseDataNetworkCaptureFilterURL               `json:"url"`
 	WaitForRequestsCountTimeout float64                                                  `json:"wait_for_requests_count_timeout"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -197,7 +196,6 @@ type ExtractResponseDataNetworkCaptureFilter struct {
 		Method                      respjson.Field
 		ResourceType                respjson.Field
 		StatusCode                  respjson.Field
-		StopOnRenderFlowFailure     respjson.Field
 		URL                         respjson.Field
 		WaitForRequestsCountTimeout respjson.Field
 		ExtraFields                 map[string]respjson.Field
@@ -2290,7 +2288,6 @@ const (
 )
 
 type ExtractParamsNetworkCapture struct {
-	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -3814,7 +3811,6 @@ const (
 )
 
 type ExtractAsyncParamsNetworkCapture struct {
-	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -5333,7 +5329,6 @@ const (
 )
 
 type ExtractBatchParamsInputNetworkCapture struct {
-	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
@@ -6763,7 +6758,6 @@ const (
 )
 
 type ExtractBatchParamsSharedInputsNetworkCapture struct {
-	StopOnRenderFlowFailure     param.Opt[bool]    `json:"stop_on_render_flow_failure,omitzero"`
 	Validation                  param.Opt[bool]    `json:"validation,omitzero"`
 	WaitForRequestsCount        param.Opt[float64] `json:"wait_for_requests_count,omitzero"`
 	WaitForRequestsCountTimeout param.Opt[float64] `json:"wait_for_requests_count_timeout,omitzero"`
