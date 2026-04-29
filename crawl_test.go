@@ -182,11 +182,11 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
+				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
