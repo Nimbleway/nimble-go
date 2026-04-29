@@ -138,11 +138,11 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractParamsHeaderUnion{
-			"User-Agent": {
-				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-			},
 			"Accept-Language": {
 				OfString: githubcomnimblewaynimblego.String("en-US"),
+			},
+			"User-Agent": {
+				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
 			},
 		},
 		Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -322,11 +322,11 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 		ExpectedStatusCodes: []int64{200, 201},
 		Formats:             []string{"html"},
 		Headers: map[string]githubcomnimblewaynimblego.ExtractAsyncParamsHeaderUnion{
-			"User-Agent": {
-				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-			},
 			"Accept-Language": {
 				OfString: githubcomnimblewaynimblego.String("en-US"),
+			},
+			"User-Agent": {
+				OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
 			},
 		},
 		Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -510,11 +510,11 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsInputHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
+				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
@@ -676,11 +676,11 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			ExpectedStatusCodes: []int64{200, 201},
 			Formats:             []string{"html"},
 			Headers: map[string]githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsHeaderUnion{
-				"User-Agent": {
-					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
-				},
 				"Accept-Language": {
 					OfString: githubcomnimblewaynimblego.String("en-US"),
+				},
+				"User-Agent": {
+					OfString: githubcomnimblewaynimblego.String("CustomBot/1.0"),
 				},
 			},
 			Http2:           githubcomnimblewaynimblego.Bool(true),
