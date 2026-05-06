@@ -24,15 +24,19 @@ type Client struct {
 	Batches BatchService
 }
 
-// DefaultClientOptions read from the environment (NIMBLE_API_KEY,
+// DefaultClientOptions read from the environment (NIMBLE_API_KEY, CLIENT_SOURCE,
 // NIMBLE_BASE_URL). This should be used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{option.WithHTTPClient(defaultHTTPClient()), option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("NIMBLE_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
+	defaults = append(defaults, option.WithClientSource("sdk"))
 	if o, ok := os.LookupEnv("NIMBLE_API_KEY"); ok {
 		defaults = append(defaults, option.WithAPIKey(o))
+	}
+	if o, ok := os.LookupEnv("CLIENT_SOURCE"); ok {
+		defaults = append(defaults, option.WithClientSource(o))
 	}
 	if o, ok := os.LookupEnv("NIMBLE_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
@@ -46,9 +50,9 @@ func DefaultClientOptions() []option.RequestOption {
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (NIMBLE_API_KEY, NIMBLE_BASE_URL). The option passed in as arguments
-// are applied after these default arguments, and all option will be passed down to
-// the services and requests that this client makes.
+// environment (NIMBLE_API_KEY, CLIENT_SOURCE, NIMBLE_BASE_URL). The option passed
+// in as arguments are applied after these default arguments, and all option will
+// be passed down to the services and requests that this client makes.
 func NewClient(opts ...option.RequestOption) (r Client) {
 	opts = append(DefaultClientOptions(), opts...)
 
