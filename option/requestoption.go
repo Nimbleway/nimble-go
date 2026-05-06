@@ -273,3 +273,11 @@ func WithAPIKey(value string) RequestOption {
 		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.APIKey)))
 	})
 }
+
+// WithClientSource returns a RequestOption that sets the client setting "client_source".
+func WithClientSource(value string) RequestOption {
+	return requestconfig.PreRequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		r.ClientSource = value
+		return r.Apply(WithHeader("X-Client-Source", value))
+	})
+}
