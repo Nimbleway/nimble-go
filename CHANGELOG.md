@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.14.0 (2026-05-06)
+
+Full Changelog: [v0.13.0...v0.14.0](https://github.com/Nimbleway/nimble-go/compare/v0.13.0...v0.14.0)
+
+### Features
+
+* **api:** api update ([aa878fc](https://github.com/Nimbleway/nimble-go/commit/aa878fcc0591bc30df9e907c8b007ef27a9a2752))
+* **api:** api update ([09164dd](https://github.com/Nimbleway/nimble-go/commit/09164dd9c16e8824bf31c4017afb69a7d6ea8cc4))
+* **api:** api update ([3158d4f](https://github.com/Nimbleway/nimble-go/commit/3158d4fbcc879a0170eb2212645aaaffa9d9bb91))
+* **api:** api update ([aeba378](https://github.com/Nimbleway/nimble-go/commit/aeba378cbf87b134cc1dd816d74ce18aed027168))
+* **client:** add client source configuration and header support ([c2e9f3b](https://github.com/Nimbleway/nimble-go/commit/c2e9f3b7328548825f8802dc03f88e77389ffac7))
+* **go:** add default http client with timeout ([8db7bb6](https://github.com/Nimbleway/nimble-go/commit/8db7bb6b4984600c6ffe89c6bc511d309f2fdcf1))
+* support setting headers via env ([4da7ad8](https://github.com/Nimbleway/nimble-go/commit/4da7ad803086d3052d68997b1f35b7a814832be2))
+
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([fa2f44e](https://github.com/Nimbleway/nimble-go/commit/fa2f44e0fcfda1aaa888724e2b46ae9e091873cc))
+* **internal:** more robust bootstrap script ([03a008f](https://github.com/Nimbleway/nimble-go/commit/03a008f45f4066460b9ff6117a41f517816cd2b3))
+
+
+### Documentation
+
+* improve examples ([471edd4](https://github.com/Nimbleway/nimble-go/commit/471edd4173ed807e4d8caae740aec13bca3ffd91))
+
 ## 0.13.0 (2026-03-30)
 
 Full Changelog: [v0.12.0...v0.13.0](https://github.com/Nimbleway/nimble-go/compare/v0.12.0...v0.13.0)
