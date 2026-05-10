@@ -17,11 +17,14 @@ import (
 // interacting with the nimble API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options []option.RequestOption
-	Agent   AgentService
-	Crawl   CrawlService
-	Tasks   TaskService
-	Batches BatchService
+	Options         []option.RequestOption
+	Agent           AgentService
+	Crawl           CrawlService
+	Tasks           TaskService
+	Batches         BatchService
+	DomainKnowledge DomainKnowledgeService
+	Media           MediaService
+	Serp            SerpService
 }
 
 // DefaultClientOptions read from the environment (NIMBLE_API_KEY, CLIENT_SOURCE,
@@ -62,6 +65,9 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Crawl = NewCrawlService(opts...)
 	r.Tasks = NewTaskService(opts...)
 	r.Batches = NewBatchService(opts...)
+	r.DomainKnowledge = NewDomainKnowledgeService(opts...)
+	r.Media = NewMediaService(opts...)
+	r.Serp = NewSerpService(opts...)
 
 	return
 }

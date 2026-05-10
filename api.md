@@ -98,3 +98,39 @@ Methods:
 - <code title="get /v1/batches">client.Batches.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#BatchService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
 - <code title="get /v1/batches/{batch_id}">client.Batches.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#BatchService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, batchID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#BatchGetResponse">BatchGetResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/batches/{batch_id}/progress">client.Batches.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#BatchService.Progress">Progress</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, batchID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#BatchProgressResponse">BatchProgressResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+# DomainKnowledge
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#DomainKnowledgeGetDriverResponse">DomainKnowledgeGetDriverResponse</a>
+
+Methods:
+
+- <code title="get /v1/domain-knowledge/driver">client.DomainKnowledge.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#DomainKnowledgeService.GetDriver">GetDriver</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#DomainKnowledgeGetDriverParams">DomainKnowledgeGetDriverParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#DomainKnowledgeGetDriverResponse">DomainKnowledgeGetDriverResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+# Media
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunResponse">MediaRunResponse</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunAsyncResponse">MediaRunAsyncResponse</a>
+
+Methods:
+
+- <code title="post /v1/media">client.Media.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaService.Run">Run</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunParams">MediaRunParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunResponse">MediaRunResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/media/async">client.Media.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaService.RunAsync">RunAsync</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunAsyncParams">MediaRunAsyncParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#MediaRunAsyncResponse">MediaRunAsyncResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+# Serp
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunResponse">SerpRunResponse</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunAsyncResponse">SerpRunAsyncResponse</a>
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunBatchResponse">SerpRunBatchResponse</a>
+
+Methods:
+
+- <code title="post /v1/serp">client.Serp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpService.Run">Run</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunParams">SerpRunParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunResponse">SerpRunResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/serp/async">client.Serp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpService.RunAsync">RunAsync</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunAsyncParams">SerpRunAsyncParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunAsyncResponse">SerpRunAsyncResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/serp/batch">client.Serp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpService.RunBatch">RunBatch</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunBatchParams">SerpRunBatchParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunBatchResponse">SerpRunBatchResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
