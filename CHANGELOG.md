@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.15.0 (2026-05-10)
+
+Full Changelog: [v0.14.0...v0.15.0](https://github.com/Nimbleway/nimble-go/compare/v0.14.0...v0.15.0)
+
+### Features
+
+* **api:** Add media, serp and domain_knowledge ([1cd85ff](https://github.com/Nimbleway/nimble-go/commit/1cd85ff5de9ff447953b3247b4571552c808e8bb))
+
+
+### Bug Fixes
+
+* **go:** avoid panic when http.DefaultTransport is wrapped ([7c8c7d4](https://github.com/Nimbleway/nimble-go/commit/7c8c7d490f6e169e98ebf5c852b29718cd43bd97))
+
+
+### Chores
+
+* redact api-key headers in debug logs ([dc8ddcc](https://github.com/Nimbleway/nimble-go/commit/dc8ddcc53d6c0c626bb40048328b3f7022c65ec2))
+
 ## 0.14.0 (2026-05-06)
 
 Full Changelog: [v0.13.0...v0.14.0](https://github.com/Nimbleway/nimble-go/compare/v0.13.0...v0.14.0)
