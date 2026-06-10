@@ -105,7 +105,8 @@ type TaskListResponseData struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -205,7 +206,8 @@ type TaskGetResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
