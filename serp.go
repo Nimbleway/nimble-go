@@ -729,7 +729,8 @@ type SerpRunAsyncResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -813,7 +814,8 @@ type SerpRunBatchResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -883,6 +885,9 @@ type SerpRunParams struct {
 	Query param.Opt[string] `json:"query,omitzero"`
 	// Whether to render the page in a browser before extracting.
 	Render param.Opt[bool] `json:"render,omitzero"`
+	// When true, disables Google result filtering (filter=0) so omitted/duplicate and
+	// highly similar pages are also returned. Applies to Google search engines.
+	ShowHiddenResults param.Opt[bool] `json:"show_hidden_results,omitzero"`
 	// Device type used for the search request.
 	//
 	// Any of "desktop", "mobile".
@@ -950,6 +955,9 @@ type SerpRunAsyncParams struct {
 	Query param.Opt[string] `json:"query,omitzero"`
 	// Whether to render the page in a browser before extracting.
 	Render param.Opt[bool] `json:"render,omitzero"`
+	// When true, disables Google result filtering (filter=0) so omitted/duplicate and
+	// highly similar pages are also returned. Applies to Google search engines.
+	ShowHiddenResults param.Opt[bool] `json:"show_hidden_results,omitzero"`
 	// Whether to compress stored data
 	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
 	// Custom name for the stored object
@@ -1037,6 +1045,9 @@ type SerpRunBatchParamsInput struct {
 	Query param.Opt[string] `json:"query,omitzero"`
 	// Whether to render the page in a browser before extracting.
 	Render param.Opt[bool] `json:"render,omitzero"`
+	// When true, disables Google result filtering (filter=0) so omitted/duplicate and
+	// highly similar pages are also returned. Applies to Google search engines.
+	ShowHiddenResults param.Opt[bool] `json:"show_hidden_results,omitzero"`
 	// Whether to compress stored data
 	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
 	// Custom name for the stored object
@@ -1099,6 +1110,9 @@ type SerpRunBatchParamsSharedInputs struct {
 	Query param.Opt[string] `json:"query,omitzero"`
 	// Whether to render the page in a browser before extracting.
 	Render param.Opt[bool] `json:"render,omitzero"`
+	// When true, disables Google result filtering (filter=0) so omitted/duplicate and
+	// highly similar pages are also returned. Applies to Google search engines.
+	ShowHiddenResults param.Opt[bool] `json:"show_hidden_results,omitzero"`
 	// Whether to compress stored data
 	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
 	// Custom name for the stored object

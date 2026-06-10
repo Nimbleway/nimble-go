@@ -1138,6 +1138,8 @@ type CrawlRunParamsExtractOptions struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Request body for POST, PUT, PATCH methods
+	Body any `json:"body,omitzero"`
 	// Browser type to emulate
 	Browser CrawlRunParamsExtractOptionsBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially

@@ -57,16 +57,20 @@ func TestAgentGenerateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agent.Generate(context.TODO(), githubcomnimblewaynimblego.AgentGenerateParams{
 		OfCreateAgentGenerationRequest: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateAgentGenerationRequest{
-			Prompt:      "prompt",
-			URL:         "url",
-			AgentName:   githubcomnimblewaynimblego.String("agent_name"),
-			InputSchema: map[string]any{},
+			Prompt:    "prompt",
+			URL:       "url",
+			AgentName: githubcomnimblewaynimblego.String("agent_name"),
+			InputSchema: map[string]any{
+				"foo": "bar",
+			},
 			Metadata: githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata{
 				Description: githubcomnimblewaynimblego.String("description"),
 				DisplayName: githubcomnimblewaynimblego.String("display_name"),
 				Tags:        []string{"string"},
 			},
-			OutputSchema: map[string]any{},
+			OutputSchema: map[string]any{
+				"foo": "bar",
+			},
 		},
 	})
 	if err != nil {
@@ -115,35 +119,6 @@ func TestAgentGetGeneration(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agent.GetGeneration(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentPublish(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agent.Publish(
-		context.TODO(),
-		"agent_name",
-		githubcomnimblewaynimblego.AgentPublishParams{
-			VersionID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
-		},
-	)
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
