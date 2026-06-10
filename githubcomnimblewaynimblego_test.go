@@ -29,6 +29,9 @@ func TestExtractWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
+		Body: map[string]any{
+			"key": "value",
+		},
 		Browser: githubcomnimblewaynimblego.ExtractParamsBrowserUnion{
 			OfExtractsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 		},
@@ -212,6 +215,9 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractAsync(context.TODO(), githubcomnimblewaynimblego.ExtractAsyncParams{
 		URL: "url",
+		Body: map[string]any{
+			"key": "value",
+		},
 		Browser: githubcomnimblewaynimblego.ExtractAsyncParamsBrowserUnion{
 			OfExtractAsyncsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 		},
@@ -400,6 +406,9 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractBatch(context.TODO(), githubcomnimblewaynimblego.ExtractBatchParams{
 		Inputs: []githubcomnimblewaynimblego.ExtractBatchParamsInput{{
+			Body: map[string]any{
+				"key": "value",
+			},
 			Browser: githubcomnimblewaynimblego.ExtractBatchParamsInputBrowserUnion{
 				OfExtractBatchsInputBrowserString: githubcomnimblewaynimblego.String("chrome"),
 			},
@@ -566,6 +575,9 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			URL:               githubcomnimblewaynimblego.String("url"),
 		}},
 		SharedInputs: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputs{
+			Body: map[string]any{
+				"key": "value",
+			},
 			Browser: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsBrowserUnion{
 				OfExtractBatchsSharedInputsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 			},
@@ -785,9 +797,12 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Search(context.TODO(), githubcomnimblewaynimblego.SearchParams{
-		Query:          "x",
-		ContentType:    []string{"string"},
-		Country:        githubcomnimblewaynimblego.String("country"),
+		Query:       "x",
+		ContentType: []string{"string"},
+		Country:     githubcomnimblewaynimblego.String("country"),
+		DebugParams: map[string]any{
+			"foo": "bar",
+		},
 		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
 		EndDate:        githubcomnimblewaynimblego.String("end_date"),
 		ExcludeDomains: []string{"string"},

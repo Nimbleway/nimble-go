@@ -682,7 +682,8 @@ type ExtractAsyncResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -766,7 +767,8 @@ type ExtractBatchResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -1046,6 +1048,8 @@ type ExtractParams struct {
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// User-defined tag for request identification
 	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Request body for POST, PUT, PATCH methods
+	Body any `json:"body,omitzero"`
 	// Browser type to emulate
 	Browser ExtractParamsBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially
@@ -2569,6 +2573,8 @@ type ExtractAsyncParams struct {
 	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
 	// User-defined tag for request identification
 	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Request body for POST, PUT, PATCH methods
+	Body any `json:"body,omitzero"`
 	// Browser type to emulate
 	Browser ExtractAsyncParamsBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially
@@ -4110,6 +4116,8 @@ type ExtractBatchParamsInput struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Request body for POST, PUT, PATCH methods
+	Body any `json:"body,omitzero"`
 	// Browser type to emulate
 	Browser ExtractBatchParamsInputBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially
@@ -5539,6 +5547,8 @@ type ExtractBatchParamsSharedInputs struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Request body for POST, PUT, PATCH methods
+	Body any `json:"body,omitzero"`
 	// Browser type to emulate
 	Browser ExtractBatchParamsSharedInputsBrowserUnion `json:"browser,omitzero"`
 	// Array of browser automation actions to execute sequentially
@@ -7886,6 +7896,8 @@ type SearchParams struct {
 	// groups ('documents', 'spreadsheets', 'presentations') and specific formats
 	// ('pdf', 'docx', 'xlsx', etc.)
 	ContentType []string `json:"content_type,omitzero"`
+	// Internal-only. Gated to allowlisted accounts; ignored otherwise.
+	DebugParams map[string]any `json:"debug_params,omitzero"`
 	// List of domains to exclude from search results. Maximum 50 domains.
 	ExcludeDomains []string `json:"exclude_domains,omitzero"`
 	// List of domains to include in search results. Maximum 50 domains.

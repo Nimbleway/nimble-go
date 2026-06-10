@@ -80,20 +80,6 @@ func (r *AgentService) GetGeneration(ctx context.Context, generationID string, o
 	return res, err
 }
 
-// Publish Agent Version
-//
-// Deprecated: deprecated
-func (r *AgentService) Publish(ctx context.Context, agentName string, body AgentPublishParams, opts ...option.RequestOption) (res *AgentPublishResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if agentName == "" {
-		err = errors.New("missing required agent_name parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/agents/%s/publish", agentName)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
 // Execute WSA Realtime Endpoint
 func (r *AgentService) Run(ctx context.Context, body AgentRunParams, opts ...option.RequestOption) (res *AgentRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -185,28 +171,26 @@ func (r *AgentGenerateResponse) UnmarshalJSON(data []byte) error {
 }
 
 type AgentGenerateResponseGeneratedVersion struct {
-	ID               string                                        `json:"id" api:"required" format:"uuid"`
-	AgentName        string                                        `json:"agent_name" api:"required"`
-	CreatedAt        time.Time                                     `json:"created_at" api:"required" format:"date-time"`
-	InputSchema      any                                           `json:"input_schema" api:"required"`
-	Metadata         AgentGenerateResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
-	OutputSchema     any                                           `json:"output_schema" api:"required"`
-	Steps            []any                                         `json:"steps" api:"required"`
-	VersionNumber    int64                                         `json:"version_number" api:"required"`
-	OutputSampleData any                                           `json:"output_sample_data"`
+	ID            string                                        `json:"id" api:"required" format:"uuid"`
+	AgentName     string                                        `json:"agent_name" api:"required"`
+	CreatedAt     time.Time                                     `json:"created_at" api:"required" format:"date-time"`
+	InputSchema   map[string]any                                `json:"input_schema" api:"required"`
+	Metadata      AgentGenerateResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
+	OutputSchema  map[string]any                                `json:"output_schema" api:"required"`
+	VersionNumber int64                                         `json:"version_number" api:"required"`
+	Samples       []AgentGenerateResponseGeneratedVersionSample `json:"samples" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID               respjson.Field
-		AgentName        respjson.Field
-		CreatedAt        respjson.Field
-		InputSchema      respjson.Field
-		Metadata         respjson.Field
-		OutputSchema     respjson.Field
-		Steps            respjson.Field
-		VersionNumber    respjson.Field
-		OutputSampleData respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		ID            respjson.Field
+		AgentName     respjson.Field
+		CreatedAt     respjson.Field
+		InputSchema   respjson.Field
+		Metadata      respjson.Field
+		OutputSchema  respjson.Field
+		VersionNumber respjson.Field
+		Samples       respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -244,6 +228,24 @@ func (r *AgentGenerateResponseGeneratedVersionMetadata) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type AgentGenerateResponseGeneratedVersionSample struct {
+	Input  any `json:"input"`
+	Output any `json:"output"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Input       respjson.Field
+		Output      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGenerateResponseGeneratedVersionSample) RawJSON() string { return r.JSON.raw }
+func (r *AgentGenerateResponseGeneratedVersionSample) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type AgentGetResponse struct {
 	DisplayName     string                          `json:"display_name" api:"required"`
 	IsPublic        bool                            `json:"is_public" api:"required"`
@@ -254,7 +256,7 @@ type AgentGetResponse struct {
 	FeatureFlags    AgentGetResponseFeatureFlags    `json:"feature_flags"`
 	InputProperties []AgentGetResponseInputProperty `json:"input_properties" api:"nullable"`
 	ManagedBy       string                          `json:"managed_by" api:"nullable"`
-	OutputSchema    any                             `json:"output_schema" api:"nullable"`
+	OutputSchema    map[string]any                  `json:"output_schema" api:"nullable"`
 	Vertical        string                          `json:"vertical" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -411,28 +413,26 @@ func (r *AgentGetGenerationResponse) UnmarshalJSON(data []byte) error {
 }
 
 type AgentGetGenerationResponseGeneratedVersion struct {
-	ID               string                                             `json:"id" api:"required" format:"uuid"`
-	AgentName        string                                             `json:"agent_name" api:"required"`
-	CreatedAt        time.Time                                          `json:"created_at" api:"required" format:"date-time"`
-	InputSchema      any                                                `json:"input_schema" api:"required"`
-	Metadata         AgentGetGenerationResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
-	OutputSchema     any                                                `json:"output_schema" api:"required"`
-	Steps            []any                                              `json:"steps" api:"required"`
-	VersionNumber    int64                                              `json:"version_number" api:"required"`
-	OutputSampleData any                                                `json:"output_sample_data"`
+	ID            string                                             `json:"id" api:"required" format:"uuid"`
+	AgentName     string                                             `json:"agent_name" api:"required"`
+	CreatedAt     time.Time                                          `json:"created_at" api:"required" format:"date-time"`
+	InputSchema   map[string]any                                     `json:"input_schema" api:"required"`
+	Metadata      AgentGetGenerationResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
+	OutputSchema  map[string]any                                     `json:"output_schema" api:"required"`
+	VersionNumber int64                                              `json:"version_number" api:"required"`
+	Samples       []AgentGetGenerationResponseGeneratedVersionSample `json:"samples" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID               respjson.Field
-		AgentName        respjson.Field
-		CreatedAt        respjson.Field
-		InputSchema      respjson.Field
-		Metadata         respjson.Field
-		OutputSchema     respjson.Field
-		Steps            respjson.Field
-		VersionNumber    respjson.Field
-		OutputSampleData respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		ID            respjson.Field
+		AgentName     respjson.Field
+		CreatedAt     respjson.Field
+		InputSchema   respjson.Field
+		Metadata      respjson.Field
+		OutputSchema  respjson.Field
+		VersionNumber respjson.Field
+		Samples       respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -470,21 +470,21 @@ func (r *AgentGetGenerationResponseGeneratedVersionMetadata) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentPublishResponse struct {
-	AgentName          string `json:"agent_name" api:"required"`
-	PublishedVersionID string `json:"published_version_id" api:"required" format:"uuid"`
+type AgentGetGenerationResponseGeneratedVersionSample struct {
+	Input  any `json:"input"`
+	Output any `json:"output"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		AgentName          respjson.Field
-		PublishedVersionID respjson.Field
-		ExtraFields        map[string]respjson.Field
-		raw                string
+		Input       respjson.Field
+		Output      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentPublishResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentPublishResponse) UnmarshalJSON(data []byte) error {
+func (r AgentGetGenerationResponseGeneratedVersionSample) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetGenerationResponseGeneratedVersionSample) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1180,7 +1180,8 @@ type AgentRunBatchResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -1295,8 +1296,8 @@ type AgentGenerateParamsBodyCreateAgentGenerationRequest struct {
 	URL          string                                                      `json:"url" api:"required"`
 	AgentName    param.Opt[string]                                           `json:"agent_name,omitzero"`
 	Metadata     AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata `json:"metadata,omitzero"`
-	InputSchema  any                                                         `json:"input_schema,omitzero"`
-	OutputSchema any                                                         `json:"output_schema,omitzero"`
+	InputSchema  map[string]any                                              `json:"input_schema,omitzero"`
+	OutputSchema map[string]any                                              `json:"output_schema,omitzero"`
 	paramObj
 }
 
@@ -1335,19 +1336,6 @@ func (r AgentGenerateParamsBodyCreateAgentRefinementRequest) MarshalJSON() (data
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *AgentGenerateParamsBodyCreateAgentRefinementRequest) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentPublishParams struct {
-	VersionID string `json:"version_id" api:"required" format:"uuid"`
-	paramObj
-}
-
-func (r AgentPublishParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentPublishParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentPublishParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

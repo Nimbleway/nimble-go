@@ -723,7 +723,8 @@ type MediaRunAsyncResponseTask struct {
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract".
+	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
+	// "fast-serp".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -788,7 +789,7 @@ func (r *MediaRunParams) UnmarshalJSON(data []byte) error {
 type MediaRunParamsStorage struct {
 	URL        string            `json:"url" api:"required"`
 	ObjectName param.Opt[string] `json:"object_name,omitzero"`
-	// Any of "s3", "gcs", "do".
+	// Any of "s3", "gcs", "do", "oci".
 	Type string `json:"type,omitzero"`
 	paramObj
 }
@@ -803,7 +804,7 @@ func (r *MediaRunParamsStorage) UnmarshalJSON(data []byte) error {
 
 func init() {
 	apijson.RegisterFieldValidator[MediaRunParamsStorage](
-		"type", "s3", "gcs", "do",
+		"type", "s3", "gcs", "do", "oci",
 	)
 }
 
@@ -838,7 +839,7 @@ func (r *MediaRunAsyncParams) UnmarshalJSON(data []byte) error {
 type MediaRunAsyncParamsStorage struct {
 	URL        string            `json:"url" api:"required"`
 	ObjectName param.Opt[string] `json:"object_name,omitzero"`
-	// Any of "s3", "gcs", "do".
+	// Any of "s3", "gcs", "do", "oci".
 	Type string `json:"type,omitzero"`
 	paramObj
 }
@@ -853,6 +854,6 @@ func (r *MediaRunAsyncParamsStorage) UnmarshalJSON(data []byte) error {
 
 func init() {
 	apijson.RegisterFieldValidator[MediaRunAsyncParamsStorage](
-		"type", "s3", "gcs", "do",
+		"type", "s3", "gcs", "do", "oci",
 	)
 }

@@ -73,6 +73,9 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 		CrawlEntireDomain: githubcomnimblewaynimblego.Bool(false),
 		ExcludePaths:      []string{"/exclude-this-path", "/and-this-path"},
 		ExtractOptions: githubcomnimblewaynimblego.CrawlRunParamsExtractOptions{
+			Body: map[string]any{
+				"key": "value",
+			},
 			Browser: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsBrowserUnion{
 				OfCrawlRunsExtractOptionsBrowserString: githubcomnimblewaynimblego.String("chrome"),
 			},
