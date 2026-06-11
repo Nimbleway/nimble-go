@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.16.0 (2026-06-11)
+
+Full Changelog: [v0.15.0...v0.16.0](https://github.com/Nimbleway/nimble-go/compare/v0.15.0...v0.16.0)
+
+### Features
+
+* **api:** manually update openapi ([cb2f1f4](https://github.com/Nimbleway/nimble-go/commit/cb2f1f415a111390a6c2b53f4d4b6c16186360a5))
+* **api:** Manually update OpenAPI spec ([3e3df87](https://github.com/Nimbleway/nimble-go/commit/3e3df870f0d3f8d637543fbaadd48a9494eb7a34))
+* **client:** optimize json encoder for internal types ([aa50927](https://github.com/Nimbleway/nimble-go/commit/aa50927c952b00e8c6d9cd483fc823c298e58dcf))
+
 ## 0.15.0 (2026-05-10)
 
 Full Changelog: [v0.14.0...v0.15.0](https://github.com/Nimbleway/nimble-go/compare/v0.14.0...v0.15.0)
