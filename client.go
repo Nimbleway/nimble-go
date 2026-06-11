@@ -25,6 +25,7 @@ type Client struct {
 	DomainKnowledge DomainKnowledgeService
 	Media           MediaService
 	Serp            SerpService
+	TaskAgent       TaskAgentService
 }
 
 // DefaultClientOptions read from the environment (NIMBLE_API_KEY, CLIENT_SOURCE,
@@ -68,6 +69,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.DomainKnowledge = NewDomainKnowledgeService(opts...)
 	r.Media = NewMediaService(opts...)
 	r.Serp = NewSerpService(opts...)
+	r.TaskAgent = NewTaskAgentService(opts...)
 
 	return
 }
