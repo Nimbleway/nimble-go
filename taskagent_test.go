@@ -1,0 +1,198 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package githubcomnimblewaynimblego_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/Nimbleway/nimble-go"
+	"github.com/Nimbleway/nimble-go/internal/testutil"
+	"github.com/Nimbleway/nimble-go/option"
+)
+
+func TestTaskAgentNewWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.TaskAgent.New(context.TODO(), githubcomnimblewaynimblego.TaskAgentNewParams{
+		AgentName:       githubcomnimblewaynimblego.String("agent_name"),
+		Description:     githubcomnimblewaynimblego.String("description"),
+		DisplayName:     githubcomnimblewaynimblego.String("display_name"),
+		DomainExpertise: githubcomnimblewaynimblego.String("domain_expertise"),
+		Effort:          githubcomnimblewaynimblego.String("effort"),
+		Goals:           []string{"string"},
+		Icon:            githubcomnimblewaynimblego.String("icon"),
+		IsActive:        githubcomnimblewaynimblego.Bool(true),
+		OutputSchema: map[string]any{
+			"foo": "bar",
+		},
+		Sources: []githubcomnimblewaynimblego.TaskAgentNewParamsSource{{
+			Domains: []string{"string"},
+			Title:   "title",
+			Order:   githubcomnimblewaynimblego.Int(0),
+		}},
+		SuggestedQuestions: []string{"string"},
+		Template:           githubcomnimblewaynimblego.String("template"),
+		UseCase:            githubcomnimblewaynimblego.TaskAgentNewParamsUseCaseResearch,
+		WorkspaceID:        githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTaskAgentUpdate(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.TaskAgent.Update(
+		context.TODO(),
+		"agent_id",
+		githubcomnimblewaynimblego.TaskAgentUpdateParams{
+			Body: []githubcomnimblewaynimblego.TaskAgentUpdateParamsBody{{
+				Op:    "replace",
+				Path:  "path",
+				Value: map[string]any{},
+			}},
+		},
+	)
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTaskAgentListWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.TaskAgent.List(context.TODO(), githubcomnimblewaynimblego.TaskAgentListParams{
+		Effort:  githubcomnimblewaynimblego.String("effort"),
+		Limit:   githubcomnimblewaynimblego.Int(1),
+		Offset:  githubcomnimblewaynimblego.Int(0),
+		UseCase: githubcomnimblewaynimblego.String("use_case"),
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTaskAgentDeactivate(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	err := client.TaskAgent.Deactivate(context.TODO(), "agent_id")
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTaskAgentGet(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.TaskAgent.Get(context.TODO(), "agent_id")
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTaskAgentRunWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.TaskAgent.Run(
+		context.TODO(),
+		"agent_id",
+		githubcomnimblewaynimblego.TaskAgentRunParams{
+			Input:        "input",
+			EnableEvents: githubcomnimblewaynimblego.Bool(true),
+			OutputSchema: map[string]any{
+				"foo": "bar",
+			},
+		},
+	)
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
