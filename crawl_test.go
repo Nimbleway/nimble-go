@@ -220,8 +220,10 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType:   githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsReferrerTypeRandom,
-			Render:         githubcomnimblewaynimblego.Bool(true),
+			ReferrerType: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsReferrerTypeRandom,
+			Render: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsRenderUnion{
+				OfBool: githubcomnimblewaynimblego.Bool(true),
+			},
 			RequestTimeout: githubcomnimblewaynimblego.Float(30000),
 			Session: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),

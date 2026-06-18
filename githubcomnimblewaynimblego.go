@@ -1042,8 +1042,6 @@ type ExtractParams struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to render JavaScript content using a browser
-	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// User-defined tag for request identification
@@ -1183,7 +1181,9 @@ type ExtractParams struct {
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType ExtractParamsReferrerType `json:"referrer_type,omitzero"`
-	Session      ExtractParamsSession      `json:"session,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render  ExtractParamsRenderUnion `json:"render,omitzero"`
+	Session ExtractParamsSession     `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill ExtractParamsSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -2441,6 +2441,32 @@ const (
 	ExtractParamsReferrerTypeInstagram  ExtractParamsReferrerType = "instagram"
 )
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractParamsRenderUnion struct {
+	OfBool param.Opt[bool] `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Auto]()
+	OfAuto constant.Auto `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractParamsRenderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfAuto)
+}
+func (u *ExtractParamsRenderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractParamsRenderUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfAuto) {
+		return &u.OfAuto
+	}
+	return nil
+}
+
 type ExtractParamsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
@@ -2559,8 +2585,6 @@ type ExtractAsyncParams struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to render JavaScript content using a browser
-	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// Whether to compress stored data
@@ -2708,7 +2732,9 @@ type ExtractAsyncParams struct {
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType ExtractAsyncParamsReferrerType `json:"referrer_type,omitzero"`
-	Session      ExtractAsyncParamsSession      `json:"session,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render  ExtractAsyncParamsRenderUnion `json:"render,omitzero"`
+	Session ExtractAsyncParamsSession     `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill ExtractAsyncParamsSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -3966,6 +3992,32 @@ const (
 	ExtractAsyncParamsReferrerTypeInstagram  ExtractAsyncParamsReferrerType = "instagram"
 )
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractAsyncParamsRenderUnion struct {
+	OfBool param.Opt[bool] `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Auto]()
+	OfAuto constant.Auto `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractAsyncParamsRenderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfAuto)
+}
+func (u *ExtractAsyncParamsRenderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractAsyncParamsRenderUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfAuto) {
+		return &u.OfAuto
+	}
+	return nil
+}
+
 type ExtractAsyncParamsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
@@ -4100,8 +4152,6 @@ type ExtractBatchParamsInput struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to render JavaScript content using a browser
-	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// Whether to compress stored data
@@ -4251,7 +4301,10 @@ type ExtractBatchParamsInput struct {
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType ExtractBatchParamsInputReferrerType `json:"referrer_type,omitzero"`
-	Session      ExtractBatchParamsInputSession      `json:"session,omitzero"`
+	// Whether to render JavaScript content using a browser. Use 'auto' to let the
+	// engine select the candidate config per domain.
+	Render  ExtractBatchParamsInputRenderUnion `json:"render,omitzero"`
+	Session ExtractBatchParamsInputSession     `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill ExtractBatchParamsInputSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -5475,6 +5528,32 @@ const (
 	ExtractBatchParamsInputReferrerTypeInstagram  ExtractBatchParamsInputReferrerType = "instagram"
 )
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsInputRenderUnion struct {
+	OfBool param.Opt[bool] `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Auto]()
+	OfAuto constant.Auto `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsInputRenderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfAuto)
+}
+func (u *ExtractBatchParamsInputRenderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsInputRenderUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfAuto) {
+		return &u.OfAuto
+	}
+	return nil
+}
+
 type ExtractBatchParamsInputSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
@@ -5531,8 +5610,6 @@ type ExtractBatchParamsSharedInputs struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to render JavaScript content using a browser
-	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// Whether to compress stored data
@@ -5682,7 +5759,10 @@ type ExtractBatchParamsSharedInputs struct {
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType ExtractBatchParamsSharedInputsReferrerType `json:"referrer_type,omitzero"`
-	Session      ExtractBatchParamsSharedInputsSession      `json:"session,omitzero"`
+	// Whether to render JavaScript content using a browser. Use 'auto' to let the
+	// engine select the candidate config per domain.
+	Render  ExtractBatchParamsSharedInputsRenderUnion `json:"render,omitzero"`
+	Session ExtractBatchParamsSharedInputsSession     `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill ExtractBatchParamsSharedInputsSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -6905,6 +6985,32 @@ const (
 	ExtractBatchParamsSharedInputsReferrerTypeTwitter    ExtractBatchParamsSharedInputsReferrerType = "twitter"
 	ExtractBatchParamsSharedInputsReferrerTypeInstagram  ExtractBatchParamsSharedInputsReferrerType = "instagram"
 )
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ExtractBatchParamsSharedInputsRenderUnion struct {
+	OfBool param.Opt[bool] `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Auto]()
+	OfAuto constant.Auto `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ExtractBatchParamsSharedInputsRenderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfAuto)
+}
+func (u *ExtractBatchParamsSharedInputsRenderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ExtractBatchParamsSharedInputsRenderUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfAuto) {
+		return &u.OfAuto
+	}
+	return nil
+}
 
 type ExtractBatchParamsSharedInputsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`

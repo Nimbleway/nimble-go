@@ -176,8 +176,10 @@ func TestExtractWithOptionalParams(t *testing.T) {
 				"myParser": "bar",
 			},
 		},
-		ReferrerType:   githubcomnimblewaynimblego.ExtractParamsReferrerTypeRandom,
-		Render:         githubcomnimblewaynimblego.Bool(true),
+		ReferrerType: githubcomnimblewaynimblego.ExtractParamsReferrerTypeRandom,
+		Render: githubcomnimblewaynimblego.ExtractParamsRenderUnion{
+			OfBool: githubcomnimblewaynimblego.Bool(true),
+		},
 		RequestTimeout: githubcomnimblewaynimblego.Float(30000),
 		Session: githubcomnimblewaynimblego.ExtractParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
@@ -363,8 +365,10 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 				"myParser": "bar",
 			},
 		},
-		ReferrerType:   githubcomnimblewaynimblego.ExtractAsyncParamsReferrerTypeRandom,
-		Render:         githubcomnimblewaynimblego.Bool(true),
+		ReferrerType: githubcomnimblewaynimblego.ExtractAsyncParamsReferrerTypeRandom,
+		Render: githubcomnimblewaynimblego.ExtractAsyncParamsRenderUnion{
+			OfBool: githubcomnimblewaynimblego.Bool(true),
+		},
 		RequestTimeout: githubcomnimblewaynimblego.Float(30000),
 		Session: githubcomnimblewaynimblego.ExtractAsyncParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
@@ -554,8 +558,10 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType:   githubcomnimblewaynimblego.ExtractBatchParamsInputReferrerTypeRandom,
-			Render:         githubcomnimblewaynimblego.Bool(true),
+			ReferrerType: githubcomnimblewaynimblego.ExtractBatchParamsInputReferrerTypeRandom,
+			Render: githubcomnimblewaynimblego.ExtractBatchParamsInputRenderUnion{
+				OfBool: githubcomnimblewaynimblego.Bool(false),
+			},
 			RequestTimeout: githubcomnimblewaynimblego.Float(30000),
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsInputSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
@@ -723,8 +729,10 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType:   githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsReferrerTypeRandom,
-			Render:         githubcomnimblewaynimblego.Bool(true),
+			ReferrerType: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsReferrerTypeRandom,
+			Render: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsRenderUnion{
+				OfBool: githubcomnimblewaynimblego.Bool(false),
+			},
 			RequestTimeout: githubcomnimblewaynimblego.Float(30000),
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
