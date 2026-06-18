@@ -18,6 +18,7 @@ import (
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
 	"github.com/Nimbleway/nimble-go/shared"
+	"github.com/Nimbleway/nimble-go/shared/constant"
 )
 
 // CrawlService contains methods and other services that help with interacting with
@@ -1130,8 +1131,6 @@ type CrawlRunParamsExtractOptions struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
-	// Whether to render JavaScript content using a browser
-	Render param.Opt[bool] `json:"render,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// User-defined tag for request identification
@@ -1273,7 +1272,9 @@ type CrawlRunParamsExtractOptions struct {
 	// Any of "random", "no-referer", "same-origin", "google", "bing", "facebook",
 	// "twitter", "instagram".
 	ReferrerType CrawlRunParamsExtractOptionsReferrerType `json:"referrer_type,omitzero"`
-	Session      CrawlRunParamsExtractOptionsSession      `json:"session,omitzero"`
+	// Whether to render JavaScript content using a browser
+	Render  CrawlRunParamsExtractOptionsRenderUnion `json:"render,omitzero"`
+	Session CrawlRunParamsExtractOptionsSession     `json:"session,omitzero"`
 	// Skills or capabilities required for the request
 	Skill CrawlRunParamsExtractOptionsSkillUnion `json:"skill,omitzero"`
 	// US state for geolocation (only valid when country is US)
@@ -2496,6 +2497,32 @@ const (
 	CrawlRunParamsExtractOptionsReferrerTypeTwitter    CrawlRunParamsExtractOptionsReferrerType = "twitter"
 	CrawlRunParamsExtractOptionsReferrerTypeInstagram  CrawlRunParamsExtractOptionsReferrerType = "instagram"
 )
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type CrawlRunParamsExtractOptionsRenderUnion struct {
+	OfBool param.Opt[bool] `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Auto]()
+	OfAuto constant.Auto `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u CrawlRunParamsExtractOptionsRenderUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfAuto)
+}
+func (u *CrawlRunParamsExtractOptionsRenderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *CrawlRunParamsExtractOptionsRenderUnion) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfAuto) {
+		return &u.OfAuto
+	}
+	return nil
+}
 
 type CrawlRunParamsExtractOptionsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
