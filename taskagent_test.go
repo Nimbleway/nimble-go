@@ -38,11 +38,20 @@ func TestTaskAgentNewWithOptionalParams(t *testing.T) {
 		OutputSchema: map[string]any{
 			"foo": "bar",
 		},
-		Sources: []githubcomnimblewaynimblego.TaskAgentNewParamsSource{{
-			Domains: []string{"string"},
-			Title:   "title",
-			Order:   githubcomnimblewaynimblego.Int(0),
-		}},
+		Sources: githubcomnimblewaynimblego.TaskAgentNewParamsSources{
+			Allow: []githubcomnimblewaynimblego.TaskAgentNewParamsSourcesAllow{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Avoid: githubcomnimblewaynimblego.String("avoid"),
+			Block: []githubcomnimblewaynimblego.TaskAgentNewParamsSourcesBlock{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Prioritize: githubcomnimblewaynimblego.String("prioritize"),
+		},
 		SuggestedQuestions: []string{"string"},
 		Template:           githubcomnimblewaynimblego.String("template"),
 		UseCase:            githubcomnimblewaynimblego.TaskAgentNewParamsUseCaseResearch,
@@ -185,6 +194,20 @@ func TestTaskAgentRunWithOptionalParams(t *testing.T) {
 			EnableEvents: githubcomnimblewaynimblego.Bool(true),
 			OutputSchema: map[string]any{
 				"foo": "bar",
+			},
+			Sources: githubcomnimblewaynimblego.TaskAgentRunParamsSources{
+				Allow: []githubcomnimblewaynimblego.TaskAgentRunParamsSourcesAllow{{
+					Domains: []string{"string"},
+					Title:   "title",
+					Order:   githubcomnimblewaynimblego.Int(0),
+				}},
+				Avoid: githubcomnimblewaynimblego.String("avoid"),
+				Block: []githubcomnimblewaynimblego.TaskAgentRunParamsSourcesBlock{{
+					Domains: []string{"string"},
+					Title:   "title",
+					Order:   githubcomnimblewaynimblego.Int(0),
+				}},
+				Prioritize: githubcomnimblewaynimblego.String("prioritize"),
 			},
 		},
 	)

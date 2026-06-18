@@ -18,14 +18,17 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type Auto string    // Always "auto"
 type Error string   // Always "error"
 type Paste string   // Always "paste"
 type Success string // Always "success"
 
+func (c Auto) Default() Auto       { return "auto" }
 func (c Error) Default() Error     { return "error" }
 func (c Paste) Default() Paste     { return "paste" }
 func (c Success) Default() Success { return "success" }
 
+func (c Auto) MarshalJSON() ([]byte, error)    { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)   { return marshalString(c) }
 func (c Paste) MarshalJSON() ([]byte, error)   { return marshalString(c) }
 func (c Success) MarshalJSON() ([]byte, error) { return marshalString(c) }

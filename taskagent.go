@@ -122,7 +122,7 @@ type TaskAgentNewResponse struct {
 	Icon               string                                  `json:"icon" api:"required"`
 	IsActive           bool                                    `json:"is_active" api:"required"`
 	OutputSchema       map[string]any                          `json:"output_schema" api:"required"`
-	Sources            []TaskAgentNewResponseSource            `json:"sources" api:"required"`
+	Sources            TaskAgentNewResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentNewResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
@@ -182,7 +182,29 @@ func (r *TaskAgentNewResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentNewResponseSource struct {
+type TaskAgentNewResponseSources struct {
+	Allow      []TaskAgentNewResponseSourcesAllow `json:"allow"`
+	Avoid      string                             `json:"avoid" api:"nullable"`
+	Block      []TaskAgentNewResponseSourcesBlock `json:"block"`
+	Prioritize string                             `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentNewResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentNewResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentNewResponseSourcesAllow struct {
 	ID      string   `json:"id" api:"required"`
 	Domains []string `json:"domains" api:"required"`
 	Order   int64    `json:"order" api:"required"`
@@ -199,8 +221,28 @@ type TaskAgentNewResponseSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentNewResponseSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentNewResponseSource) UnmarshalJSON(data []byte) error {
+func (r TaskAgentNewResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentNewResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentNewResponseSourcesBlock struct {
+	Domains []string `json:"domains" api:"required"`
+	Title   string   `json:"title" api:"required"`
+	Order   int64    `json:"order"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Domains     respjson.Field
+		Title       respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentNewResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentNewResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -243,7 +285,7 @@ type TaskAgentUpdateResponse struct {
 	Icon               string                                     `json:"icon" api:"required"`
 	IsActive           bool                                       `json:"is_active" api:"required"`
 	OutputSchema       map[string]any                             `json:"output_schema" api:"required"`
-	Sources            []TaskAgentUpdateResponseSource            `json:"sources" api:"required"`
+	Sources            TaskAgentUpdateResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentUpdateResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                                  `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
@@ -303,7 +345,29 @@ func (r *TaskAgentUpdateResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentUpdateResponseSource struct {
+type TaskAgentUpdateResponseSources struct {
+	Allow      []TaskAgentUpdateResponseSourcesAllow `json:"allow"`
+	Avoid      string                                `json:"avoid" api:"nullable"`
+	Block      []TaskAgentUpdateResponseSourcesBlock `json:"block"`
+	Prioritize string                                `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentUpdateResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentUpdateResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentUpdateResponseSourcesAllow struct {
 	ID      string   `json:"id" api:"required"`
 	Domains []string `json:"domains" api:"required"`
 	Order   int64    `json:"order" api:"required"`
@@ -320,8 +384,28 @@ type TaskAgentUpdateResponseSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentUpdateResponseSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentUpdateResponseSource) UnmarshalJSON(data []byte) error {
+func (r TaskAgentUpdateResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentUpdateResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentUpdateResponseSourcesBlock struct {
+	Domains []string `json:"domains" api:"required"`
+	Title   string   `json:"title" api:"required"`
+	Order   int64    `json:"order"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Domains     respjson.Field
+		Title       respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentUpdateResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentUpdateResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -364,7 +448,7 @@ type TaskAgentListResponse struct {
 	Icon               string                                   `json:"icon" api:"required"`
 	IsActive           bool                                     `json:"is_active" api:"required"`
 	OutputSchema       map[string]any                           `json:"output_schema" api:"required"`
-	Sources            []TaskAgentListResponseSource            `json:"sources" api:"required"`
+	Sources            TaskAgentListResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentListResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                                `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
@@ -424,7 +508,29 @@ func (r *TaskAgentListResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentListResponseSource struct {
+type TaskAgentListResponseSources struct {
+	Allow      []TaskAgentListResponseSourcesAllow `json:"allow"`
+	Avoid      string                              `json:"avoid" api:"nullable"`
+	Block      []TaskAgentListResponseSourcesBlock `json:"block"`
+	Prioritize string                              `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentListResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentListResponseSourcesAllow struct {
 	ID      string   `json:"id" api:"required"`
 	Domains []string `json:"domains" api:"required"`
 	Order   int64    `json:"order" api:"required"`
@@ -441,8 +547,28 @@ type TaskAgentListResponseSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseSource) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentListResponseSourcesBlock struct {
+	Domains []string `json:"domains" api:"required"`
+	Title   string   `json:"title" api:"required"`
+	Order   int64    `json:"order"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Domains     respjson.Field
+		Title       respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentListResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -485,7 +611,7 @@ type TaskAgentGetResponse struct {
 	Icon               string                                  `json:"icon" api:"required"`
 	IsActive           bool                                    `json:"is_active" api:"required"`
 	OutputSchema       map[string]any                          `json:"output_schema" api:"required"`
-	Sources            []TaskAgentGetResponseSource            `json:"sources" api:"required"`
+	Sources            TaskAgentGetResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
@@ -545,7 +671,29 @@ func (r *TaskAgentGetResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentGetResponseSource struct {
+type TaskAgentGetResponseSources struct {
+	Allow      []TaskAgentGetResponseSourcesAllow `json:"allow"`
+	Avoid      string                             `json:"avoid" api:"nullable"`
+	Block      []TaskAgentGetResponseSourcesBlock `json:"block"`
+	Prioritize string                             `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentGetResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentGetResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentGetResponseSourcesAllow struct {
 	ID      string   `json:"id" api:"required"`
 	Domains []string `json:"domains" api:"required"`
 	Order   int64    `json:"order" api:"required"`
@@ -562,8 +710,28 @@ type TaskAgentGetResponseSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentGetResponseSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentGetResponseSource) UnmarshalJSON(data []byte) error {
+func (r TaskAgentGetResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentGetResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentGetResponseSourcesBlock struct {
+	Domains []string `json:"domains" api:"required"`
+	Title   string   `json:"title" api:"required"`
+	Order   int64    `json:"order"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Domains     respjson.Field
+		Title       respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentGetResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentGetResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -693,10 +861,10 @@ type TaskAgentNewParams struct {
 	IsActive     param.Opt[bool]   `json:"is_active,omitzero"`
 	OutputSchema map[string]any    `json:"output_schema,omitzero"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase            TaskAgentNewParamsUseCase  `json:"use_case,omitzero"`
-	Goals              []string                   `json:"goals,omitzero"`
-	Sources            []TaskAgentNewParamsSource `json:"sources,omitzero"`
-	SuggestedQuestions []string                   `json:"suggested_questions,omitzero"`
+	UseCase            TaskAgentNewParamsUseCase `json:"use_case,omitzero"`
+	Goals              []string                  `json:"goals,omitzero"`
+	Sources            TaskAgentNewParamsSources `json:"sources,omitzero"`
+	SuggestedQuestions []string                  `json:"suggested_questions,omitzero"`
 	paramObj
 }
 
@@ -708,19 +876,51 @@ func (r *TaskAgentNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type TaskAgentNewParamsSources struct {
+	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
+	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
+	Allow      []TaskAgentNewParamsSourcesAllow `json:"allow,omitzero"`
+	Block      []TaskAgentNewParamsSourcesBlock `json:"block,omitzero"`
+	paramObj
+}
+
+func (r TaskAgentNewParamsSources) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentNewParamsSources
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *TaskAgentNewParamsSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties Domains, Title are required.
-type TaskAgentNewParamsSource struct {
+type TaskAgentNewParamsSourcesAllow struct {
 	Domains []string         `json:"domains,omitzero" api:"required"`
 	Title   string           `json:"title" api:"required"`
 	Order   param.Opt[int64] `json:"order,omitzero"`
 	paramObj
 }
 
-func (r TaskAgentNewParamsSource) MarshalJSON() (data []byte, err error) {
-	type shadow TaskAgentNewParamsSource
+func (r TaskAgentNewParamsSourcesAllow) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentNewParamsSourcesAllow
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *TaskAgentNewParamsSource) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentNewParamsSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type TaskAgentNewParamsSourcesBlock struct {
+	Domains []string         `json:"domains,omitzero" api:"required"`
+	Title   string           `json:"title" api:"required"`
+	Order   param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r TaskAgentNewParamsSourcesBlock) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentNewParamsSourcesBlock
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *TaskAgentNewParamsSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -784,9 +984,10 @@ func (r TaskAgentListParams) URLQuery() (v url.Values, err error) {
 }
 
 type TaskAgentRunParams struct {
-	Input        string          `json:"input" api:"required"`
-	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
-	OutputSchema map[string]any  `json:"output_schema,omitzero"`
+	Input        string                    `json:"input" api:"required"`
+	EnableEvents param.Opt[bool]           `json:"enable_events,omitzero"`
+	OutputSchema map[string]any            `json:"output_schema,omitzero"`
+	Sources      TaskAgentRunParamsSources `json:"sources,omitzero"`
 	paramObj
 }
 
@@ -795,5 +996,53 @@ func (r TaskAgentRunParams) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *TaskAgentRunParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentRunParamsSources struct {
+	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
+	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
+	Allow      []TaskAgentRunParamsSourcesAllow `json:"allow,omitzero"`
+	Block      []TaskAgentRunParamsSourcesBlock `json:"block,omitzero"`
+	paramObj
+}
+
+func (r TaskAgentRunParamsSources) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentRunParamsSources
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *TaskAgentRunParamsSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type TaskAgentRunParamsSourcesAllow struct {
+	Domains []string         `json:"domains,omitzero" api:"required"`
+	Title   string           `json:"title" api:"required"`
+	Order   param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r TaskAgentRunParamsSourcesAllow) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentRunParamsSourcesAllow
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *TaskAgentRunParamsSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type TaskAgentRunParamsSourcesBlock struct {
+	Domains []string         `json:"domains,omitzero" api:"required"`
+	Title   string           `json:"title" api:"required"`
+	Order   param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r TaskAgentRunParamsSourcesBlock) MarshalJSON() (data []byte, err error) {
+	type shadow TaskAgentRunParamsSourcesBlock
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *TaskAgentRunParamsSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
