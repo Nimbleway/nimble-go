@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.17.0 (2026-06-18)
+
+Full Changelog: [v0.16.0...v0.17.0](https://github.com/Nimbleway/nimble-go/compare/v0.16.0...v0.17.0)
+
+### Features
+
+* **api:** Add jobs api ([50b3e75](https://github.com/Nimbleway/nimble-go/commit/50b3e75017d5f7c0e0368f4eeae825fb653ae388))
+* **api:** api update ([024bf3c](https://github.com/Nimbleway/nimble-go/commit/024bf3c8c6b5ae6901853c21b77b9c99f2c9e6fb))
+
 ## 0.16.0 (2026-06-11)
 
 Full Changelog: [v0.15.0...v0.16.0](https://github.com/Nimbleway/nimble-go/compare/v0.15.0...v0.16.0)
