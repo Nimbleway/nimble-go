@@ -133,6 +133,16 @@ Methods:
 - <code title="post /v1/serp/async">client.Serp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpService.RunAsync">RunAsync</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunAsyncParams">SerpRunAsyncParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunAsyncResponse">SerpRunAsyncResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/serp/batch">client.Serp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpService.RunBatch">RunBatch</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunBatchParams">SerpRunBatchParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#SerpRunBatchResponse">SerpRunBatchResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
+# FastSerp
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunResponse">FastSerpRunResponse</a>
+
+Methods:
+
+- <code title="post /v1/fast-serp">client.FastSerp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpService.Run">Run</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunParams">FastSerpRunParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunResponse">FastSerpRunResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 # TaskAgent
 
 Response Types:

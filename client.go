@@ -25,6 +25,7 @@ type Client struct {
 	DomainKnowledge DomainKnowledgeService
 	Media           MediaService
 	Serp            SerpService
+	FastSerp        FastSerpService
 	TaskAgent       TaskAgentService
 	Jobs            JobService
 }
@@ -70,6 +71,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.DomainKnowledge = NewDomainKnowledgeService(opts...)
 	r.Media = NewMediaService(opts...)
 	r.Serp = NewSerpService(opts...)
+	r.FastSerp = NewFastSerpService(opts...)
 	r.TaskAgent = NewTaskAgentService(opts...)
 	r.Jobs = NewJobService(opts...)
 
