@@ -780,7 +780,7 @@ type TaskAgentRunResponse struct {
 	Prompt      string                     `json:"prompt" api:"nullable"`
 	StartedAt   time.Time                  `json:"started_at" api:"nullable" format:"date-time"`
 	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable" format:"uuid"`
+	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
 	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

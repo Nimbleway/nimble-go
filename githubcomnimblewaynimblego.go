@@ -676,14 +676,14 @@ type ExtractAsyncResponseTask struct {
 	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
-	// Any of "pending", "success", "error".
+	// Any of "pending", "queued", "in_progress", "success", "error".
 	State string `json:"state" api:"required"`
 	// URL for checking the task status.
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp".
+	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -697,6 +697,8 @@ type ExtractAsyncResponseTask struct {
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
 	OutputURL string `json:"output_url"`
+	// Queue name the task was submitted to.
+	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
 	StatusCode float64 `json:"status_code"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -715,6 +717,7 @@ type ExtractAsyncResponseTask struct {
 		ErrorType   respjson.Field
 		ModifiedAt  respjson.Field
 		OutputURL   respjson.Field
+		Queue       respjson.Field
 		StatusCode  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -761,14 +764,14 @@ type ExtractBatchResponseTask struct {
 	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
-	// Any of "pending", "success", "error".
+	// Any of "pending", "queued", "in_progress", "success", "error".
 	State string `json:"state" api:"required"`
 	// URL for checking the task status.
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp".
+	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
 	BatchID string `json:"batch_id"`
@@ -782,6 +785,8 @@ type ExtractBatchResponseTask struct {
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
 	OutputURL string `json:"output_url"`
+	// Queue name the task was submitted to.
+	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
 	StatusCode float64 `json:"status_code"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -800,6 +805,7 @@ type ExtractBatchResponseTask struct {
 		ErrorType   respjson.Field
 		ModifiedAt  respjson.Field
 		OutputURL   respjson.Field
+		Queue       respjson.Field
 		StatusCode  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -869,6 +875,9 @@ type SearchResponse struct {
 	Answer       string `json:"answer" api:"nullable"`
 	// Citations mapping citation markers to result indices
 	AnswerCitations []SearchResponseAnswerCitation `json:"answer_citations" api:"nullable"`
+	// Cleaned SERP entities (e.g. KnowledgeGraph, TopStory, RelatedSearch). Only
+	// present for focus='serp'.
+	SerpData map[string]any `json:"serp_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		RequestID       respjson.Field
@@ -876,6 +885,7 @@ type SearchResponse struct {
 		TotalResults    respjson.Field
 		Answer          respjson.Field
 		AnswerCitations respjson.Field
+		SerpData        respjson.Field
 		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
@@ -1046,6 +1056,11 @@ type ExtractParams struct {
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// User-defined tag for request identification
 	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Custom flow for the optimization engine: maps candidate names to the number of
+	// attempts to spend on each candidate before advancing (0 skips it). Key order
+	// defines the flow order. Providing it opts the request into 'auto' driver
+	// selection.
+	AutoDriverConfiguration map[string]int64 `json:"auto_driver_configuration,omitzero"`
 	// Request body for POST, PUT, PATCH methods
 	Body any `json:"body,omitzero"`
 	// Browser type to emulate
@@ -1083,8 +1098,8 @@ type ExtractParams struct {
 	Device ExtractParamsDevice `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	// "media-vx6".
+	// Any of "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6", "fast-vx6".
 	Driver ExtractParamsDriver `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -1696,6 +1711,7 @@ const (
 type ExtractParamsDriver string
 
 const (
+	ExtractParamsDriverAuto     ExtractParamsDriver = "auto"
 	ExtractParamsDriverVx6      ExtractParamsDriver = "vx6"
 	ExtractParamsDriverVx8      ExtractParamsDriver = "vx8"
 	ExtractParamsDriverVx8Pro   ExtractParamsDriver = "vx8-pro"
@@ -1704,6 +1720,7 @@ const (
 	ExtractParamsDriverVx12     ExtractParamsDriver = "vx12"
 	ExtractParamsDriverVx12Pro  ExtractParamsDriver = "vx12-pro"
 	ExtractParamsDriverMediaVx6 ExtractParamsDriver = "media-vx6"
+	ExtractParamsDriverFastVx6  ExtractParamsDriver = "fast-vx6"
 )
 
 // Only one field can be non-zero.
@@ -2597,6 +2614,11 @@ type ExtractAsyncParams struct {
 	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
 	// User-defined tag for request identification
 	Tag param.Opt[string] `json:"tag,omitzero"`
+	// Custom flow for the optimization engine: maps candidate names to the number of
+	// attempts to spend on each candidate before advancing (0 skips it). Key order
+	// defines the flow order. Providing it opts the request into 'auto' driver
+	// selection.
+	AutoDriverConfiguration map[string]int64 `json:"auto_driver_configuration,omitzero"`
 	// Request body for POST, PUT, PATCH methods
 	Body any `json:"body,omitzero"`
 	// Browser type to emulate
@@ -2634,8 +2656,8 @@ type ExtractAsyncParams struct {
 	Device ExtractAsyncParamsDevice `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	// "media-vx6".
+	// Any of "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6", "fast-vx6".
 	Driver ExtractAsyncParamsDriver `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -3247,6 +3269,7 @@ const (
 type ExtractAsyncParamsDriver string
 
 const (
+	ExtractAsyncParamsDriverAuto     ExtractAsyncParamsDriver = "auto"
 	ExtractAsyncParamsDriverVx6      ExtractAsyncParamsDriver = "vx6"
 	ExtractAsyncParamsDriverVx8      ExtractAsyncParamsDriver = "vx8"
 	ExtractAsyncParamsDriverVx8Pro   ExtractAsyncParamsDriver = "vx8-pro"
@@ -3255,6 +3278,7 @@ const (
 	ExtractAsyncParamsDriverVx12     ExtractAsyncParamsDriver = "vx12"
 	ExtractAsyncParamsDriverVx12Pro  ExtractAsyncParamsDriver = "vx12-pro"
 	ExtractAsyncParamsDriverMediaVx6 ExtractAsyncParamsDriver = "media-vx6"
+	ExtractAsyncParamsDriverFastVx6  ExtractAsyncParamsDriver = "fast-vx6"
 )
 
 // Only one field can be non-zero.
@@ -4166,6 +4190,11 @@ type ExtractBatchParamsInput struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Custom flow for the optimization engine: maps candidate names to the number of
+	// attempts to spend on each candidate before advancing (0 skips it). Key order
+	// defines the flow order. Providing it opts the request into 'auto' driver
+	// selection.
+	AutoDriverConfiguration map[string]int64 `json:"auto_driver_configuration,omitzero"`
 	// Request body for POST, PUT, PATCH methods
 	Body any `json:"body,omitzero"`
 	// Browser type to emulate
@@ -4201,10 +4230,11 @@ type ExtractBatchParamsInput struct {
 	//
 	// Any of "desktop", "mobile", "tablet".
 	Device string `json:"device,omitzero"`
-	// Browser driver to use
+	// Browser driver to use. Use 'auto' to let the engine select the candidate config
+	// per domain.
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	// "media-vx6".
+	// Any of "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6", "fast-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -4331,7 +4361,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+		"driver", "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6", "fast-vx6",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsInput](
 		"markdown_backend", "full_page", "main_content",
@@ -5624,6 +5654,11 @@ type ExtractBatchParamsSharedInputs struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Custom flow for the optimization engine: maps candidate names to the number of
+	// attempts to spend on each candidate before advancing (0 skips it). Key order
+	// defines the flow order. Providing it opts the request into 'auto' driver
+	// selection.
+	AutoDriverConfiguration map[string]int64 `json:"auto_driver_configuration,omitzero"`
 	// Request body for POST, PUT, PATCH methods
 	Body any `json:"body,omitzero"`
 	// Browser type to emulate
@@ -5659,10 +5694,11 @@ type ExtractBatchParamsSharedInputs struct {
 	//
 	// Any of "desktop", "mobile", "tablet".
 	Device string `json:"device,omitzero"`
-	// Browser driver to use
+	// Browser driver to use. Use 'auto' to let the engine select the candidate config
+	// per domain.
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	// "media-vx6".
+	// Any of "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6", "fast-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -5789,7 +5825,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+		"driver", "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6", "fast-vx6",
 	)
 	apijson.RegisterFieldValidator[ExtractBatchParamsSharedInputs](
 		"markdown_backend", "full_page", "main_content",

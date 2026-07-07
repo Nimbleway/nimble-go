@@ -73,6 +73,14 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 		CrawlEntireDomain: githubcomnimblewaynimblego.Bool(false),
 		ExcludePaths:      []string{"/exclude-this-path", "/and-this-path"},
 		ExtractOptions: githubcomnimblewaynimblego.CrawlRunParamsExtractOptions{
+			AutoDriverConfiguration: map[string]int64{
+				"vx10":        2,
+				"vx10-pro":    0,
+				"vx6-fast":    1,
+				"vx6-stealth": 1,
+				"vx8":         5,
+				"vx8-pro":     5,
+			},
 			Body: map[string]any{
 				"key": "value",
 			},
