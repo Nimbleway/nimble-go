@@ -105,21 +105,34 @@ func (r *JobService) Run(ctx context.Context, jobID string, opts ...option.Reque
 	return res, err
 }
 
+// A configured job: an agent plus its schedule, inputs, and destination.
 type JobNewResponse struct {
-	ID          string                    `json:"id" api:"required"`
-	Name        string                    `json:"name" api:"required"`
-	AgentName   string                    `json:"agent_name" api:"nullable"`
-	CreatedAt   time.Time                 `json:"created_at" api:"nullable" format:"date-time"`
-	Description string                    `json:"description" api:"nullable"`
+	// Unique job identifier (job\_<n>).
+	ID string `json:"id" api:"required"`
+	// Job name.
+	Name string `json:"name" api:"required"`
+	// Name of the agent this job runs.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// When the job was created.
+	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Description string    `json:"description" api:"nullable"`
+	// Where a job writes its results.
 	Destination JobNewResponseDestination `json:"destination" api:"nullable"`
-	DisplayName string                    `json:"display_name" api:"nullable"`
-	Inputs      JobNewResponseInputs      `json:"inputs" api:"nullable"`
-	LastRunAt   time.Time                 `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Human-friendly job name shown in the UI.
+	DisplayName string `json:"display_name" api:"nullable"`
+	// Configuration for the input data a job processes.
+	Inputs JobNewResponseInputs `json:"inputs" api:"nullable"`
+	// Timestamp of the most recent run.
+	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Status of the most recent run.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	LastRunStatus JobNewResponseLastRunStatus `json:"last_run_status" api:"nullable"`
-	Schedule      JobNewResponseSchedule      `json:"schedule" api:"nullable"`
-	UpdatedAt     time.Time                   `json:"updated_at" api:"nullable" format:"date-time"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobNewResponseSchedule `json:"schedule" api:"nullable"`
+	// When the job was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -145,10 +158,16 @@ func (r *JobNewResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
 type JobNewResponseDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -167,11 +186,18 @@ func (r *JobNewResponseDestination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Configuration for the input data a job processes.
 type JobNewResponseInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string           `json:"type" api:"required"`
-	Data     []map[string]any `json:"data" api:"nullable"`
-	FilePath string           `json:"file_path" api:"nullable"`
+	Type string `json:"type" api:"required"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data" api:"nullable"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
+	FilePath string `json:"file_path" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -188,6 +214,7 @@ func (r *JobNewResponseInputs) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Status of the most recent run.
 type JobNewResponseLastRunStatus string
 
 const (
@@ -200,9 +227,12 @@ const (
 	JobNewResponseLastRunStatusWarning   JobNewResponseLastRunStatus = "WARNING"
 )
 
+// Cron-based schedule controlling when a job runs automatically.
 type JobNewResponseSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Cron        respjson.Field
@@ -218,21 +248,34 @@ func (r *JobNewResponseSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A configured job: an agent plus its schedule, inputs, and destination.
 type JobUpdateResponse struct {
-	ID          string                       `json:"id" api:"required"`
-	Name        string                       `json:"name" api:"required"`
-	AgentName   string                       `json:"agent_name" api:"nullable"`
-	CreatedAt   time.Time                    `json:"created_at" api:"nullable" format:"date-time"`
-	Description string                       `json:"description" api:"nullable"`
+	// Unique job identifier (job\_<n>).
+	ID string `json:"id" api:"required"`
+	// Job name.
+	Name string `json:"name" api:"required"`
+	// Name of the agent this job runs.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// When the job was created.
+	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Description string    `json:"description" api:"nullable"`
+	// Where a job writes its results.
 	Destination JobUpdateResponseDestination `json:"destination" api:"nullable"`
-	DisplayName string                       `json:"display_name" api:"nullable"`
-	Inputs      JobUpdateResponseInputs      `json:"inputs" api:"nullable"`
-	LastRunAt   time.Time                    `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Human-friendly job name shown in the UI.
+	DisplayName string `json:"display_name" api:"nullable"`
+	// Configuration for the input data a job processes.
+	Inputs JobUpdateResponseInputs `json:"inputs" api:"nullable"`
+	// Timestamp of the most recent run.
+	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Status of the most recent run.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	LastRunStatus JobUpdateResponseLastRunStatus `json:"last_run_status" api:"nullable"`
-	Schedule      JobUpdateResponseSchedule      `json:"schedule" api:"nullable"`
-	UpdatedAt     time.Time                      `json:"updated_at" api:"nullable" format:"date-time"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobUpdateResponseSchedule `json:"schedule" api:"nullable"`
+	// When the job was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -258,10 +301,16 @@ func (r *JobUpdateResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
 type JobUpdateResponseDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -280,11 +329,18 @@ func (r *JobUpdateResponseDestination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Configuration for the input data a job processes.
 type JobUpdateResponseInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string           `json:"type" api:"required"`
-	Data     []map[string]any `json:"data" api:"nullable"`
-	FilePath string           `json:"file_path" api:"nullable"`
+	Type string `json:"type" api:"required"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data" api:"nullable"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
+	FilePath string `json:"file_path" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -301,6 +357,7 @@ func (r *JobUpdateResponseInputs) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Status of the most recent run.
 type JobUpdateResponseLastRunStatus string
 
 const (
@@ -313,9 +370,12 @@ const (
 	JobUpdateResponseLastRunStatusWarning   JobUpdateResponseLastRunStatus = "WARNING"
 )
 
+// Cron-based schedule controlling when a job runs automatically.
 type JobUpdateResponseSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Cron        respjson.Field
@@ -331,11 +391,16 @@ func (r *JobUpdateResponseSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A page of jobs.
 type JobListResponse struct {
-	Items   []JobListResponseItem `json:"items" api:"required"`
-	Page    int64                 `json:"page" api:"required"`
-	PerPage int64                 `json:"per_page" api:"required"`
-	Total   int64                 `json:"total" api:"required"`
+	// Jobs on this page.
+	Items []JobListResponseItem `json:"items" api:"required"`
+	// Current page number.
+	Page int64 `json:"page" api:"required"`
+	// Number of items per page.
+	PerPage int64 `json:"per_page" api:"required"`
+	// Total number of jobs matching the query.
+	Total int64 `json:"total" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
@@ -353,21 +418,34 @@ func (r *JobListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A configured job: an agent plus its schedule, inputs, and destination.
 type JobListResponseItem struct {
-	ID          string                         `json:"id" api:"required"`
-	Name        string                         `json:"name" api:"required"`
-	AgentName   string                         `json:"agent_name" api:"nullable"`
-	CreatedAt   time.Time                      `json:"created_at" api:"nullable" format:"date-time"`
-	Description string                         `json:"description" api:"nullable"`
+	// Unique job identifier (job\_<n>).
+	ID string `json:"id" api:"required"`
+	// Job name.
+	Name string `json:"name" api:"required"`
+	// Name of the agent this job runs.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// When the job was created.
+	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Description string    `json:"description" api:"nullable"`
+	// Where a job writes its results.
 	Destination JobListResponseItemDestination `json:"destination" api:"nullable"`
-	DisplayName string                         `json:"display_name" api:"nullable"`
-	Inputs      JobListResponseItemInputs      `json:"inputs" api:"nullable"`
-	LastRunAt   time.Time                      `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Human-friendly job name shown in the UI.
+	DisplayName string `json:"display_name" api:"nullable"`
+	// Configuration for the input data a job processes.
+	Inputs JobListResponseItemInputs `json:"inputs" api:"nullable"`
+	// Timestamp of the most recent run.
+	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Status of the most recent run.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
-	LastRunStatus string                      `json:"last_run_status" api:"nullable"`
-	Schedule      JobListResponseItemSchedule `json:"schedule" api:"nullable"`
-	UpdatedAt     time.Time                   `json:"updated_at" api:"nullable" format:"date-time"`
+	LastRunStatus string `json:"last_run_status" api:"nullable"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobListResponseItemSchedule `json:"schedule" api:"nullable"`
+	// When the job was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -393,10 +471,16 @@ func (r *JobListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
 type JobListResponseItemDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -415,11 +499,18 @@ func (r *JobListResponseItemDestination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Configuration for the input data a job processes.
 type JobListResponseItemInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string           `json:"type" api:"required"`
-	Data     []map[string]any `json:"data" api:"nullable"`
-	FilePath string           `json:"file_path" api:"nullable"`
+	Type string `json:"type" api:"required"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data" api:"nullable"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
+	FilePath string `json:"file_path" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -436,9 +527,12 @@ func (r *JobListResponseItemInputs) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Cron-based schedule controlling when a job runs automatically.
 type JobListResponseItemSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Cron        respjson.Field
@@ -454,21 +548,34 @@ func (r *JobListResponseItemSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A configured job: an agent plus its schedule, inputs, and destination.
 type JobGetResponse struct {
-	ID          string                    `json:"id" api:"required"`
-	Name        string                    `json:"name" api:"required"`
-	AgentName   string                    `json:"agent_name" api:"nullable"`
-	CreatedAt   time.Time                 `json:"created_at" api:"nullable" format:"date-time"`
-	Description string                    `json:"description" api:"nullable"`
+	// Unique job identifier (job\_<n>).
+	ID string `json:"id" api:"required"`
+	// Job name.
+	Name string `json:"name" api:"required"`
+	// Name of the agent this job runs.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// When the job was created.
+	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Description string    `json:"description" api:"nullable"`
+	// Where a job writes its results.
 	Destination JobGetResponseDestination `json:"destination" api:"nullable"`
-	DisplayName string                    `json:"display_name" api:"nullable"`
-	Inputs      JobGetResponseInputs      `json:"inputs" api:"nullable"`
-	LastRunAt   time.Time                 `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Human-friendly job name shown in the UI.
+	DisplayName string `json:"display_name" api:"nullable"`
+	// Configuration for the input data a job processes.
+	Inputs JobGetResponseInputs `json:"inputs" api:"nullable"`
+	// Timestamp of the most recent run.
+	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
+	// Status of the most recent run.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	LastRunStatus JobGetResponseLastRunStatus `json:"last_run_status" api:"nullable"`
-	Schedule      JobGetResponseSchedule      `json:"schedule" api:"nullable"`
-	UpdatedAt     time.Time                   `json:"updated_at" api:"nullable" format:"date-time"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobGetResponseSchedule `json:"schedule" api:"nullable"`
+	// When the job was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -494,10 +601,16 @@ func (r *JobGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
 type JobGetResponseDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -516,11 +629,18 @@ func (r *JobGetResponseDestination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Configuration for the input data a job processes.
 type JobGetResponseInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string           `json:"type" api:"required"`
-	Data     []map[string]any `json:"data" api:"nullable"`
-	FilePath string           `json:"file_path" api:"nullable"`
+	Type string `json:"type" api:"required"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data" api:"nullable"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
+	FilePath string `json:"file_path" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -537,6 +657,7 @@ func (r *JobGetResponseInputs) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Status of the most recent run.
 type JobGetResponseLastRunStatus string
 
 const (
@@ -549,9 +670,12 @@ const (
 	JobGetResponseLastRunStatusWarning   JobGetResponseLastRunStatus = "WARNING"
 )
 
+// Cron-based schedule controlling when a job runs automatically.
 type JobGetResponseSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Cron        respjson.Field
@@ -567,19 +691,31 @@ func (r *JobGetResponseSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A single execution of a job.
 type JobRunResponse struct {
-	ID        string    `json:"id" api:"required"`
+	// Unique run identifier (run\_<n>).
+	ID string `json:"id" api:"required"`
+	// When the run was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	JobID     string    `json:"job_id" api:"required"`
+	// Identifier of the job this run belongs to.
+	JobID string `json:"job_id" api:"required"`
+	// Current run status.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	Status JobRunResponseStatus `json:"status" api:"required"`
+	// What triggered the run: 'schedule' or 'manual'.
+	//
 	// Any of "schedule", "manual".
 	TriggeredBy JobRunResponseTriggeredBy `json:"triggered_by" api:"required"`
-	FinishedAt  time.Time                 `json:"finished_at" api:"nullable" format:"date-time"`
-	InputCount  int64                     `json:"input_count" api:"nullable"`
-	ResultCount int64                     `json:"result_count" api:"nullable"`
-	StartedAt   time.Time                 `json:"started_at" api:"nullable" format:"date-time"`
+	// When the run finished.
+	FinishedAt time.Time `json:"finished_at" api:"nullable" format:"date-time"`
+	// Number of input records processed.
+	InputCount int64 `json:"input_count" api:"nullable"`
+	// Number of result records produced.
+	ResultCount int64 `json:"result_count" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -602,6 +738,7 @@ func (r *JobRunResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Current run status.
 type JobRunResponseStatus string
 
 const (
@@ -614,6 +751,7 @@ const (
 	JobRunResponseStatusWarning   JobRunResponseStatus = "WARNING"
 )
 
+// What triggered the run: 'schedule' or 'manual'.
 type JobRunResponseTriggeredBy string
 
 const (
@@ -622,13 +760,19 @@ const (
 )
 
 type JobNewParams struct {
-	AgentName   string                  `json:"agent_name" api:"required"`
-	Name        string                  `json:"name" api:"required"`
-	Description param.Opt[string]       `json:"description,omitzero"`
-	DisplayName param.Opt[string]       `json:"display_name,omitzero"`
+	// Name of the agent to run.
+	AgentName string `json:"agent_name" api:"required"`
+	// Job name.
+	Name        string            `json:"name" api:"required"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	// Human-friendly job name shown in the UI.
+	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	// Where a job writes its results.
 	Destination JobNewParamsDestination `json:"destination,omitzero"`
-	Inputs      JobNewParamsInputs      `json:"inputs,omitzero"`
-	Schedule    JobNewParamsSchedule    `json:"schedule,omitzero"`
+	// Configuration for the input data a job processes.
+	Inputs JobNewParamsInputs `json:"inputs,omitzero"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobNewParamsSchedule `json:"schedule,omitzero"`
 	paramObj
 }
 
@@ -640,11 +784,18 @@ func (r *JobNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
+//
 // The properties Path, Type are required.
 type JobNewParamsDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type,omitzero" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format,omitzero"`
 	paramObj
@@ -667,12 +818,20 @@ func init() {
 	)
 }
 
+// Configuration for the input data a job processes.
+//
 // The property Type is required.
 type JobNewParamsInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string            `json:"type,omitzero" api:"required"`
+	Type string `json:"type,omitzero" api:"required"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
 	FilePath param.Opt[string] `json:"file_path,omitzero"`
-	Data     []map[string]any  `json:"data,omitzero"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data,omitzero"`
 	paramObj
 }
 
@@ -690,10 +849,14 @@ func init() {
 	)
 }
 
+// Cron-based schedule controlling when a job runs automatically.
+//
 // The properties Cron, Enabled are required.
 type JobNewParamsSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	paramObj
 }
 
@@ -706,11 +869,15 @@ func (r *JobNewParamsSchedule) UnmarshalJSON(data []byte) error {
 }
 
 type JobUpdateParams struct {
-	Description param.Opt[string]          `json:"description,omitzero"`
-	DisplayName param.Opt[string]          `json:"display_name,omitzero"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	// New display name.
+	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	// Where a job writes its results.
 	Destination JobUpdateParamsDestination `json:"destination,omitzero"`
-	Inputs      JobUpdateParamsInputs      `json:"inputs,omitzero"`
-	Schedule    JobUpdateParamsSchedule    `json:"schedule,omitzero"`
+	// Configuration for the input data a job processes.
+	Inputs JobUpdateParamsInputs `json:"inputs,omitzero"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobUpdateParamsSchedule `json:"schedule,omitzero"`
 	paramObj
 }
 
@@ -722,11 +889,18 @@ func (r *JobUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Where a job writes its results.
+//
 // The properties Path, Type are required.
 type JobUpdateParamsDestination struct {
+	// Destination path the output is written to.
 	Path string `json:"path" api:"required"`
+	// Destination kind: a local 'file' or an 's3' bucket.
+	//
 	// Any of "file", "s3".
 	Type string `json:"type,omitzero" api:"required"`
+	// Output file format.
+	//
 	// Any of "jsonl", "csv", "parquet".
 	Format string `json:"format,omitzero"`
 	paramObj
@@ -749,12 +923,20 @@ func init() {
 	)
 }
 
+// Configuration for the input data a job processes.
+//
 // The property Type is required.
 type JobUpdateParamsInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
 	// Any of "s3", "inline", "file".
-	Type     string            `json:"type,omitzero" api:"required"`
+	Type string `json:"type,omitzero" api:"required"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
 	FilePath param.Opt[string] `json:"file_path,omitzero"`
-	Data     []map[string]any  `json:"data,omitzero"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data,omitzero"`
 	paramObj
 }
 
@@ -772,10 +954,14 @@ func init() {
 	)
 }
 
+// Cron-based schedule controlling when a job runs automatically.
+//
 // The properties Cron, Enabled are required.
 type JobUpdateParamsSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	paramObj
 }
 

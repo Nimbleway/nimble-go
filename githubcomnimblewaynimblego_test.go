@@ -29,6 +29,14 @@ func TestExtractWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
+		AutoDriverConfiguration: map[string]int64{
+			"vx10":        2,
+			"vx10-pro":    0,
+			"vx6-fast":    1,
+			"vx6-stealth": 1,
+			"vx8":         5,
+			"vx8-pro":     5,
+		},
 		Body: map[string]any{
 			"key": "value",
 		},
@@ -217,6 +225,14 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractAsync(context.TODO(), githubcomnimblewaynimblego.ExtractAsyncParams{
 		URL: "url",
+		AutoDriverConfiguration: map[string]int64{
+			"vx10":        2,
+			"vx10-pro":    0,
+			"vx6-fast":    1,
+			"vx6-stealth": 1,
+			"vx8":         5,
+			"vx8-pro":     5,
+		},
 		Body: map[string]any{
 			"key": "value",
 		},
@@ -410,6 +426,14 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractBatch(context.TODO(), githubcomnimblewaynimblego.ExtractBatchParams{
 		Inputs: []githubcomnimblewaynimblego.ExtractBatchParamsInput{{
+			AutoDriverConfiguration: map[string]int64{
+				"vx10":        2,
+				"vx10-pro":    0,
+				"vx6-fast":    1,
+				"vx6-stealth": 1,
+				"vx8":         5,
+				"vx8-pro":     5,
+			},
 			Body: map[string]any{
 				"key": "value",
 			},
@@ -581,6 +605,14 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			URL:               githubcomnimblewaynimblego.String("url"),
 		}},
 		SharedInputs: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputs{
+			AutoDriverConfiguration: map[string]int64{
+				"vx10":        2,
+				"vx10-pro":    0,
+				"vx6-fast":    1,
+				"vx6-stealth": 1,
+				"vx8":         5,
+				"vx8-pro":     5,
+			},
 			Body: map[string]any{
 				"key": "value",
 			},

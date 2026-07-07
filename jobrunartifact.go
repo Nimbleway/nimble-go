@@ -95,7 +95,9 @@ func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID string, 
 	return res, err
 }
 
+// Artifacts produced by a run.
 type JobRunArtifactListResponse struct {
+	// Artifacts produced by the run.
 	Items []JobRunArtifactListResponseItem `json:"items" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -111,11 +113,20 @@ func (r *JobRunArtifactListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A file produced by a run.
+//
+// Intentional subset of the bakery Artifact: `data_format` and `s3_path` are
+// hidden from SDK consumers — internal storage details, not part of the public
+// contract. Use the download-url endpoint to fetch the file. Bakery emits `id` as
+// an int (crawlit native); the SDK contract is a string.
 type JobRunArtifactListResponseItem struct {
-	ID          string    `json:"id" api:"required"`
+	// Artifact identifier.
+	ID string `json:"id" api:"required"`
+	// When the artifact was created.
 	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
 	Description string    `json:"description" api:"required"`
-	Type        string    `json:"type" api:"required"`
+	// Artifact type.
+	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -133,9 +144,12 @@ func (r *JobRunArtifactListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A pre-signed URL for downloading an artifact.
 type JobRunArtifactDownloadURLResponse struct {
+	// When the download URL expires.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
-	URL       string    `json:"url" api:"required"`
+	// Pre-signed URL to download the artifact.
+	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ExpiresAt   respjson.Field
@@ -151,11 +165,20 @@ func (r *JobRunArtifactDownloadURLResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A file produced by a run.
+//
+// Intentional subset of the bakery Artifact: `data_format` and `s3_path` are
+// hidden from SDK consumers — internal storage details, not part of the public
+// contract. Use the download-url endpoint to fetch the file. Bakery emits `id` as
+// an int (crawlit native); the SDK contract is a string.
 type JobRunArtifactGetResponse struct {
-	ID          string    `json:"id" api:"required"`
+	// Artifact identifier.
+	ID string `json:"id" api:"required"`
+	// When the artifact was created.
 	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
 	Description string    `json:"description" api:"required"`
-	Type        string    `json:"type" api:"required"`
+	// Artifact type.
+	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -173,10 +196,14 @@ func (r *JobRunArtifactGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A tabular preview of an artifact's contents.
 type JobRunArtifactPreviewResponse struct {
-	Columns  []string         `json:"columns" api:"required"`
-	RowCount int64            `json:"row_count" api:"required"`
-	Rows     []map[string]any `json:"rows" api:"required"`
+	// Column names in the preview.
+	Columns []string `json:"columns" api:"required"`
+	// Total number of rows in the artifact.
+	RowCount int64 `json:"row_count" api:"required"`
+	// Sample rows from the artifact.
+	Rows []map[string]any `json:"rows" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Columns     respjson.Field
