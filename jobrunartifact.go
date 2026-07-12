@@ -123,8 +123,9 @@ type JobRunArtifactListResponseItem struct {
 	// Artifact identifier.
 	ID string `json:"id" api:"required"`
 	// When the artifact was created.
-	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description string    `json:"description" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Human-readable artifact description.
+	Description string `json:"description" api:"required"`
 	// Artifact type.
 	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -175,8 +176,9 @@ type JobRunArtifactGetResponse struct {
 	// Artifact identifier.
 	ID string `json:"id" api:"required"`
 	// When the artifact was created.
-	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description string    `json:"description" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Human-readable artifact description.
+	Description string `json:"description" api:"required"`
 	// Artifact type.
 	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

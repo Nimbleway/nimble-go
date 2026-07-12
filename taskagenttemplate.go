@@ -38,7 +38,7 @@ func NewTaskAgentTemplateService(opts ...option.RequestOption) (r TaskAgentTempl
 	return
 }
 
-// List all available Web Search Agent templates.
+// List Templates
 func (r *TaskAgentTemplateService) List(ctx context.Context, query TaskAgentTemplateListParams, opts ...option.RequestOption) (res *[]TaskAgentTemplateListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/task-agents/templates"
@@ -46,7 +46,7 @@ func (r *TaskAgentTemplateService) List(ctx context.Context, query TaskAgentTemp
 	return res, err
 }
 
-// Fetch a single Web Search Agent template by name.
+// Get Template
 func (r *TaskAgentTemplateService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *TaskAgentTemplateGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if templateName == "" {
@@ -59,12 +59,15 @@ func (r *TaskAgentTemplateService) Get(ctx context.Context, templateName string,
 }
 
 type TaskAgentTemplateListResponse struct {
-	ID                 string                                           `json:"id" api:"required"`
-	CreatedAt          time.Time                                        `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                           `json:"description" api:"required"`
-	DisplayName        string                                           `json:"display_name" api:"required"`
-	DomainExpertise    string                                           `json:"domain_expertise" api:"required"`
-	Effort             string                                           `json:"effort" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort             TaskAgentTemplateListResponseEffort              `json:"effort" api:"required"`
 	Goals              []TaskAgentTemplateListResponseGoal              `json:"goals" api:"required"`
 	Icon               string                                           `json:"icon" api:"required"`
 	OutputSchema       map[string]any                                   `json:"output_schema" api:"required"`
@@ -100,6 +103,17 @@ func (r TaskAgentTemplateListResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentTemplateListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentTemplateListResponseEffort string
+
+const (
+	TaskAgentTemplateListResponseEffortLow    TaskAgentTemplateListResponseEffort = "low"
+	TaskAgentTemplateListResponseEffortMedium TaskAgentTemplateListResponseEffort = "medium"
+	TaskAgentTemplateListResponseEffortHigh   TaskAgentTemplateListResponseEffort = "high"
+	TaskAgentTemplateListResponseEffortXHigh  TaskAgentTemplateListResponseEffort = "x-high"
+	TaskAgentTemplateListResponseEffortMax    TaskAgentTemplateListResponseEffort = "max"
+)
 
 type TaskAgentTemplateListResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -172,12 +186,15 @@ const (
 )
 
 type TaskAgentTemplateGetResponse struct {
-	ID                 string                                          `json:"id" api:"required"`
-	CreatedAt          time.Time                                       `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                          `json:"description" api:"required"`
-	DisplayName        string                                          `json:"display_name" api:"required"`
-	DomainExpertise    string                                          `json:"domain_expertise" api:"required"`
-	Effort             string                                          `json:"effort" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort             TaskAgentTemplateGetResponseEffort              `json:"effort" api:"required"`
 	Goals              []TaskAgentTemplateGetResponseGoal              `json:"goals" api:"required"`
 	Icon               string                                          `json:"icon" api:"required"`
 	OutputSchema       map[string]any                                  `json:"output_schema" api:"required"`
@@ -213,6 +230,17 @@ func (r TaskAgentTemplateGetResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentTemplateGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentTemplateGetResponseEffort string
+
+const (
+	TaskAgentTemplateGetResponseEffortLow    TaskAgentTemplateGetResponseEffort = "low"
+	TaskAgentTemplateGetResponseEffortMedium TaskAgentTemplateGetResponseEffort = "medium"
+	TaskAgentTemplateGetResponseEffortHigh   TaskAgentTemplateGetResponseEffort = "high"
+	TaskAgentTemplateGetResponseEffortXHigh  TaskAgentTemplateGetResponseEffort = "x-high"
+	TaskAgentTemplateGetResponseEffortMax    TaskAgentTemplateGetResponseEffort = "max"
+)
 
 type TaskAgentTemplateGetResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -285,10 +313,14 @@ const (
 )
 
 type TaskAgentTemplateListParams struct {
-	Effort  param.Opt[string] `query:"effort,omitzero" json:"-"`
-	UseCase param.Opt[string] `query:"use_case,omitzero" json:"-"`
-	Limit   param.Opt[int64]  `query:"limit,omitzero" json:"-"`
-	Offset  param.Opt[int64]  `query:"offset,omitzero" json:"-"`
+	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	FilterEffort TaskAgentTemplateListParamsFilterEffort `query:"filter_effort,omitzero" json:"-"`
+	// Any of "research", "enrichment", "dataset_building".
+	FilterUseCase TaskAgentTemplateListParamsFilterUseCase `query:"filter_use_case,omitzero" json:"-"`
 	paramObj
 }
 
@@ -300,3 +332,22 @@ func (r TaskAgentTemplateListParams) URLQuery() (v url.Values, err error) {
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentTemplateListParamsFilterEffort string
+
+const (
+	TaskAgentTemplateListParamsFilterEffortLow    TaskAgentTemplateListParamsFilterEffort = "low"
+	TaskAgentTemplateListParamsFilterEffortMedium TaskAgentTemplateListParamsFilterEffort = "medium"
+	TaskAgentTemplateListParamsFilterEffortHigh   TaskAgentTemplateListParamsFilterEffort = "high"
+	TaskAgentTemplateListParamsFilterEffortXHigh  TaskAgentTemplateListParamsFilterEffort = "x-high"
+	TaskAgentTemplateListParamsFilterEffortMax    TaskAgentTemplateListParamsFilterEffort = "max"
+)
+
+type TaskAgentTemplateListParamsFilterUseCase string
+
+const (
+	TaskAgentTemplateListParamsFilterUseCaseResearch        TaskAgentTemplateListParamsFilterUseCase = "research"
+	TaskAgentTemplateListParamsFilterUseCaseEnrichment      TaskAgentTemplateListParamsFilterUseCase = "enrichment"
+	TaskAgentTemplateListParamsFilterUseCaseDatasetBuilding TaskAgentTemplateListParamsFilterUseCase = "dataset_building"
+)

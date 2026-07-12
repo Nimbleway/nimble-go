@@ -114,8 +114,9 @@ type JobNewResponse struct {
 	// Name of the agent this job runs.
 	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
-	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
-	Description string    `json:"description" api:"nullable"`
+	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	// Free-text description of the job.
+	Description string `json:"description" api:"nullable"`
 	// Where a job writes its results.
 	Destination JobNewResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
@@ -257,8 +258,9 @@ type JobUpdateResponse struct {
 	// Name of the agent this job runs.
 	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
-	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
-	Description string    `json:"description" api:"nullable"`
+	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	// Free-text description of the job.
+	Description string `json:"description" api:"nullable"`
 	// Where a job writes its results.
 	Destination JobUpdateResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
@@ -427,8 +429,9 @@ type JobListResponseItem struct {
 	// Name of the agent this job runs.
 	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
-	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
-	Description string    `json:"description" api:"nullable"`
+	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	// Free-text description of the job.
+	Description string `json:"description" api:"nullable"`
 	// Where a job writes its results.
 	Destination JobListResponseItemDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
@@ -557,8 +560,9 @@ type JobGetResponse struct {
 	// Name of the agent this job runs.
 	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
-	CreatedAt   time.Time `json:"created_at" api:"nullable" format:"date-time"`
-	Description string    `json:"description" api:"nullable"`
+	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	// Free-text description of the job.
+	Description string `json:"description" api:"nullable"`
 	// Where a job writes its results.
 	Destination JobGetResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
@@ -763,7 +767,8 @@ type JobNewParams struct {
 	// Name of the agent to run.
 	AgentName string `json:"agent_name" api:"required"`
 	// Job name.
-	Name        string            `json:"name" api:"required"`
+	Name string `json:"name" api:"required"`
+	// Free-text description of the job.
 	Description param.Opt[string] `json:"description,omitzero"`
 	// Human-friendly job name shown in the UI.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
@@ -869,6 +874,7 @@ func (r *JobNewParamsSchedule) UnmarshalJSON(data []byte) error {
 }
 
 type JobUpdateParams struct {
+	// New description.
 	Description param.Opt[string] `json:"description,omitzero"`
 	// New display name.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`

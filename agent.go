@@ -1184,17 +1184,17 @@ type AgentRunBatchResponseTask struct {
 	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
 	// Queue name the task was submitted to.
 	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
@@ -1279,66 +1279,66 @@ type AgentGenerateParams struct {
 	//
 
 	// This field is a request body variant, only one variant field can be set.
-	OfCreateAgentGenerationRequest *AgentGenerateParamsBodyCreateAgentGenerationRequest `json:",inline"`
+	OfCrustCreateAgentGenerationRequest *AgentGenerateParamsBodyCrustCreateAgentGenerationRequest `json:",inline"`
 	// This field is a request body variant, only one variant field can be set.
-	OfCreateAgentRefinementRequest *AgentGenerateParamsBodyCreateAgentRefinementRequest `json:",inline"`
+	OfCrustCreateAgentRefinementRequest *AgentGenerateParamsBodyCrustCreateAgentRefinementRequest `json:",inline"`
 
 	paramObj
 }
 
 func (u AgentGenerateParams) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCreateAgentGenerationRequest, u.OfCreateAgentRefinementRequest)
+	return param.MarshalUnion(u, u.OfCrustCreateAgentGenerationRequest, u.OfCrustCreateAgentRefinementRequest)
 }
 func (r *AgentGenerateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Prompt, URL are required.
-type AgentGenerateParamsBodyCreateAgentGenerationRequest struct {
-	Prompt       string                                                      `json:"prompt" api:"required"`
-	URL          string                                                      `json:"url" api:"required"`
-	Name         param.Opt[string]                                           `json:"name,omitzero"`
-	Metadata     AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata `json:"metadata,omitzero"`
-	InputSchema  map[string]any                                              `json:"input_schema,omitzero"`
-	OutputSchema map[string]any                                              `json:"output_schema,omitzero"`
+type AgentGenerateParamsBodyCrustCreateAgentGenerationRequest struct {
+	Prompt       string                                                           `json:"prompt" api:"required"`
+	URL          string                                                           `json:"url" api:"required"`
+	Name         param.Opt[string]                                                `json:"name,omitzero"`
+	Metadata     AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata `json:"metadata,omitzero"`
+	InputSchema  map[string]any                                                   `json:"input_schema,omitzero"`
+	OutputSchema map[string]any                                                   `json:"output_schema,omitzero"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentGenerationRequest) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentGenerationRequest
+func (r AgentGenerateParamsBodyCrustCreateAgentGenerationRequest) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCrustCreateAgentGenerationRequest
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentGenerationRequest) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCrustCreateAgentGenerationRequest) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata struct {
+type AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata struct {
 	Description param.Opt[string] `json:"description,omitzero"`
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
 	Tags        []string          `json:"tags,omitzero"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata
+func (r AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties FromAgent, Prompt are required.
-type AgentGenerateParamsBodyCreateAgentRefinementRequest struct {
+type AgentGenerateParamsBodyCrustCreateAgentRefinementRequest struct {
 	FromAgent string `json:"from_agent" api:"required"`
 	Prompt    string `json:"prompt" api:"required"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentRefinementRequest) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentRefinementRequest
+func (r AgentGenerateParamsBodyCrustCreateAgentRefinementRequest) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCrustCreateAgentRefinementRequest
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentRefinementRequest) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCrustCreateAgentRefinementRequest) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

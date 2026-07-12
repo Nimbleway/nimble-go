@@ -192,6 +192,7 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		Session: githubcomnimblewaynimblego.ExtractParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
 			PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+			RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 			Retry:               githubcomnimblewaynimblego.Bool(true),
 			Timeout:             githubcomnimblewaynimblego.Float(1),
 		},
@@ -389,6 +390,7 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 		Session: githubcomnimblewaynimblego.ExtractAsyncParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
 			PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+			RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 			Retry:               githubcomnimblewaynimblego.Bool(true),
 			Timeout:             githubcomnimblewaynimblego.Float(1),
 		},
@@ -590,6 +592,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsInputSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
 				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 				Retry:               githubcomnimblewaynimblego.Bool(true),
 				Timeout:             githubcomnimblewaynimblego.Float(1),
 			},
@@ -769,6 +772,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
 				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 				Retry:               githubcomnimblewaynimblego.Bool(true),
 				Timeout:             githubcomnimblewaynimblego.Float(1),
 			},

@@ -31,7 +31,7 @@ func TestTaskAgentNewWithOptionalParams(t *testing.T) {
 		Description:     githubcomnimblewaynimblego.String("description"),
 		DisplayName:     githubcomnimblewaynimblego.String("display_name"),
 		DomainExpertise: githubcomnimblewaynimblego.String("domain_expertise"),
-		Effort:          githubcomnimblewaynimblego.String("effort"),
+		Effort:          githubcomnimblewaynimblego.TaskAgentNewParamsEffortLow,
 		Goals:           []string{"string"},
 		Icon:            githubcomnimblewaynimblego.String("icon"),
 		IsActive:        githubcomnimblewaynimblego.Bool(true),
@@ -81,11 +81,12 @@ func TestTaskAgentUpdate(t *testing.T) {
 	)
 	_, err := client.TaskAgent.Update(
 		context.TODO(),
-		"agent_id",
+		"182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		githubcomnimblewaynimblego.TaskAgentUpdateParams{
 			Body: []githubcomnimblewaynimblego.TaskAgentUpdateParamsBody{{
-				Op:    "replace",
+				Op:    "add",
 				Path:  "path",
+				From:  githubcomnimblewaynimblego.String("from"),
 				Value: map[string]any{},
 			}},
 		},
@@ -113,10 +114,11 @@ func TestTaskAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.TaskAgent.List(context.TODO(), githubcomnimblewaynimblego.TaskAgentListParams{
-		Effort:  githubcomnimblewaynimblego.String("effort"),
-		Limit:   githubcomnimblewaynimblego.Int(1),
-		Offset:  githubcomnimblewaynimblego.Int(0),
-		UseCase: githubcomnimblewaynimblego.String("use_case"),
+		FilterEffort:  githubcomnimblewaynimblego.TaskAgentListParamsFilterEffortLow,
+		FilterUseCase: githubcomnimblewaynimblego.TaskAgentListParamsFilterUseCaseResearch,
+		Limit:         githubcomnimblewaynimblego.Int(0),
+		Offset:        githubcomnimblewaynimblego.Int(0),
+		WorkspaceID:   githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -140,7 +142,7 @@ func TestTaskAgentDeactivate(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.TaskAgent.Deactivate(context.TODO(), "agent_id")
+	err := client.TaskAgent.Deactivate(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
@@ -163,7 +165,7 @@ func TestTaskAgentGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.TaskAgent.Get(context.TODO(), "agent_id")
+	_, err := client.TaskAgent.Get(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
@@ -188,13 +190,15 @@ func TestTaskAgentRunWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.TaskAgent.Run(
 		context.TODO(),
-		"agent_id",
+		"182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		githubcomnimblewaynimblego.TaskAgentRunParams{
 			Input:        "input",
+			Effort:       githubcomnimblewaynimblego.TaskAgentRunParamsEffortLow,
 			EnableEvents: githubcomnimblewaynimblego.Bool(true),
 			OutputSchema: map[string]any{
 				"foo": "bar",
 			},
+			PreviousInteractionID: githubcomnimblewaynimblego.String("previous_interaction_id"),
 			Sources: githubcomnimblewaynimblego.TaskAgentRunParamsSources{
 				Allow: []githubcomnimblewaynimblego.TaskAgentRunParamsSourcesAllow{{
 					Domains: []string{"string"},

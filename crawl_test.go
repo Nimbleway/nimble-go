@@ -236,6 +236,7 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 			Session: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
 				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 				Retry:               githubcomnimblewaynimblego.Bool(true),
 				Timeout:             githubcomnimblewaynimblego.Float(1),
 			},

@@ -39,8 +39,11 @@ func NewTaskAgentRunService(opts ...option.RequestOption) (r TaskAgentRunService
 	return
 }
 
-// List task runs for the caller's workspace and the given agent, newest first.
-func (r *TaskAgentRunService) List(ctx context.Context, agentID string, query TaskAgentRunListParams, opts ...option.RequestOption) (res *[]TaskAgentRunListResponse, err error) {
+// List runs for this instance.
+//
+// `status` accepts a lowercase `TaskRunStatusValue` (e.g. "completed") or a
+// comma-separated list of them (e.g. "queued,running").
+func (r *TaskAgentRunService) List(ctx context.Context, agentID string, query TaskAgentRunListParams, opts ...option.RequestOption) (res *TaskAgentRunListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
 		err = errors.New("missing required agent_id parameter")
@@ -52,6 +55,9 @@ func (r *TaskAgentRunService) List(ctx context.Context, agentID string, query Ta
 }
 
 // Cancel an in-progress or queued run.
+//
+// Verb is POST + `/cancel` action segment per the AGENTS-1666 spec (replaces the
+// old `DELETE …/runs/{run_id}`).
 func (r *TaskAgentRunService) Cancel(ctx context.Context, runID string, body TaskAgentRunCancelParams, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
@@ -68,7 +74,11 @@ func (r *TaskAgentRunService) Cancel(ctx context.Context, runID string, body Tas
 	return err
 }
 
-// Poll run status. Repeat until status is 'completed', 'failed', or 'cancelled'.
+// Fetch a run by id, scoped to the instance.
+//
+// A run resolves only when (run_id, agent_id) match — otherwise 404. This means a
+// stale URL with a swapped agent_id won't leak runs across instances even if the
+// run_id is real.
 func (r *TaskAgentRunService) Get(ctx context.Context, runID string, query TaskAgentRunGetParams, opts ...option.RequestOption) (res *TaskAgentRunGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.AgentID == "" {
@@ -84,8 +94,14 @@ func (r *TaskAgentRunService) Get(ctx context.Context, runID string, query TaskA
 	return res, err
 }
 
-// Fetch the result for a terminal run. Returns 408 if still active, 422 with
-// `AgentRunFailedResult` if failed.
+// Fetch the result for a terminal run on this instance.
+//
+// Mirrors the previous flat `GET /tasks/runs/:run_id/result` semantics:
+//
+// - 404 when the run doesn't belong to the agent.
+// - 408 when the run is still active.
+// - 422 (with TaskRunFailedResult body) when the run failed or was cancelled.
+// - 200 (with TaskRunResult body) on success.
 func (r *TaskAgentRunService) GetResult(ctx context.Context, runID string, query TaskAgentRunGetResultParams, opts ...option.RequestOption) (res *TaskAgentRunGetResultResponseUnion, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.AgentID == "" {
@@ -101,8 +117,7 @@ func (r *TaskAgentRunService) GetResult(ctx context.Context, runID string, query
 	return res, err
 }
 
-// Server-Sent Events stream of real-time progress events for a run. The run must
-// have been created with `enable_events=true`.
+// SSE stream of real-time progress events for a run on this instance.
 func (r *TaskAgentRunService) StreamEvents(ctx context.Context, runID string, query TaskAgentRunStreamEventsParams, opts ...option.RequestOption) (res *TaskAgentRunStreamEventsResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.AgentID == "" {
@@ -118,41 +133,20 @@ func (r *TaskAgentRunService) StreamEvents(ctx context.Context, runID string, qu
 	return res, err
 }
 
+// Paginated list of task runs for GET /tasks/runs.
 type TaskAgentRunListResponse struct {
-	// Run identifier.
-	ID        string    `json:"id" api:"required"`
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "quickest", "quick", "research", "pro", "max".
-	Effort TaskAgentRunListResponseEffort `json:"effort" api:"required"`
-	// Interaction ID — pass as previous_interaction_id to reuse context.
-	InteractionID string `json:"interaction_id" api:"required"`
-	// True while status is 'queued' or 'running'.
-	IsActive bool `json:"is_active" api:"required"`
-	// Any of "queued", "running", "completed", "failed", "cancelled".
-	Status      TaskAgentRunListResponseStatus `json:"status" api:"required"`
-	CompletedAt time.Time                      `json:"completed_at" api:"nullable" format:"date-time"`
-	Error       TaskAgentRunListResponseError  `json:"error" api:"nullable"`
-	Prompt      string                         `json:"prompt" api:"nullable"`
-	StartedAt   time.Time                      `json:"started_at" api:"nullable" format:"date-time"`
-	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
-	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
+	Items  []TaskAgentRunListResponseItem `json:"items" api:"required"`
+	Total  int64                          `json:"total" api:"required"`
+	Limit  int64                          `json:"limit"`
+	Offset int64                          `json:"offset"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID               respjson.Field
-		CreatedAt        respjson.Field
-		Effort           respjson.Field
-		InteractionID    respjson.Field
-		IsActive         respjson.Field
-		Status           respjson.Field
-		CompletedAt      respjson.Field
-		Error            respjson.Field
-		Prompt           respjson.Field
-		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
-		WorkspaceID      respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		Items       respjson.Field
+		Total       respjson.Field
+		Limit       respjson.Field
+		Offset      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
@@ -162,27 +156,62 @@ func (r *TaskAgentRunListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunListResponseEffort string
+// Task run status returned by list/create/get endpoints.
+type TaskAgentRunListResponseItem struct {
+	// Run identifier, format "task*run*{uuid}".
+	ID        string    `json:"id" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort string `json:"effort" api:"required"`
+	// Interaction ID — pass as previous_interaction_id to reuse context.
+	InteractionID string `json:"interaction_id" api:"required"`
+	// True while status is 'queued' or 'running'.
+	IsActive bool `json:"is_active" api:"required"`
+	// Lowercase status values used in API responses (distinct from the DB-level
+	// TaskRunStatus enum).
+	//
+	// Any of "queued", "running", "completed", "failed", "cancelled".
+	Status string `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to. Every task run is agent-bound
+	// (see AGENTS-1666). Use this to build the nested URL
+	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
+	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
+	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error detail for a failed run.
+	Error TaskAgentRunListResponseItemError `json:"error" api:"nullable"`
+	// Original user prompt before enrichment. Populated for Web Search Agent runs.
+	Prompt      string    `json:"prompt" api:"nullable"`
+	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID               respjson.Field
+		CreatedAt        respjson.Field
+		Effort           respjson.Field
+		InteractionID    respjson.Field
+		IsActive         respjson.Field
+		Status           respjson.Field
+		WebSearchAgentID respjson.Field
+		CompletedAt      respjson.Field
+		Error            respjson.Field
+		Prompt           respjson.Field
+		StartedAt        respjson.Field
+		WorkspaceID      respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
 
-const (
-	TaskAgentRunListResponseEffortQuickest TaskAgentRunListResponseEffort = "quickest"
-	TaskAgentRunListResponseEffortQuick    TaskAgentRunListResponseEffort = "quick"
-	TaskAgentRunListResponseEffortResearch TaskAgentRunListResponseEffort = "research"
-	TaskAgentRunListResponseEffortPro      TaskAgentRunListResponseEffort = "pro"
-	TaskAgentRunListResponseEffortMax      TaskAgentRunListResponseEffort = "max"
-)
+// Returns the unmodified JSON received from the API
+func (r TaskAgentRunListResponseItem) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunListResponseItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-type TaskAgentRunListResponseStatus string
-
-const (
-	TaskAgentRunListResponseStatusQueued    TaskAgentRunListResponseStatus = "queued"
-	TaskAgentRunListResponseStatusRunning   TaskAgentRunListResponseStatus = "running"
-	TaskAgentRunListResponseStatusCompleted TaskAgentRunListResponseStatus = "completed"
-	TaskAgentRunListResponseStatusFailed    TaskAgentRunListResponseStatus = "failed"
-	TaskAgentRunListResponseStatusCancelled TaskAgentRunListResponseStatus = "cancelled"
-)
-
-type TaskAgentRunListResponseError struct {
+// Error detail for a failed run.
+type TaskAgentRunListResponseItemError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// Reference ID (equals the run id).
@@ -197,30 +226,40 @@ type TaskAgentRunListResponseError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunListResponseError) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunListResponseError) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunListResponseItemError) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunListResponseItemError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Task run status returned by list/create/get endpoints.
 type TaskAgentRunGetResponse struct {
-	// Run identifier.
+	// Run identifier, format "task*run*{uuid}".
 	ID        string    `json:"id" api:"required"`
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "quickest", "quick", "research", "pro", "max".
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
 	Effort TaskAgentRunGetResponseEffort `json:"effort" api:"required"`
 	// Interaction ID — pass as previous_interaction_id to reuse context.
 	InteractionID string `json:"interaction_id" api:"required"`
 	// True while status is 'queued' or 'running'.
 	IsActive bool `json:"is_active" api:"required"`
+	// Lowercase status values used in API responses (distinct from the DB-level
+	// TaskRunStatus enum).
+	//
 	// Any of "queued", "running", "completed", "failed", "cancelled".
-	Status      TaskAgentRunGetResponseStatus `json:"status" api:"required"`
-	CompletedAt time.Time                     `json:"completed_at" api:"nullable" format:"date-time"`
-	Error       TaskAgentRunGetResponseError  `json:"error" api:"nullable"`
-	Prompt      string                        `json:"prompt" api:"nullable"`
-	StartedAt   time.Time                     `json:"started_at" api:"nullable" format:"date-time"`
-	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
-	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
+	Status TaskAgentRunGetResponseStatus `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to. Every task run is agent-bound
+	// (see AGENTS-1666). Use this to build the nested URL
+	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
+	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
+	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error detail for a failed run.
+	Error TaskAgentRunGetResponseError `json:"error" api:"nullable"`
+	// Original user prompt before enrichment. Populated for Web Search Agent runs.
+	Prompt      string    `json:"prompt" api:"nullable"`
+	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -229,11 +268,11 @@ type TaskAgentRunGetResponse struct {
 		InteractionID    respjson.Field
 		IsActive         respjson.Field
 		Status           respjson.Field
+		WebSearchAgentID respjson.Field
 		CompletedAt      respjson.Field
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
 		WorkspaceID      respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
@@ -246,16 +285,19 @@ func (r *TaskAgentRunGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Canonical effort tier names for the research graph.
 type TaskAgentRunGetResponseEffort string
 
 const (
-	TaskAgentRunGetResponseEffortQuickest TaskAgentRunGetResponseEffort = "quickest"
-	TaskAgentRunGetResponseEffortQuick    TaskAgentRunGetResponseEffort = "quick"
-	TaskAgentRunGetResponseEffortResearch TaskAgentRunGetResponseEffort = "research"
-	TaskAgentRunGetResponseEffortPro      TaskAgentRunGetResponseEffort = "pro"
-	TaskAgentRunGetResponseEffortMax      TaskAgentRunGetResponseEffort = "max"
+	TaskAgentRunGetResponseEffortLow    TaskAgentRunGetResponseEffort = "low"
+	TaskAgentRunGetResponseEffortMedium TaskAgentRunGetResponseEffort = "medium"
+	TaskAgentRunGetResponseEffortHigh   TaskAgentRunGetResponseEffort = "high"
+	TaskAgentRunGetResponseEffortXHigh  TaskAgentRunGetResponseEffort = "x-high"
+	TaskAgentRunGetResponseEffortMax    TaskAgentRunGetResponseEffort = "max"
 )
 
+// Lowercase status values used in API responses (distinct from the DB-level
+// TaskRunStatus enum).
 type TaskAgentRunGetResponseStatus string
 
 const (
@@ -266,6 +308,7 @@ const (
 	TaskAgentRunGetResponseStatusCancelled TaskAgentRunGetResponseStatus = "cancelled"
 )
 
+// Error detail for a failed run.
 type TaskAgentRunGetResponseError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
@@ -287,18 +330,18 @@ func (r *TaskAgentRunGetResponseError) UnmarshalJSON(data []byte) error {
 }
 
 // TaskAgentRunGetResultResponseUnion contains all possible properties and values
-// from [TaskAgentRunGetResultResponseAgentRunResult],
-// [TaskAgentRunGetResultResponseAgentRunFailedResult].
+// from [TaskAgentRunGetResultResponseTaskRunResult],
+// [TaskAgentRunGetResultResponseTaskRunFailedResult].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type TaskAgentRunGetResultResponseUnion struct {
-	// This field is from variant [TaskAgentRunGetResultResponseAgentRunResult].
-	Output TaskAgentRunGetResultResponseAgentRunResultOutputUnion `json:"output"`
-	// This field is a union of [TaskAgentRunGetResultResponseAgentRunResultRun],
-	// [TaskAgentRunGetResultResponseAgentRunFailedResultRun]
+	// This field is from variant [TaskAgentRunGetResultResponseTaskRunResult].
+	Output TaskAgentRunGetResultResponseTaskRunResultOutputUnion `json:"output"`
+	// This field is a union of [TaskAgentRunGetResultResponseTaskRunResultRun],
+	// [TaskAgentRunGetResultResponseTaskRunFailedResultRun]
 	Run TaskAgentRunGetResultResponseUnionRun `json:"run"`
-	// This field is from variant [TaskAgentRunGetResultResponseAgentRunFailedResult].
-	Error TaskAgentRunGetResultResponseAgentRunFailedResultError `json:"error"`
+	// This field is from variant [TaskAgentRunGetResultResponseTaskRunFailedResult].
+	Error TaskAgentRunGetResultResponseTaskRunFailedResultError `json:"error"`
 	JSON  struct {
 		Output respjson.Field
 		Run    respjson.Field
@@ -307,12 +350,12 @@ type TaskAgentRunGetResultResponseUnion struct {
 	} `json:"-"`
 }
 
-func (u TaskAgentRunGetResultResponseUnion) AsAgentRunResult() (v TaskAgentRunGetResultResponseAgentRunResult) {
+func (u TaskAgentRunGetResultResponseUnion) AsTaskRunResult() (v TaskAgentRunGetResultResponseTaskRunResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TaskAgentRunGetResultResponseUnion) AsAgentRunFailedResult() (v TaskAgentRunGetResultResponseAgentRunFailedResult) {
+func (u TaskAgentRunGetResultResponseUnion) AsTaskRunFailedResult() (v TaskAgentRunGetResultResponseTaskRunFailedResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -331,32 +374,32 @@ func (r *TaskAgentRunGetResultResponseUnion) UnmarshalJSON(data []byte) error {
 // For type safety it is recommended to directly use a variant of the
 // [TaskAgentRunGetResultResponseUnion].
 type TaskAgentRunGetResultResponseUnionRun struct {
-	ID            string    `json:"id"`
-	CreatedAt     time.Time `json:"created_at"`
-	Effort        string    `json:"effort"`
-	InteractionID string    `json:"interaction_id"`
-	IsActive      bool      `json:"is_active"`
-	Status        string    `json:"status"`
-	CompletedAt   time.Time `json:"completed_at"`
-	// This field is a union of [TaskAgentRunGetResultResponseAgentRunResultRunError],
-	// [TaskAgentRunGetResultResponseAgentRunFailedResultRunError]
-	Error            TaskAgentRunGetResultResponseUnionRunError `json:"error"`
-	Prompt           string                                     `json:"prompt"`
-	StartedAt        time.Time                                  `json:"started_at"`
-	WebSearchAgentID string                                     `json:"web_search_agent_id"`
-	WorkspaceID      string                                     `json:"workspace_id"`
-	JSON             struct {
+	ID               string    `json:"id"`
+	CreatedAt        time.Time `json:"created_at"`
+	Effort           string    `json:"effort"`
+	InteractionID    string    `json:"interaction_id"`
+	IsActive         bool      `json:"is_active"`
+	Status           string    `json:"status"`
+	WebSearchAgentID string    `json:"web_search_agent_id"`
+	CompletedAt      time.Time `json:"completed_at"`
+	// This field is a union of [TaskAgentRunGetResultResponseTaskRunResultRunError],
+	// [TaskAgentRunGetResultResponseTaskRunFailedResultRunError]
+	Error       TaskAgentRunGetResultResponseUnionRunError `json:"error"`
+	Prompt      string                                     `json:"prompt"`
+	StartedAt   time.Time                                  `json:"started_at"`
+	WorkspaceID string                                     `json:"workspace_id"`
+	JSON        struct {
 		ID               respjson.Field
 		CreatedAt        respjson.Field
 		Effort           respjson.Field
 		InteractionID    respjson.Field
 		IsActive         respjson.Field
 		Status           respjson.Field
+		WebSearchAgentID respjson.Field
 		CompletedAt      respjson.Field
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
 		WorkspaceID      respjson.Field
 		raw              string
 	} `json:"-"`
@@ -386,9 +429,12 @@ func (r *TaskAgentRunGetResultResponseUnionRunError) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResult struct {
-	Output TaskAgentRunGetResultResponseAgentRunResultOutputUnion `json:"output" api:"required"`
-	Run    TaskAgentRunGetResultResponseAgentRunResultRun         `json:"run" api:"required"`
+// Response for GET /tasks/runs/{run_id}/result — status 'completed'.
+type TaskAgentRunGetResultResponseTaskRunResult struct {
+	// Output from the completed task.
+	Output TaskAgentRunGetResultResponseTaskRunResultOutputUnion `json:"output" api:"required"`
+	// Task run object with status 'completed'.
+	Run TaskAgentRunGetResultResponseTaskRunResultRun `json:"run" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Output      respjson.Field
@@ -399,26 +445,26 @@ type TaskAgentRunGetResultResponseAgentRunResult struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResult) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunResult) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunResult) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnion contains all possible
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnion contains all possible
 // properties and values from
-// [TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput],
-// [TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput].
+// [TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutput],
+// [TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutput].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type TaskAgentRunGetResultResponseAgentRunResultOutputUnion struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputUnion struct {
 	// This field is a union of [string],
-	// [TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion]
-	Content TaskAgentRunGetResultResponseAgentRunResultOutputUnionContent `json:"content"`
+	// [TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion]
+	Content TaskAgentRunGetResultResponseTaskRunResultOutputUnionContent `json:"content"`
 	// This field is a union of
-	// [TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust],
-	// [TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust]
-	Trust TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust `json:"trust"`
-	Type  string                                                      `json:"type"`
+	// [TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrust],
+	// [TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrust]
+	Trust TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrust `json:"trust"`
+	Type  string                                                     `json:"type"`
 	JSON  struct {
 		Content respjson.Field
 		Trust   respjson.Field
@@ -427,72 +473,72 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputUnion struct {
 	} `json:"-"`
 }
 
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputUnion) AsAgentRunTextOutput() (v TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput) {
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputUnion) AsTaskRunTextOutput() (v TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutput) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputUnion) AsAgentRunJsonOutput() (v TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput) {
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputUnion) AsTaskRunJsonOutput() (v TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutput) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputUnion) RawJSON() string { return u.JSON.raw }
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputUnion) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionContent is an implicit
-// subunion of [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionContent provides
-// convenient access to the sub-properties of the union.
-//
-// For type safety it is recommended to directly use a variant of the
-// [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString
-// OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem
-// OfAnyArray]
-type TaskAgentRunGetResultResponseAgentRunResultOutputUnionContent struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [any] instead of an object.
-	OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem any `json:",inline"`
-	// This field will be present if the value is a [[]any] instead of an object.
-	OfAnyArray []any `json:",inline"`
-	JSON       struct {
-		OfString                                                                            respjson.Field
-		OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem respjson.Field
-		OfAnyArray                                                                          respjson.Field
-		raw                                                                                 string
-	} `json:"-"`
-}
-
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputUnionContent) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust is an implicit
-// subunion of [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust provides convenient
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionContent is an implicit
+// subunion of [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionContent provides convenient
 // access to the sub-properties of the union.
 //
 // For type safety it is recommended to directly use a variant of the
-// [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-type TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust struct {
+// [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString
+// OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem
+// OfAnyArray]
+type TaskAgentRunGetResultResponseTaskRunResultOutputUnionContent struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	// This field will be present if the value is a [any] instead of an object.
+	OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem any `json:",inline"`
+	// This field will be present if the value is a [[]any] instead of an object.
+	OfAnyArray []any `json:",inline"`
+	JSON       struct {
+		OfString                                                                          respjson.Field
+		OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem respjson.Field
+		OfAnyArray                                                                        respjson.Field
+		raw                                                                               string
+	} `json:"-"`
+}
+
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputUnionContent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrust is an implicit
+// subunion of [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrust provides convenient
+// access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+type TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrust struct {
 	// This field is a union of
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim],
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaim]
-	Claims     TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustClaims `json:"claims"`
-	Confidence string                                                            `json:"confidence"`
-	Reasoning  string                                                            `json:"reasoning"`
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim],
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaim]
+	Claims     TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustClaims `json:"claims"`
+	Confidence string                                                           `json:"confidence"`
+	Reasoning  string                                                           `json:"reasoning"`
 	// This field is a union of
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource],
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustSource]
-	Sources TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustSources `json:"sources"`
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource],
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustSource]
+	Sources TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustSources `json:"sources"`
 	JSON    struct {
 		Claims     respjson.Field
 		Confidence respjson.Field
@@ -502,64 +548,65 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust struct {
 	} `json:"-"`
 }
 
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrust) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrust) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustClaims is an implicit
-// subunion of [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustClaims provides
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustClaims is an implicit
+// subunion of [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustClaims provides
 // convenient access to the sub-properties of the union.
 //
 // For type safety it is recommended to directly use a variant of the
-// [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
+// [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid: OfClaims]
-type TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustClaims struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustClaims struct {
 	// This field will be present if the value is a
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim]
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim]
 	// instead of an object.
-	OfClaims []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim `json:",inline"`
+	OfClaims []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim `json:",inline"`
 	JSON     struct {
 		OfClaims respjson.Field
 		raw      string
 	} `json:"-"`
 }
 
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustClaims) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustClaims) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustSources is an
-// implicit subunion of [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
-// TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustSources provides
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustSources is an implicit
+// subunion of [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
+// TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustSources provides
 // convenient access to the sub-properties of the union.
 //
 // For type safety it is recommended to directly use a variant of the
-// [TaskAgentRunGetResultResponseAgentRunResultOutputUnion].
+// [TaskAgentRunGetResultResponseTaskRunResultOutputUnion].
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid: OfSources]
-type TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustSources struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustSources struct {
 	// This field will be present if the value is a
-	// [[]TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource]
+	// [[]TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource]
 	// instead of an object.
-	OfSources []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource `json:",inline"`
+	OfSources []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource `json:",inline"`
 	JSON      struct {
 		OfSources respjson.Field
 		raw       string
 	} `json:"-"`
 }
 
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputUnionTrustSources) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputUnionTrustSources) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput struct {
+// Text output from a completed task.
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutput struct {
 	// The final prose answer.
-	Content string                                                                   `json:"content" api:"required"`
-	Trust   TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust `json:"trust" api:"required"`
+	Content string                                                                 `json:"content" api:"required"`
+	Trust   TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrust `json:"trust" api:"required"`
 	// Any of "text".
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -573,19 +620,19 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput struct 
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutput) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutput) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust struct {
-	Claims []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim `json:"claims" api:"required"`
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrust struct {
+	Claims []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim `json:"claims" api:"required"`
 	// Any of "high", "medium", "low".
-	Confidence string                                                                           `json:"confidence" api:"required"`
-	Reasoning  string                                                                           `json:"reasoning" api:"required"`
-	Sources    []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource `json:"sources" api:"required"`
+	Confidence string                                                                         `json:"confidence" api:"required"`
+	Reasoning  string                                                                         `json:"reasoning" api:"required"`
+	Sources    []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource `json:"sources" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Claims      respjson.Field
@@ -598,50 +645,75 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust st
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrust) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrust) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrust) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim struct {
-	Callout   int64                                                                                   `json:"callout" api:"required"`
-	Citations []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimCitation `json:"citations" api:"required"`
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim struct {
+	Callout   int64                                                                                 `json:"callout" api:"required"`
+	Citations []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaimCitation `json:"citations" api:"required"`
 	// Any of "high", "medium", "low".
-	Confidence string                                                                              `json:"confidence" api:"required"`
-	Reasoning  string                                                                              `json:"reasoning" api:"required"`
-	Source     TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimSource `json:"source" api:"nullable"`
+	Confidence string `json:"confidence" api:"required"`
+	Reasoning  string `json:"reasoning" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Callout     respjson.Field
 		Citations   respjson.Field
 		Confidence  respjson.Field
 		Reasoning   respjson.Field
-		Source      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaim) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaim) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimCitation struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaimCitation struct {
 	URL                 string   `json:"url" api:"required"`
 	Excerpts            []string `json:"excerpts" api:"nullable"`
 	ExtractTemplateName string   `json:"extract_template_name" api:"nullable"`
-	Title               string   `json:"title" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceCategory string `json:"source_category" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceIntent string `json:"source_intent" api:"nullable"`
+	// Any of "primary", "secondary".
+	SourceType string `json:"source_type" api:"nullable"`
+	Title      string `json:"title" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		URL                 respjson.Field
 		Excerpts            respjson.Field
 		ExtractTemplateName respjson.Field
+		SourceCategory      respjson.Field
+		SourceIntent        respjson.Field
+		SourceType          respjson.Field
 		Title               respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -649,24 +721,48 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustCla
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimCitation) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaimCitation) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimCitation) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustClaimCitation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimSource struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource struct {
 	// Any of "primary", "secondary".
 	Type                string `json:"type" api:"required"`
 	URL                 string `json:"url" api:"required"`
 	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
-	Title               string `json:"title" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceCategory string `json:"source_category" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceIntent string `json:"source_intent" api:"nullable"`
+	Title        string `json:"title" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type                respjson.Field
 		URL                 respjson.Field
 		ExtractTemplateName respjson.Field
+		SourceCategory      respjson.Field
+		SourceIntent        respjson.Field
 		Title               respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -674,41 +770,20 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustCla
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimSource) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustClaimSource) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunTextOutputTrustSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource struct {
-	// Any of "primary", "secondary".
-	Type                string `json:"type" api:"required"`
-	URL                 string `json:"url" api:"required"`
-	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
-	Title               string `json:"title" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Type                respjson.Field
-		URL                 respjson.Field
-		ExtractTemplateName respjson.Field
-		Title               respjson.Field
-		ExtraFields         map[string]respjson.Field
-		raw                 string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunTextOutputTrustSource) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput struct {
-	Content TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion `json:"content" api:"required"`
-	Trust   TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust        `json:"trust" api:"required"`
+// Structured JSON output from a completed task, produced when
+// task_spec.output_schema.type is 'json'.
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutput struct {
+	// Data conforming to the caller-supplied JSON schema. A dict for object schemas; a
+	// list for array schemas.
+	Content TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion `json:"content" api:"required"`
+	Trust   TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrust        `json:"trust" api:"required"`
 	// Any of "json".
 	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -722,59 +797,59 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput struct 
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutput) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutput) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion
+// TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion
 // contains all possible properties and values from [map[string]any], [[]any].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid:
-// OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem
+// OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem
 // OfAnyArray]
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion struct {
 	// This field will be present if the value is a [any] instead of an object.
-	OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem any `json:",inline"`
+	OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem any `json:",inline"`
 	// This field will be present if the value is a [[]any] instead of an object.
 	OfAnyArray []any `json:",inline"`
 	JSON       struct {
-		OfTaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentMapItem respjson.Field
-		OfAnyArray                                                                          respjson.Field
-		raw                                                                                 string
+		OfTaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentMapItem respjson.Field
+		OfAnyArray                                                                        respjson.Field
+		raw                                                                               string
 	} `json:"-"`
 }
 
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion) AsAnyMap() (v map[string]any) {
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion) AsAnyMap() (v map[string]any) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion) AsAnyArray() (v []any) {
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion) AsAnyArray() (v []any) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion) RawJSON() string {
+func (u TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputContentUnion) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust struct {
-	Claims []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaim `json:"claims" api:"required"`
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrust struct {
+	Claims []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaim `json:"claims" api:"required"`
 	// Any of "high", "medium", "low".
-	Confidence string                                                                           `json:"confidence" api:"required"`
-	Reasoning  string                                                                           `json:"reasoning" api:"required"`
-	Sources    []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustSource `json:"sources" api:"required"`
+	Confidence string                                                                         `json:"confidence" api:"required"`
+	Reasoning  string                                                                         `json:"reasoning" api:"required"`
+	Sources    []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustSource `json:"sources" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Claims      respjson.Field
@@ -787,50 +862,75 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust st
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrust) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrust) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrust) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaim struct {
-	Citations []TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimCitation `json:"citations" api:"required"`
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaim struct {
+	Citations []TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaimCitation `json:"citations" api:"required"`
 	// Any of "high", "medium", "low".
-	Confidence string                                                                              `json:"confidence" api:"required"`
-	Path       string                                                                              `json:"path" api:"required"`
-	Reasoning  string                                                                              `json:"reasoning" api:"required"`
-	Source     TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimSource `json:"source" api:"nullable"`
+	Confidence string `json:"confidence" api:"required"`
+	Path       string `json:"path" api:"required"`
+	Reasoning  string `json:"reasoning" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Citations   respjson.Field
 		Confidence  respjson.Field
 		Path        respjson.Field
 		Reasoning   respjson.Field
-		Source      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaim) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaim) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaim) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaim) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimCitation struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaimCitation struct {
 	URL                 string   `json:"url" api:"required"`
 	Excerpts            []string `json:"excerpts" api:"nullable"`
 	ExtractTemplateName string   `json:"extract_template_name" api:"nullable"`
-	Title               string   `json:"title" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceCategory string `json:"source_category" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceIntent string `json:"source_intent" api:"nullable"`
+	// Any of "primary", "secondary".
+	SourceType string `json:"source_type" api:"nullable"`
+	Title      string `json:"title" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		URL                 respjson.Field
 		Excerpts            respjson.Field
 		ExtractTemplateName respjson.Field
+		SourceCategory      respjson.Field
+		SourceIntent        respjson.Field
+		SourceType          respjson.Field
 		Title               respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -838,24 +938,48 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustCla
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimCitation) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaimCitation) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimCitation) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustClaimCitation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimSource struct {
+type TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustSource struct {
 	// Any of "primary", "secondary".
 	Type                string `json:"type" api:"required"`
 	URL                 string `json:"url" api:"required"`
 	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
-	Title               string `json:"title" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceCategory string `json:"source_category" api:"nullable"`
+	// What _kind_ of source this is (classified by the compress LLM), independent of
+	// TrustSourceType (how authoritative it is for a specific claim). Deliberately
+	// uses "official" rather than "primary" so the two axes can never collide.
+	//
+	// Also doubles as the sub-question's `source_intent` (what kind of source a
+	// question _needs_) — the two concepts overlap enough that a single enum lets
+	// `classify_source_importance` compare "what we got" against "what we asked for"
+	// directly.
+	//
+	// Any of "official", "news", "social", "academic", "aggregator", "other".
+	SourceIntent string `json:"source_intent" api:"nullable"`
+	Title        string `json:"title" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type                respjson.Field
 		URL                 respjson.Field
 		ExtractTemplateName respjson.Field
+		SourceCategory      respjson.Field
+		SourceIntent        respjson.Field
 		Title               respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -863,57 +987,42 @@ type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustCla
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimSource) RawJSON() string {
+func (r TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustSource) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustClaimSource) UnmarshalJSON(data []byte) error {
+func (r *TaskAgentRunGetResultResponseTaskRunResultOutputTaskRunJsonOutputTrustSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustSource struct {
-	// Any of "primary", "secondary".
-	Type                string `json:"type" api:"required"`
-	URL                 string `json:"url" api:"required"`
-	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
-	Title               string `json:"title" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Type                respjson.Field
-		URL                 respjson.Field
-		ExtractTemplateName respjson.Field
-		Title               respjson.Field
-		ExtraFields         map[string]respjson.Field
-		raw                 string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustSource) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *TaskAgentRunGetResultResponseAgentRunResultOutputAgentRunJsonOutputTrustSource) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type TaskAgentRunGetResultResponseAgentRunResultRun struct {
-	// Run identifier.
+// Task run object with status 'completed'.
+type TaskAgentRunGetResultResponseTaskRunResultRun struct {
+	// Run identifier, format "task*run*{uuid}".
 	ID        string    `json:"id" api:"required"`
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "quickest", "quick", "research", "pro", "max".
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Interaction ID — pass as previous_interaction_id to reuse context.
 	InteractionID string `json:"interaction_id" api:"required"`
 	// True while status is 'queued' or 'running'.
 	IsActive bool `json:"is_active" api:"required"`
+	// Lowercase status values used in API responses (distinct from the DB-level
+	// TaskRunStatus enum).
+	//
 	// Any of "queued", "running", "completed", "failed", "cancelled".
-	Status      string                                              `json:"status" api:"required"`
-	CompletedAt time.Time                                           `json:"completed_at" api:"nullable" format:"date-time"`
-	Error       TaskAgentRunGetResultResponseAgentRunResultRunError `json:"error" api:"nullable"`
-	Prompt      string                                              `json:"prompt" api:"nullable"`
-	StartedAt   time.Time                                           `json:"started_at" api:"nullable" format:"date-time"`
-	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
-	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
+	Status string `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to. Every task run is agent-bound
+	// (see AGENTS-1666). Use this to build the nested URL
+	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
+	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
+	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error detail for a failed run.
+	Error TaskAgentRunGetResultResponseTaskRunResultRunError `json:"error" api:"nullable"`
+	// Original user prompt before enrichment. Populated for Web Search Agent runs.
+	Prompt      string    `json:"prompt" api:"nullable"`
+	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -922,11 +1031,11 @@ type TaskAgentRunGetResultResponseAgentRunResultRun struct {
 		InteractionID    respjson.Field
 		IsActive         respjson.Field
 		Status           respjson.Field
+		WebSearchAgentID respjson.Field
 		CompletedAt      respjson.Field
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
 		WorkspaceID      respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
@@ -934,12 +1043,13 @@ type TaskAgentRunGetResultResponseAgentRunResultRun struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultRun) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunResultRun) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunResultRun) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunResultRun) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunResultRunError struct {
+// Error detail for a failed run.
+type TaskAgentRunGetResultResponseTaskRunResultRunError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// Reference ID (equals the run id).
@@ -954,14 +1064,20 @@ type TaskAgentRunGetResultResponseAgentRunResultRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunResultRunError) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunResultRunError) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunResultRunError) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunResultRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunFailedResult struct {
-	Error TaskAgentRunGetResultResponseAgentRunFailedResultError `json:"error" api:"required"`
-	Run   TaskAgentRunGetResultResponseAgentRunFailedResultRun   `json:"run" api:"required"`
+// Response for GET /tasks/runs/{run_id}/result when the run failed.
+//
+// Returned with HTTP 422 so callers can distinguish a failed run from a missing
+// one (404) or an active one (408).
+type TaskAgentRunGetResultResponseTaskRunFailedResult struct {
+	// Structured error detail.
+	Error TaskAgentRunGetResultResponseTaskRunFailedResultError `json:"error" api:"required"`
+	// Task run object with status 'failed'.
+	Run TaskAgentRunGetResultResponseTaskRunFailedResultRun `json:"run" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -972,12 +1088,13 @@ type TaskAgentRunGetResultResponseAgentRunFailedResult struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunFailedResult) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunFailedResult) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunFailedResult) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunFailedResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunFailedResultError struct {
+// Structured error detail.
+type TaskAgentRunGetResultResponseTaskRunFailedResultError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// Reference ID (equals the run id).
@@ -992,30 +1109,40 @@ type TaskAgentRunGetResultResponseAgentRunFailedResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunFailedResultError) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunFailedResultError) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunFailedResultError) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunFailedResultError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunFailedResultRun struct {
-	// Run identifier.
+// Task run object with status 'failed'.
+type TaskAgentRunGetResultResponseTaskRunFailedResultRun struct {
+	// Run identifier, format "task*run*{uuid}".
 	ID        string    `json:"id" api:"required"`
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "quickest", "quick", "research", "pro", "max".
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Interaction ID — pass as previous_interaction_id to reuse context.
 	InteractionID string `json:"interaction_id" api:"required"`
 	// True while status is 'queued' or 'running'.
 	IsActive bool `json:"is_active" api:"required"`
+	// Lowercase status values used in API responses (distinct from the DB-level
+	// TaskRunStatus enum).
+	//
 	// Any of "queued", "running", "completed", "failed", "cancelled".
-	Status      string                                                    `json:"status" api:"required"`
-	CompletedAt time.Time                                                 `json:"completed_at" api:"nullable" format:"date-time"`
-	Error       TaskAgentRunGetResultResponseAgentRunFailedResultRunError `json:"error" api:"nullable"`
-	Prompt      string                                                    `json:"prompt" api:"nullable"`
-	StartedAt   time.Time                                                 `json:"started_at" api:"nullable" format:"date-time"`
-	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
-	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
+	Status string `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to. Every task run is agent-bound
+	// (see AGENTS-1666). Use this to build the nested URL
+	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
+	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
+	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error detail for a failed run.
+	Error TaskAgentRunGetResultResponseTaskRunFailedResultRunError `json:"error" api:"nullable"`
+	// Original user prompt before enrichment. Populated for Web Search Agent runs.
+	Prompt      string    `json:"prompt" api:"nullable"`
+	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -1024,11 +1151,11 @@ type TaskAgentRunGetResultResponseAgentRunFailedResultRun struct {
 		InteractionID    respjson.Field
 		IsActive         respjson.Field
 		Status           respjson.Field
+		WebSearchAgentID respjson.Field
 		CompletedAt      respjson.Field
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
 		WorkspaceID      respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
@@ -1036,12 +1163,13 @@ type TaskAgentRunGetResultResponseAgentRunFailedResultRun struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunFailedResultRun) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentRunGetResultResponseAgentRunFailedResultRun) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunFailedResultRun) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunFailedResultRun) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentRunGetResultResponseAgentRunFailedResultRunError struct {
+// Error detail for a failed run.
+type TaskAgentRunGetResultResponseTaskRunFailedResultRunError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// Reference ID (equals the run id).
@@ -1056,18 +1184,18 @@ type TaskAgentRunGetResultResponseAgentRunFailedResultRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentRunGetResultResponseAgentRunFailedResultRunError) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *TaskAgentRunGetResultResponseAgentRunFailedResultRunError) UnmarshalJSON(data []byte) error {
+func (r TaskAgentRunGetResultResponseTaskRunFailedResultRunError) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentRunGetResultResponseTaskRunFailedResultRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 type TaskAgentRunStreamEventsResponse = any
 
 type TaskAgentRunListParams struct {
-	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
+	Q      param.Opt[string] `query:"q,omitzero" json:"-"`
+	Status param.Opt[string] `query:"status,omitzero" json:"-"`
+	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Offset param.Opt[int64]  `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1080,21 +1208,21 @@ func (r TaskAgentRunListParams) URLQuery() (v url.Values, err error) {
 }
 
 type TaskAgentRunCancelParams struct {
-	AgentID string `path:"agent_id" api:"required" json:"-"`
+	AgentID string `path:"agent_id" api:"required" format:"uuid" json:"-"`
 	paramObj
 }
 
 type TaskAgentRunGetParams struct {
-	AgentID string `path:"agent_id" api:"required" json:"-"`
+	AgentID string `path:"agent_id" api:"required" format:"uuid" json:"-"`
 	paramObj
 }
 
 type TaskAgentRunGetResultParams struct {
-	AgentID string `path:"agent_id" api:"required" json:"-"`
+	AgentID string `path:"agent_id" api:"required" format:"uuid" json:"-"`
 	paramObj
 }
 
 type TaskAgentRunStreamEventsParams struct {
-	AgentID string `path:"agent_id" api:"required" json:"-"`
+	AgentID string `path:"agent_id" api:"required" format:"uuid" json:"-"`
 	paramObj
 }

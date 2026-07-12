@@ -43,8 +43,9 @@ func NewTaskAgentService(opts ...option.RequestOption) (r TaskAgentService) {
 	return
 }
 
-// Create a new workspace-scoped Web Search Agent. Pass `template` to clone from a
-// named template.
+// Create a Web Search Agent instance.
+//
+// `account_id` is JWT-derived and never read from the request body.
 func (r *TaskAgentService) New(ctx context.Context, body TaskAgentNewParams, opts ...option.RequestOption) (res *TaskAgentNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/task-agents"
@@ -52,8 +53,7 @@ func (r *TaskAgentService) New(ctx context.Context, body TaskAgentNewParams, opt
 	return res, err
 }
 
-// Apply a JSON Patch document (`application/json-patch+json`) to an agent you own.
-// Each operation must be a `replace` with path `/field_name`.
+// Update Agent
 func (r *TaskAgentService) Update(ctx context.Context, agentID string, body TaskAgentUpdateParams, opts ...option.RequestOption) (res *TaskAgentUpdateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -65,8 +65,10 @@ func (r *TaskAgentService) Update(ctx context.Context, agentID string, body Task
 	return res, err
 }
 
-// List active Web Search Agents visible to the caller. Includes agents scoped to
-// the caller's workspace.
+// List Web Search Agent instances.
+//
+// Callers are strictly scoped to their (account, workspace). If `workspace_id` is
+// omitted, the user's default workspace is used.
 func (r *TaskAgentService) List(ctx context.Context, query TaskAgentListParams, opts ...option.RequestOption) (res *[]TaskAgentListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/task-agents"
@@ -74,7 +76,7 @@ func (r *TaskAgentService) List(ctx context.Context, query TaskAgentListParams, 
 	return res, err
 }
 
-// Deactivate an agent you own. The agent is marked inactive but not deleted.
+// Deactivate Agent
 func (r *TaskAgentService) Deactivate(ctx context.Context, agentID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
@@ -87,7 +89,7 @@ func (r *TaskAgentService) Deactivate(ctx context.Context, agentID string, opts 
 	return err
 }
 
-// Fetch a single Web Search Agent by id.
+// Get Agent
 func (r *TaskAgentService) Get(ctx context.Context, agentID string, opts ...option.RequestOption) (res *TaskAgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -99,7 +101,7 @@ func (r *TaskAgentService) Get(ctx context.Context, agentID string, opts ...opti
 	return res, err
 }
 
-// Create and enqueue a research run for a Web Search Agent.
+// Create a research run for a Web Search Agent instance.
 func (r *TaskAgentService) Run(ctx context.Context, agentID string, body TaskAgentRunParams, opts ...option.RequestOption) (res *TaskAgentRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -112,25 +114,28 @@ func (r *TaskAgentService) Run(ctx context.Context, agentID string, body TaskAge
 }
 
 type TaskAgentNewResponse struct {
-	ID                 string                                  `json:"id" api:"required"`
-	CreatedAt          time.Time                               `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                  `json:"description" api:"required"`
-	DisplayName        string                                  `json:"display_name" api:"required"`
-	DomainExpertise    string                                  `json:"domain_expertise" api:"required"`
-	Effort             string                                  `json:"effort" api:"required"`
-	Goals              []TaskAgentNewResponseGoal              `json:"goals" api:"required"`
-	Icon               string                                  `json:"icon" api:"required"`
-	IsActive           bool                                    `json:"is_active" api:"required"`
-	OutputSchema       map[string]any                          `json:"output_schema" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort       TaskAgentNewResponseEffort `json:"effort" api:"required"`
+	Goals        []TaskAgentNewResponseGoal `json:"goals" api:"required"`
+	Icon         string                     `json:"icon" api:"required"`
+	IsActive     bool                       `json:"is_active" api:"required"`
+	OutputSchema map[string]any             `json:"output_schema" api:"required"`
+	// Response variant of AgentSources — preserves per-row id on allow rows.
 	Sources            TaskAgentNewResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentNewResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase       TaskAgentNewResponseUseCase `json:"use_case" api:"required"`
-	AccountID     string                      `json:"account_id" api:"nullable"`
-	AgentName     string                      `json:"agent_name" api:"nullable"`
-	WorkspaceID   string                      `json:"workspace_id" api:"nullable" format:"uuid"`
-	WorkspaceName string                      `json:"workspace_name" api:"nullable"`
+	UseCase     TaskAgentNewResponseUseCase `json:"use_case" api:"required"`
+	AccountID   string                      `json:"account_id" api:"nullable"`
+	AgentName   string                      `json:"agent_name" api:"nullable"`
+	WorkspaceID string                      `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -150,7 +155,6 @@ type TaskAgentNewResponse struct {
 		AccountID          respjson.Field
 		AgentName          respjson.Field
 		WorkspaceID        respjson.Field
-		WorkspaceName      respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -161,6 +165,17 @@ func (r TaskAgentNewResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentNewResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentNewResponseEffort string
+
+const (
+	TaskAgentNewResponseEffortLow    TaskAgentNewResponseEffort = "low"
+	TaskAgentNewResponseEffortMedium TaskAgentNewResponseEffort = "medium"
+	TaskAgentNewResponseEffortHigh   TaskAgentNewResponseEffort = "high"
+	TaskAgentNewResponseEffortXHigh  TaskAgentNewResponseEffort = "x-high"
+	TaskAgentNewResponseEffortMax    TaskAgentNewResponseEffort = "max"
+)
 
 type TaskAgentNewResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -182,6 +197,7 @@ func (r *TaskAgentNewResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response variant of AgentSources — preserves per-row id on allow rows.
 type TaskAgentNewResponseSources struct {
 	Allow      []TaskAgentNewResponseSourcesAllow `json:"allow"`
 	Avoid      string                             `json:"avoid" api:"nullable"`
@@ -226,15 +242,16 @@ func (r *TaskAgentNewResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentNewResponseSourcesBlock struct {
 	Domains []string `json:"domains" api:"required"`
+	Order   int64    `json:"order" api:"required"`
 	Title   string   `json:"title" api:"required"`
-	Order   int64    `json:"order"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
-		Title       respjson.Field
 		Order       respjson.Field
+		Title       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -275,25 +292,28 @@ const (
 )
 
 type TaskAgentUpdateResponse struct {
-	ID                 string                                     `json:"id" api:"required"`
-	CreatedAt          time.Time                                  `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                     `json:"description" api:"required"`
-	DisplayName        string                                     `json:"display_name" api:"required"`
-	DomainExpertise    string                                     `json:"domain_expertise" api:"required"`
-	Effort             string                                     `json:"effort" api:"required"`
-	Goals              []TaskAgentUpdateResponseGoal              `json:"goals" api:"required"`
-	Icon               string                                     `json:"icon" api:"required"`
-	IsActive           bool                                       `json:"is_active" api:"required"`
-	OutputSchema       map[string]any                             `json:"output_schema" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort       TaskAgentUpdateResponseEffort `json:"effort" api:"required"`
+	Goals        []TaskAgentUpdateResponseGoal `json:"goals" api:"required"`
+	Icon         string                        `json:"icon" api:"required"`
+	IsActive     bool                          `json:"is_active" api:"required"`
+	OutputSchema map[string]any                `json:"output_schema" api:"required"`
+	// Response variant of AgentSources — preserves per-row id on allow rows.
 	Sources            TaskAgentUpdateResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentUpdateResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                                  `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase       TaskAgentUpdateResponseUseCase `json:"use_case" api:"required"`
-	AccountID     string                         `json:"account_id" api:"nullable"`
-	AgentName     string                         `json:"agent_name" api:"nullable"`
-	WorkspaceID   string                         `json:"workspace_id" api:"nullable" format:"uuid"`
-	WorkspaceName string                         `json:"workspace_name" api:"nullable"`
+	UseCase     TaskAgentUpdateResponseUseCase `json:"use_case" api:"required"`
+	AccountID   string                         `json:"account_id" api:"nullable"`
+	AgentName   string                         `json:"agent_name" api:"nullable"`
+	WorkspaceID string                         `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -313,7 +333,6 @@ type TaskAgentUpdateResponse struct {
 		AccountID          respjson.Field
 		AgentName          respjson.Field
 		WorkspaceID        respjson.Field
-		WorkspaceName      respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -324,6 +343,17 @@ func (r TaskAgentUpdateResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentUpdateResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentUpdateResponseEffort string
+
+const (
+	TaskAgentUpdateResponseEffortLow    TaskAgentUpdateResponseEffort = "low"
+	TaskAgentUpdateResponseEffortMedium TaskAgentUpdateResponseEffort = "medium"
+	TaskAgentUpdateResponseEffortHigh   TaskAgentUpdateResponseEffort = "high"
+	TaskAgentUpdateResponseEffortXHigh  TaskAgentUpdateResponseEffort = "x-high"
+	TaskAgentUpdateResponseEffortMax    TaskAgentUpdateResponseEffort = "max"
+)
 
 type TaskAgentUpdateResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -345,6 +375,7 @@ func (r *TaskAgentUpdateResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response variant of AgentSources — preserves per-row id on allow rows.
 type TaskAgentUpdateResponseSources struct {
 	Allow      []TaskAgentUpdateResponseSourcesAllow `json:"allow"`
 	Avoid      string                                `json:"avoid" api:"nullable"`
@@ -389,15 +420,16 @@ func (r *TaskAgentUpdateResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentUpdateResponseSourcesBlock struct {
 	Domains []string `json:"domains" api:"required"`
+	Order   int64    `json:"order" api:"required"`
 	Title   string   `json:"title" api:"required"`
-	Order   int64    `json:"order"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
-		Title       respjson.Field
 		Order       respjson.Field
+		Title       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -438,25 +470,28 @@ const (
 )
 
 type TaskAgentListResponse struct {
-	ID                 string                                   `json:"id" api:"required"`
-	CreatedAt          time.Time                                `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                   `json:"description" api:"required"`
-	DisplayName        string                                   `json:"display_name" api:"required"`
-	DomainExpertise    string                                   `json:"domain_expertise" api:"required"`
-	Effort             string                                   `json:"effort" api:"required"`
-	Goals              []TaskAgentListResponseGoal              `json:"goals" api:"required"`
-	Icon               string                                   `json:"icon" api:"required"`
-	IsActive           bool                                     `json:"is_active" api:"required"`
-	OutputSchema       map[string]any                           `json:"output_schema" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort       TaskAgentListResponseEffort `json:"effort" api:"required"`
+	Goals        []TaskAgentListResponseGoal `json:"goals" api:"required"`
+	Icon         string                      `json:"icon" api:"required"`
+	IsActive     bool                        `json:"is_active" api:"required"`
+	OutputSchema map[string]any              `json:"output_schema" api:"required"`
+	// Response variant of AgentSources — preserves per-row id on allow rows.
 	Sources            TaskAgentListResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentListResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                                `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase       TaskAgentListResponseUseCase `json:"use_case" api:"required"`
-	AccountID     string                       `json:"account_id" api:"nullable"`
-	AgentName     string                       `json:"agent_name" api:"nullable"`
-	WorkspaceID   string                       `json:"workspace_id" api:"nullable" format:"uuid"`
-	WorkspaceName string                       `json:"workspace_name" api:"nullable"`
+	UseCase     TaskAgentListResponseUseCase `json:"use_case" api:"required"`
+	AccountID   string                       `json:"account_id" api:"nullable"`
+	AgentName   string                       `json:"agent_name" api:"nullable"`
+	WorkspaceID string                       `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -476,7 +511,6 @@ type TaskAgentListResponse struct {
 		AccountID          respjson.Field
 		AgentName          respjson.Field
 		WorkspaceID        respjson.Field
-		WorkspaceName      respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -487,6 +521,17 @@ func (r TaskAgentListResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentListResponseEffort string
+
+const (
+	TaskAgentListResponseEffortLow    TaskAgentListResponseEffort = "low"
+	TaskAgentListResponseEffortMedium TaskAgentListResponseEffort = "medium"
+	TaskAgentListResponseEffortHigh   TaskAgentListResponseEffort = "high"
+	TaskAgentListResponseEffortXHigh  TaskAgentListResponseEffort = "x-high"
+	TaskAgentListResponseEffortMax    TaskAgentListResponseEffort = "max"
+)
 
 type TaskAgentListResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -508,6 +553,7 @@ func (r *TaskAgentListResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response variant of AgentSources — preserves per-row id on allow rows.
 type TaskAgentListResponseSources struct {
 	Allow      []TaskAgentListResponseSourcesAllow `json:"allow"`
 	Avoid      string                              `json:"avoid" api:"nullable"`
@@ -552,15 +598,16 @@ func (r *TaskAgentListResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentListResponseSourcesBlock struct {
 	Domains []string `json:"domains" api:"required"`
+	Order   int64    `json:"order" api:"required"`
 	Title   string   `json:"title" api:"required"`
-	Order   int64    `json:"order"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
-		Title       respjson.Field
 		Order       respjson.Field
+		Title       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -601,25 +648,28 @@ const (
 )
 
 type TaskAgentGetResponse struct {
-	ID                 string                                  `json:"id" api:"required"`
-	CreatedAt          time.Time                               `json:"created_at" api:"required" format:"date-time"`
-	Description        string                                  `json:"description" api:"required"`
-	DisplayName        string                                  `json:"display_name" api:"required"`
-	DomainExpertise    string                                  `json:"domain_expertise" api:"required"`
-	Effort             string                                  `json:"effort" api:"required"`
-	Goals              []TaskAgentGetResponseGoal              `json:"goals" api:"required"`
-	Icon               string                                  `json:"icon" api:"required"`
-	IsActive           bool                                    `json:"is_active" api:"required"`
-	OutputSchema       map[string]any                          `json:"output_schema" api:"required"`
+	ID              string    `json:"id" api:"required"`
+	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description     string    `json:"description" api:"required"`
+	DisplayName     string    `json:"display_name" api:"required"`
+	DomainExpertise string    `json:"domain_expertise" api:"required"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort       TaskAgentGetResponseEffort `json:"effort" api:"required"`
+	Goals        []TaskAgentGetResponseGoal `json:"goals" api:"required"`
+	Icon         string                     `json:"icon" api:"required"`
+	IsActive     bool                       `json:"is_active" api:"required"`
+	OutputSchema map[string]any             `json:"output_schema" api:"required"`
+	// Response variant of AgentSources — preserves per-row id on allow rows.
 	Sources            TaskAgentGetResponseSources             `json:"sources" api:"required"`
 	SuggestedQuestions []TaskAgentGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase       TaskAgentGetResponseUseCase `json:"use_case" api:"required"`
-	AccountID     string                      `json:"account_id" api:"nullable"`
-	AgentName     string                      `json:"agent_name" api:"nullable"`
-	WorkspaceID   string                      `json:"workspace_id" api:"nullable" format:"uuid"`
-	WorkspaceName string                      `json:"workspace_name" api:"nullable"`
+	UseCase     TaskAgentGetResponseUseCase `json:"use_case" api:"required"`
+	AccountID   string                      `json:"account_id" api:"nullable"`
+	AgentName   string                      `json:"agent_name" api:"nullable"`
+	WorkspaceID string                      `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -639,7 +689,6 @@ type TaskAgentGetResponse struct {
 		AccountID          respjson.Field
 		AgentName          respjson.Field
 		WorkspaceID        respjson.Field
-		WorkspaceName      respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -650,6 +699,17 @@ func (r TaskAgentGetResponse) RawJSON() string { return r.JSON.raw }
 func (r *TaskAgentGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Canonical effort tier names for the research graph.
+type TaskAgentGetResponseEffort string
+
+const (
+	TaskAgentGetResponseEffortLow    TaskAgentGetResponseEffort = "low"
+	TaskAgentGetResponseEffortMedium TaskAgentGetResponseEffort = "medium"
+	TaskAgentGetResponseEffortHigh   TaskAgentGetResponseEffort = "high"
+	TaskAgentGetResponseEffortXHigh  TaskAgentGetResponseEffort = "x-high"
+	TaskAgentGetResponseEffortMax    TaskAgentGetResponseEffort = "max"
+)
 
 type TaskAgentGetResponseGoal struct {
 	ID    string `json:"id" api:"required"`
@@ -671,6 +731,7 @@ func (r *TaskAgentGetResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response variant of AgentSources — preserves per-row id on allow rows.
 type TaskAgentGetResponseSources struct {
 	Allow      []TaskAgentGetResponseSourcesAllow `json:"allow"`
 	Avoid      string                             `json:"avoid" api:"nullable"`
@@ -715,15 +776,16 @@ func (r *TaskAgentGetResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentGetResponseSourcesBlock struct {
 	Domains []string `json:"domains" api:"required"`
+	Order   int64    `json:"order" api:"required"`
 	Title   string   `json:"title" api:"required"`
-	Order   int64    `json:"order"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
-		Title       respjson.Field
 		Order       respjson.Field
+		Title       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -763,25 +825,35 @@ const (
 	TaskAgentGetResponseUseCaseDatasetBuilding TaskAgentGetResponseUseCase = "dataset_building"
 )
 
+// Task run status returned by list/create/get endpoints.
 type TaskAgentRunResponse struct {
-	// Run identifier.
+	// Run identifier, format "task*run*{uuid}".
 	ID        string    `json:"id" api:"required"`
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "quickest", "quick", "research", "pro", "max".
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
 	Effort TaskAgentRunResponseEffort `json:"effort" api:"required"`
 	// Interaction ID — pass as previous_interaction_id to reuse context.
 	InteractionID string `json:"interaction_id" api:"required"`
 	// True while status is 'queued' or 'running'.
 	IsActive bool `json:"is_active" api:"required"`
+	// Lowercase status values used in API responses (distinct from the DB-level
+	// TaskRunStatus enum).
+	//
 	// Any of "queued", "running", "completed", "failed", "cancelled".
-	Status      TaskAgentRunResponseStatus `json:"status" api:"required"`
-	CompletedAt time.Time                  `json:"completed_at" api:"nullable" format:"date-time"`
-	Error       TaskAgentRunResponseError  `json:"error" api:"nullable"`
-	Prompt      string                     `json:"prompt" api:"nullable"`
-	StartedAt   time.Time                  `json:"started_at" api:"nullable" format:"date-time"`
-	// Web Search Agent instance this run belongs to.
-	WebSearchAgentID string `json:"web_search_agent_id" api:"nullable"`
-	WorkspaceID      string `json:"workspace_id" api:"nullable" format:"uuid"`
+	Status TaskAgentRunResponseStatus `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to. Every task run is agent-bound
+	// (see AGENTS-1666). Use this to build the nested URL
+	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
+	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
+	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error detail for a failed run.
+	Error TaskAgentRunResponseError `json:"error" api:"nullable"`
+	// Original user prompt before enrichment. Populated for Web Search Agent runs.
+	Prompt      string    `json:"prompt" api:"nullable"`
+	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -790,11 +862,11 @@ type TaskAgentRunResponse struct {
 		InteractionID    respjson.Field
 		IsActive         respjson.Field
 		Status           respjson.Field
+		WebSearchAgentID respjson.Field
 		CompletedAt      respjson.Field
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WebSearchAgentID respjson.Field
 		WorkspaceID      respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
@@ -807,16 +879,19 @@ func (r *TaskAgentRunResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Canonical effort tier names for the research graph.
 type TaskAgentRunResponseEffort string
 
 const (
-	TaskAgentRunResponseEffortQuickest TaskAgentRunResponseEffort = "quickest"
-	TaskAgentRunResponseEffortQuick    TaskAgentRunResponseEffort = "quick"
-	TaskAgentRunResponseEffortResearch TaskAgentRunResponseEffort = "research"
-	TaskAgentRunResponseEffortPro      TaskAgentRunResponseEffort = "pro"
-	TaskAgentRunResponseEffortMax      TaskAgentRunResponseEffort = "max"
+	TaskAgentRunResponseEffortLow    TaskAgentRunResponseEffort = "low"
+	TaskAgentRunResponseEffortMedium TaskAgentRunResponseEffort = "medium"
+	TaskAgentRunResponseEffortHigh   TaskAgentRunResponseEffort = "high"
+	TaskAgentRunResponseEffortXHigh  TaskAgentRunResponseEffort = "x-high"
+	TaskAgentRunResponseEffortMax    TaskAgentRunResponseEffort = "max"
 )
 
+// Lowercase status values used in API responses (distinct from the DB-level
+// TaskRunStatus enum).
 type TaskAgentRunResponseStatus string
 
 const (
@@ -827,6 +902,7 @@ const (
 	TaskAgentRunResponseStatusCancelled TaskAgentRunResponseStatus = "cancelled"
 )
 
+// Error detail for a failed run.
 type TaskAgentRunResponseError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
@@ -853,16 +929,20 @@ type TaskAgentNewParams struct {
 	DisplayName     param.Opt[string] `json:"display_name,omitzero"`
 	DomainExpertise param.Opt[string] `json:"domain_expertise,omitzero"`
 	Icon            param.Opt[string] `json:"icon,omitzero"`
-	// Template name to materialise this instance from. When set, scalar fields and
+	// Template name to materialize this instance from. When set, the scalar fields and
 	// child rows are copied from the template.
 	Template     param.Opt[string] `json:"template,omitzero"`
 	WorkspaceID  param.Opt[string] `json:"workspace_id,omitzero" format:"uuid"`
-	Effort       param.Opt[string] `json:"effort,omitzero"`
 	IsActive     param.Opt[bool]   `json:"is_active,omitzero"`
 	OutputSchema map[string]any    `json:"output_schema,omitzero"`
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase            TaskAgentNewParamsUseCase `json:"use_case,omitzero"`
-	Goals              []string                  `json:"goals,omitzero"`
+	UseCase TaskAgentNewParamsUseCase `json:"use_case,omitzero"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort TaskAgentNewParamsEffort `json:"effort,omitzero"`
+	Goals  []string                 `json:"goals,omitzero"`
+	// Source preferences for a web search agent instance.
 	Sources            TaskAgentNewParamsSources `json:"sources,omitzero"`
 	SuggestedQuestions []string                  `json:"suggested_questions,omitzero"`
 	paramObj
@@ -876,6 +956,18 @@ func (r *TaskAgentNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Canonical effort tier names for the research graph.
+type TaskAgentNewParamsEffort string
+
+const (
+	TaskAgentNewParamsEffortLow    TaskAgentNewParamsEffort = "low"
+	TaskAgentNewParamsEffortMedium TaskAgentNewParamsEffort = "medium"
+	TaskAgentNewParamsEffortHigh   TaskAgentNewParamsEffort = "high"
+	TaskAgentNewParamsEffortXHigh  TaskAgentNewParamsEffort = "x-high"
+	TaskAgentNewParamsEffortMax    TaskAgentNewParamsEffort = "max"
+)
+
+// Source preferences for a web search agent instance.
 type TaskAgentNewParamsSources struct {
 	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
 	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
@@ -933,6 +1025,7 @@ const (
 )
 
 type TaskAgentUpdateParams struct {
+	// A JSON Patch document per RFC 6902 — a JSON array of patch operations.
 	Body []TaskAgentUpdateParamsBody
 	paramObj
 }
@@ -944,12 +1037,15 @@ func (r *TaskAgentUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Op, Path, Value are required.
+// A single JSON Patch operation per RFC 6902.
+//
+// The properties Op, Path are required.
 type TaskAgentUpdateParamsBody struct {
-	// Any of "replace".
-	Op    string `json:"op,omitzero" api:"required"`
-	Path  string `json:"path" api:"required"`
-	Value any    `json:"value,omitzero" api:"required"`
+	// Any of "add", "remove", "replace", "move", "copy", "test".
+	Op    string            `json:"op,omitzero" api:"required"`
+	Path  string            `json:"path" api:"required"`
+	From  param.Opt[string] `json:"from,omitzero"`
+	Value any               `json:"value,omitzero"`
 	paramObj
 }
 
@@ -963,15 +1059,20 @@ func (r *TaskAgentUpdateParamsBody) UnmarshalJSON(data []byte) error {
 
 func init() {
 	apijson.RegisterFieldValidator[TaskAgentUpdateParamsBody](
-		"op", "replace",
+		"op", "add", "remove", "replace", "move", "copy", "test",
 	)
 }
 
 type TaskAgentListParams struct {
-	Effort  param.Opt[string] `query:"effort,omitzero" json:"-"`
-	UseCase param.Opt[string] `query:"use_case,omitzero" json:"-"`
-	Limit   param.Opt[int64]  `query:"limit,omitzero" json:"-"`
-	Offset  param.Opt[int64]  `query:"offset,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `query:"workspace_id,omitzero" format:"uuid" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Offset      param.Opt[int64]  `query:"offset,omitzero" json:"-"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	FilterEffort TaskAgentListParamsFilterEffort `query:"filter_effort,omitzero" json:"-"`
+	// Any of "research", "enrichment", "dataset_building".
+	FilterUseCase TaskAgentListParamsFilterUseCase `query:"filter_use_case,omitzero" json:"-"`
 	paramObj
 }
 
@@ -983,11 +1084,36 @@ func (r TaskAgentListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
+// Canonical effort tier names for the research graph.
+type TaskAgentListParamsFilterEffort string
+
+const (
+	TaskAgentListParamsFilterEffortLow    TaskAgentListParamsFilterEffort = "low"
+	TaskAgentListParamsFilterEffortMedium TaskAgentListParamsFilterEffort = "medium"
+	TaskAgentListParamsFilterEffortHigh   TaskAgentListParamsFilterEffort = "high"
+	TaskAgentListParamsFilterEffortXHigh  TaskAgentListParamsFilterEffort = "x-high"
+	TaskAgentListParamsFilterEffortMax    TaskAgentListParamsFilterEffort = "max"
+)
+
+type TaskAgentListParamsFilterUseCase string
+
+const (
+	TaskAgentListParamsFilterUseCaseResearch        TaskAgentListParamsFilterUseCase = "research"
+	TaskAgentListParamsFilterUseCaseEnrichment      TaskAgentListParamsFilterUseCase = "enrichment"
+	TaskAgentListParamsFilterUseCaseDatasetBuilding TaskAgentListParamsFilterUseCase = "dataset_building"
+)
+
 type TaskAgentRunParams struct {
-	Input        string                    `json:"input" api:"required"`
-	EnableEvents param.Opt[bool]           `json:"enable_events,omitzero"`
-	OutputSchema map[string]any            `json:"output_schema,omitzero"`
-	Sources      TaskAgentRunParamsSources `json:"sources,omitzero"`
+	Input                 string            `json:"input" api:"required"`
+	PreviousInteractionID param.Opt[string] `json:"previous_interaction_id,omitzero"`
+	EnableEvents          param.Opt[bool]   `json:"enable_events,omitzero"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort       TaskAgentRunParamsEffort `json:"effort,omitzero"`
+	OutputSchema map[string]any           `json:"output_schema,omitzero"`
+	// Source preferences for a web search agent instance.
+	Sources TaskAgentRunParamsSources `json:"sources,omitzero"`
 	paramObj
 }
 
@@ -999,6 +1125,18 @@ func (r *TaskAgentRunParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Canonical effort tier names for the research graph.
+type TaskAgentRunParamsEffort string
+
+const (
+	TaskAgentRunParamsEffortLow    TaskAgentRunParamsEffort = "low"
+	TaskAgentRunParamsEffortMedium TaskAgentRunParamsEffort = "medium"
+	TaskAgentRunParamsEffortHigh   TaskAgentRunParamsEffort = "high"
+	TaskAgentRunParamsEffortXHigh  TaskAgentRunParamsEffort = "x-high"
+	TaskAgentRunParamsEffortMax    TaskAgentRunParamsEffort = "max"
+)
+
+// Source preferences for a web search agent instance.
 type TaskAgentRunParamsSources struct {
 	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
 	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
