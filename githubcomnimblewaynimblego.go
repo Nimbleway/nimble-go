@@ -686,17 +686,17 @@ type ExtractAsyncResponseTask struct {
 	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
 	// Queue name the task was submitted to.
 	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
@@ -774,17 +774,17 @@ type ExtractBatchResponseTask struct {
 	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
 	// Queue name the task was submitted to.
 	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
@@ -2487,6 +2487,7 @@ func (u *ExtractParamsRenderUnion) asAny() any {
 type ExtractParamsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj
@@ -4045,6 +4046,7 @@ func (u *ExtractAsyncParamsRenderUnion) asAny() any {
 type ExtractAsyncParamsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj
@@ -5587,6 +5589,7 @@ func (u *ExtractBatchParamsInputRenderUnion) asAny() any {
 type ExtractBatchParamsInputSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj
@@ -7051,6 +7054,7 @@ func (u *ExtractBatchParamsSharedInputsRenderUnion) asAny() any {
 type ExtractBatchParamsSharedInputsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj

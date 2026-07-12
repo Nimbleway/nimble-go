@@ -28,10 +28,12 @@ func TestTaskAgentRunListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.TaskAgent.Runs.List(
 		context.TODO(),
-		"agent_id",
+		"182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		githubcomnimblewaynimblego.TaskAgentRunListParams{
-			Limit:  githubcomnimblewaynimblego.Int(1),
+			Limit:  githubcomnimblewaynimblego.Int(0),
 			Offset: githubcomnimblewaynimblego.Int(0),
+			Q:      githubcomnimblewaynimblego.String("q"),
+			Status: githubcomnimblewaynimblego.String("status"),
 		},
 	)
 	if err != nil {
@@ -60,7 +62,7 @@ func TestTaskAgentRunCancel(t *testing.T) {
 		context.TODO(),
 		"run_id",
 		githubcomnimblewaynimblego.TaskAgentRunCancelParams{
-			AgentID: "agent_id",
+			AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		},
 	)
 	if err != nil {
@@ -89,7 +91,7 @@ func TestTaskAgentRunGet(t *testing.T) {
 		context.TODO(),
 		"run_id",
 		githubcomnimblewaynimblego.TaskAgentRunGetParams{
-			AgentID: "agent_id",
+			AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		},
 	)
 	if err != nil {
@@ -118,7 +120,7 @@ func TestTaskAgentRunGetResult(t *testing.T) {
 		context.TODO(),
 		"run_id",
 		githubcomnimblewaynimblego.TaskAgentRunGetResultParams{
-			AgentID: "agent_id",
+			AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		},
 	)
 	if err != nil {
@@ -147,7 +149,7 @@ func TestTaskAgentRunStreamEvents(t *testing.T) {
 		context.TODO(),
 		"run_id",
 		githubcomnimblewaynimblego.TaskAgentRunStreamEventsParams{
-			AgentID: "agent_id",
+			AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		},
 	)
 	if err != nil {

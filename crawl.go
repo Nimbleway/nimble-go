@@ -2532,6 +2532,7 @@ func (u *CrawlRunParamsExtractOptionsRenderUnion) asAny() any {
 type CrawlRunParamsExtractOptionsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj
