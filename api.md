@@ -135,6 +135,14 @@ Methods:
 
 # FastSerp
 
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunResponse">FastSerpRunResponse</a>
+
+Methods:
+
+- <code title="post /v1/fast-serp">client.FastSerp.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpService.Run">Run</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunParams">FastSerpRunParams</a>) (\*<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go">githubcomnimblewaynimblego</a>.<a href="https://pkg.go.dev/github.com/Nimbleway/nimble-go#FastSerpRunResponse">FastSerpRunResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 # TaskAgent
 
 Response Types:
