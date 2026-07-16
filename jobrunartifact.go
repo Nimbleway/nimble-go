@@ -36,6 +36,8 @@ func NewJobRunArtifactService(opts ...option.RequestOption) (r JobRunArtifactSer
 }
 
 // List Run Artifacts
+//
+// Deprecated: deprecated
 func (r *JobRunArtifactService) List(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunArtifactListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -48,49 +50,43 @@ func (r *JobRunArtifactService) List(ctx context.Context, runID string, opts ...
 }
 
 // Get Run Artifact Download URL
-func (r *JobRunArtifactService) DownloadURL(ctx context.Context, artifactID string, query JobRunArtifactDownloadURLParams, opts ...option.RequestOption) (res *JobRunArtifactDownloadURLResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) DownloadURL(ctx context.Context, artifactID int64, query JobRunArtifactDownloadURLParams, opts ...option.RequestOption) (res *JobRunArtifactDownloadURLResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s/download-url", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/download-url", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Get Run Artifact
-func (r *JobRunArtifactService) Get(ctx context.Context, artifactID string, query JobRunArtifactGetParams, opts ...option.RequestOption) (res *JobRunArtifactGetResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) Get(ctx context.Context, artifactID int64, query JobRunArtifactGetParams, opts ...option.RequestOption) (res *JobRunArtifactGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Preview Run Artifact
-func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID string, query JobRunArtifactPreviewParams, opts ...option.RequestOption) (res *JobRunArtifactPreviewResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID int64, query JobRunArtifactPreviewParams, opts ...option.RequestOption) (res *JobRunArtifactPreviewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s/preview", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/preview", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -114,11 +110,6 @@ func (r *JobRunArtifactListResponse) UnmarshalJSON(data []byte) error {
 }
 
 // A file produced by a run.
-//
-// Intentional subset of the bakery Artifact: `data_format` and `s3_path` are
-// hidden from SDK consumers — internal storage details, not part of the public
-// contract. Use the download-url endpoint to fetch the file. Bakery emits `id` as
-// an int (crawlit native); the SDK contract is a string.
 type JobRunArtifactListResponseItem struct {
 	// Artifact identifier.
 	ID string `json:"id" api:"required"`
@@ -167,11 +158,6 @@ func (r *JobRunArtifactDownloadURLResponse) UnmarshalJSON(data []byte) error {
 }
 
 // A file produced by a run.
-//
-// Intentional subset of the bakery Artifact: `data_format` and `s3_path` are
-// hidden from SDK consumers — internal storage details, not part of the public
-// contract. Use the download-url endpoint to fetch the file. Bakery emits `id` as
-// an int (crawlit native); the SDK contract is a string.
 type JobRunArtifactGetResponse struct {
 	// Artifact identifier.
 	ID string `json:"id" api:"required"`

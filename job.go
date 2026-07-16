@@ -41,6 +41,8 @@ func NewJobService(opts ...option.RequestOption) (r JobService) {
 }
 
 // Create Job
+//
+// Deprecated: deprecated
 func (r *JobService) New(ctx context.Context, body JobNewParams, opts ...option.RequestOption) (res *JobNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/jobs"
@@ -49,6 +51,8 @@ func (r *JobService) New(ctx context.Context, body JobNewParams, opts ...option.
 }
 
 // Update Job
+//
+// Deprecated: deprecated
 func (r *JobService) Update(ctx context.Context, jobID string, body JobUpdateParams, opts ...option.RequestOption) (res *JobUpdateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
@@ -61,6 +65,8 @@ func (r *JobService) Update(ctx context.Context, jobID string, body JobUpdatePar
 }
 
 // List Jobs
+//
+// Deprecated: deprecated
 func (r *JobService) List(ctx context.Context, query JobListParams, opts ...option.RequestOption) (res *JobListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/jobs"
@@ -69,6 +75,8 @@ func (r *JobService) List(ctx context.Context, query JobListParams, opts ...opti
 }
 
 // Delete Job
+//
+// Deprecated: deprecated
 func (r *JobService) Delete(ctx context.Context, jobID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
@@ -82,6 +90,8 @@ func (r *JobService) Delete(ctx context.Context, jobID string, opts ...option.Re
 }
 
 // Get Job
+//
+// Deprecated: deprecated
 func (r *JobService) Get(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
@@ -94,6 +104,8 @@ func (r *JobService) Get(ctx context.Context, jobID string, opts ...option.Reque
 }
 
 // Trigger Run
+//
+// Deprecated: deprecated
 func (r *JobService) Run(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
@@ -397,18 +409,18 @@ func (r *JobUpdateResponseSchedule) UnmarshalJSON(data []byte) error {
 type JobListResponse struct {
 	// Jobs on this page.
 	Items []JobListResponseItem `json:"items" api:"required"`
-	// Current page number.
-	Page int64 `json:"page" api:"required"`
-	// Number of items per page.
-	PerPage int64 `json:"per_page" api:"required"`
 	// Total number of jobs matching the query.
 	Total int64 `json:"total" api:"required"`
+	// Current page number.
+	Page int64 `json:"page"`
+	// Number of items per page.
+	PerPage int64 `json:"per_page"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
+		Total       respjson.Field
 		Page        respjson.Field
 		PerPage     respjson.Field
-		Total       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`

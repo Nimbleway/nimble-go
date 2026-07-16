@@ -46,6 +46,8 @@ func NewTaskAgentService(opts ...option.RequestOption) (r TaskAgentService) {
 // Create a Web Search Agent instance.
 //
 // `account_id` is JWT-derived and never read from the request body.
+//
+// Deprecated: deprecated
 func (r *TaskAgentService) New(ctx context.Context, body TaskAgentNewParams, opts ...option.RequestOption) (res *TaskAgentNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/task-agents"
@@ -54,6 +56,8 @@ func (r *TaskAgentService) New(ctx context.Context, body TaskAgentNewParams, opt
 }
 
 // Update Agent
+//
+// Deprecated: deprecated
 func (r *TaskAgentService) Update(ctx context.Context, agentID string, body TaskAgentUpdateParams, opts ...option.RequestOption) (res *TaskAgentUpdateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -69,7 +73,9 @@ func (r *TaskAgentService) Update(ctx context.Context, agentID string, body Task
 //
 // Callers are strictly scoped to their (account, workspace). If `workspace_id` is
 // omitted, the user's default workspace is used.
-func (r *TaskAgentService) List(ctx context.Context, query TaskAgentListParams, opts ...option.RequestOption) (res *[]TaskAgentListResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *TaskAgentService) List(ctx context.Context, query TaskAgentListParams, opts ...option.RequestOption) (res *TaskAgentListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/task-agents"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
@@ -77,6 +83,8 @@ func (r *TaskAgentService) List(ctx context.Context, query TaskAgentListParams, 
 }
 
 // Deactivate Agent
+//
+// Deprecated: deprecated
 func (r *TaskAgentService) Deactivate(ctx context.Context, agentID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
@@ -90,6 +98,8 @@ func (r *TaskAgentService) Deactivate(ctx context.Context, agentID string, opts 
 }
 
 // Get Agent
+//
+// Deprecated: deprecated
 func (r *TaskAgentService) Get(ctx context.Context, agentID string, opts ...option.RequestOption) (res *TaskAgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -102,6 +112,8 @@ func (r *TaskAgentService) Get(ctx context.Context, agentID string, opts ...opti
 }
 
 // Create a research run for a Web Search Agent instance.
+//
+// Deprecated: deprecated
 func (r *TaskAgentService) Run(ctx context.Context, agentID string, body TaskAgentRunParams, opts ...option.RequestOption) (res *TaskAgentRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if agentID == "" {
@@ -114,28 +126,44 @@ func (r *TaskAgentService) Run(ctx context.Context, agentID string, body TaskAge
 }
 
 type TaskAgentNewResponse struct {
-	ID              string    `json:"id" api:"required"`
-	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description     string    `json:"description" api:"required"`
-	DisplayName     string    `json:"display_name" api:"required"`
-	DomainExpertise string    `json:"domain_expertise" api:"required"`
-	// Canonical effort tier names for the research graph.
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort       TaskAgentNewResponseEffort `json:"effort" api:"required"`
-	Goals        []TaskAgentNewResponseGoal `json:"goals" api:"required"`
-	Icon         string                     `json:"icon" api:"required"`
-	IsActive     bool                       `json:"is_active" api:"required"`
-	OutputSchema map[string]any             `json:"output_schema" api:"required"`
-	// Response variant of AgentSources — preserves per-row id on allow rows.
-	Sources            TaskAgentNewResponseSources             `json:"sources" api:"required"`
+	Effort TaskAgentNewResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []TaskAgentNewResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources TaskAgentNewResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
 	SuggestedQuestions []TaskAgentNewResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
-	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase     TaskAgentNewResponseUseCase `json:"use_case" api:"required"`
-	AccountID   string                      `json:"account_id" api:"nullable"`
-	AgentName   string                      `json:"agent_name" api:"nullable"`
-	WorkspaceID string                      `json:"workspace_id" api:"nullable" format:"uuid"`
+	UseCase TaskAgentNewResponseUseCase `json:"use_case" api:"required"`
+	// Account identifier associated with the agent.
+	AccountID string `json:"account_id" api:"nullable"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// Workspace identifier associated with the agent.
+	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -166,7 +194,7 @@ func (r *TaskAgentNewResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
+// Default effort level for this agent's runs.
 type TaskAgentNewResponseEffort string
 
 const (
@@ -178,9 +206,12 @@ const (
 )
 
 type TaskAgentNewResponseGoal struct {
-	ID    string `json:"id" api:"required"`
-	Goal  string `json:"goal" api:"required"`
-	Order int64  `json:"order" api:"required"`
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -197,12 +228,16 @@ func (r *TaskAgentNewResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Response variant of AgentSources — preserves per-row id on allow rows.
+// Source guidance for the agent.
 type TaskAgentNewResponseSources struct {
-	Allow      []TaskAgentNewResponseSourcesAllow `json:"allow"`
-	Avoid      string                             `json:"avoid" api:"nullable"`
-	Block      []TaskAgentNewResponseSourcesBlock `json:"block"`
-	Prioritize string                             `json:"prioritize" api:"nullable"`
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentNewResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []TaskAgentNewResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Allow       respjson.Field
@@ -221,10 +256,14 @@ func (r *TaskAgentNewResponseSources) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentNewResponseSourcesAllow struct {
-	ID      string   `json:"id" api:"required"`
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -242,11 +281,13 @@ func (r *TaskAgentNewResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentNewResponseSourcesBlock struct {
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
@@ -264,8 +305,11 @@ func (r *TaskAgentNewResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentNewResponseSuggestedQuestion struct {
-	ID       string `json:"id" api:"required"`
-	Order    int64  `json:"order" api:"required"`
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
 	Question string `json:"question" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -283,6 +327,7 @@ func (r *TaskAgentNewResponseSuggestedQuestion) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Primary use case supported by the agent.
 type TaskAgentNewResponseUseCase string
 
 const (
@@ -292,28 +337,44 @@ const (
 )
 
 type TaskAgentUpdateResponse struct {
-	ID              string    `json:"id" api:"required"`
-	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description     string    `json:"description" api:"required"`
-	DisplayName     string    `json:"display_name" api:"required"`
-	DomainExpertise string    `json:"domain_expertise" api:"required"`
-	// Canonical effort tier names for the research graph.
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort       TaskAgentUpdateResponseEffort `json:"effort" api:"required"`
-	Goals        []TaskAgentUpdateResponseGoal `json:"goals" api:"required"`
-	Icon         string                        `json:"icon" api:"required"`
-	IsActive     bool                          `json:"is_active" api:"required"`
-	OutputSchema map[string]any                `json:"output_schema" api:"required"`
-	// Response variant of AgentSources — preserves per-row id on allow rows.
-	Sources            TaskAgentUpdateResponseSources             `json:"sources" api:"required"`
+	Effort TaskAgentUpdateResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []TaskAgentUpdateResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources TaskAgentUpdateResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
 	SuggestedQuestions []TaskAgentUpdateResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
-	UpdatedAt          time.Time                                  `json:"updated_at" api:"required" format:"date-time"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase     TaskAgentUpdateResponseUseCase `json:"use_case" api:"required"`
-	AccountID   string                         `json:"account_id" api:"nullable"`
-	AgentName   string                         `json:"agent_name" api:"nullable"`
-	WorkspaceID string                         `json:"workspace_id" api:"nullable" format:"uuid"`
+	UseCase TaskAgentUpdateResponseUseCase `json:"use_case" api:"required"`
+	// Account identifier associated with the agent.
+	AccountID string `json:"account_id" api:"nullable"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// Workspace identifier associated with the agent.
+	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -344,7 +405,7 @@ func (r *TaskAgentUpdateResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
+// Default effort level for this agent's runs.
 type TaskAgentUpdateResponseEffort string
 
 const (
@@ -356,9 +417,12 @@ const (
 )
 
 type TaskAgentUpdateResponseGoal struct {
-	ID    string `json:"id" api:"required"`
-	Goal  string `json:"goal" api:"required"`
-	Order int64  `json:"order" api:"required"`
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -375,12 +439,16 @@ func (r *TaskAgentUpdateResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Response variant of AgentSources — preserves per-row id on allow rows.
+// Source guidance for the agent.
 type TaskAgentUpdateResponseSources struct {
-	Allow      []TaskAgentUpdateResponseSourcesAllow `json:"allow"`
-	Avoid      string                                `json:"avoid" api:"nullable"`
-	Block      []TaskAgentUpdateResponseSourcesBlock `json:"block"`
-	Prioritize string                                `json:"prioritize" api:"nullable"`
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentUpdateResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []TaskAgentUpdateResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Allow       respjson.Field
@@ -399,10 +467,14 @@ func (r *TaskAgentUpdateResponseSources) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentUpdateResponseSourcesAllow struct {
-	ID      string   `json:"id" api:"required"`
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -420,11 +492,13 @@ func (r *TaskAgentUpdateResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentUpdateResponseSourcesBlock struct {
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
@@ -442,8 +516,11 @@ func (r *TaskAgentUpdateResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentUpdateResponseSuggestedQuestion struct {
-	ID       string `json:"id" api:"required"`
-	Order    int64  `json:"order" api:"required"`
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
 	Question string `json:"question" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -461,6 +538,7 @@ func (r *TaskAgentUpdateResponseSuggestedQuestion) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Primary use case supported by the agent.
 type TaskAgentUpdateResponseUseCase string
 
 const (
@@ -470,28 +548,70 @@ const (
 )
 
 type TaskAgentListResponse struct {
-	ID              string    `json:"id" api:"required"`
-	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description     string    `json:"description" api:"required"`
-	DisplayName     string    `json:"display_name" api:"required"`
-	DomainExpertise string    `json:"domain_expertise" api:"required"`
-	// Canonical effort tier names for the research graph.
+	// Items returned in this page.
+	Items []TaskAgentListResponseItem `json:"items" api:"required"`
+	// Maximum number of items returned.
+	Limit int64 `json:"limit" api:"required"`
+	// Number of items skipped before this page.
+	Offset int64 `json:"offset" api:"required"`
+	// Total number of items matching the query.
+	Total int64 `json:"total" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		Limit       respjson.Field
+		Offset      respjson.Field
+		Total       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r TaskAgentListResponse) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type TaskAgentListResponseItem struct {
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort       TaskAgentListResponseEffort `json:"effort" api:"required"`
-	Goals        []TaskAgentListResponseGoal `json:"goals" api:"required"`
-	Icon         string                      `json:"icon" api:"required"`
-	IsActive     bool                        `json:"is_active" api:"required"`
-	OutputSchema map[string]any              `json:"output_schema" api:"required"`
-	// Response variant of AgentSources — preserves per-row id on allow rows.
-	Sources            TaskAgentListResponseSources             `json:"sources" api:"required"`
-	SuggestedQuestions []TaskAgentListResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
-	UpdatedAt          time.Time                                `json:"updated_at" api:"required" format:"date-time"`
+	Effort string `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []TaskAgentListResponseItemGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources TaskAgentListResponseItemSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []TaskAgentListResponseItemSuggestedQuestion `json:"suggested_questions" api:"required"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase     TaskAgentListResponseUseCase `json:"use_case" api:"required"`
-	AccountID   string                       `json:"account_id" api:"nullable"`
-	AgentName   string                       `json:"agent_name" api:"nullable"`
-	WorkspaceID string                       `json:"workspace_id" api:"nullable" format:"uuid"`
+	UseCase string `json:"use_case" api:"required"`
+	// Account identifier associated with the agent.
+	AccountID string `json:"account_id" api:"nullable"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// Workspace identifier associated with the agent.
+	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -517,26 +637,18 @@ type TaskAgentListResponse struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponse) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponse) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItem) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
-type TaskAgentListResponseEffort string
-
-const (
-	TaskAgentListResponseEffortLow    TaskAgentListResponseEffort = "low"
-	TaskAgentListResponseEffortMedium TaskAgentListResponseEffort = "medium"
-	TaskAgentListResponseEffortHigh   TaskAgentListResponseEffort = "high"
-	TaskAgentListResponseEffortXHigh  TaskAgentListResponseEffort = "x-high"
-	TaskAgentListResponseEffortMax    TaskAgentListResponseEffort = "max"
-)
-
-type TaskAgentListResponseGoal struct {
-	ID    string `json:"id" api:"required"`
-	Goal  string `json:"goal" api:"required"`
-	Order int64  `json:"order" api:"required"`
+type TaskAgentListResponseItemGoal struct {
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -548,17 +660,21 @@ type TaskAgentListResponseGoal struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseGoal) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseGoal) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItemGoal) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItemGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Response variant of AgentSources — preserves per-row id on allow rows.
-type TaskAgentListResponseSources struct {
-	Allow      []TaskAgentListResponseSourcesAllow `json:"allow"`
-	Avoid      string                              `json:"avoid" api:"nullable"`
-	Block      []TaskAgentListResponseSourcesBlock `json:"block"`
-	Prioritize string                              `json:"prioritize" api:"nullable"`
+// Source guidance for the agent.
+type TaskAgentListResponseItemSources struct {
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentListResponseItemSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []TaskAgentListResponseItemSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Allow       respjson.Field
@@ -571,16 +687,20 @@ type TaskAgentListResponseSources struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseSources) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseSources) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItemSources) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItemSources) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentListResponseSourcesAllow struct {
-	ID      string   `json:"id" api:"required"`
+type TaskAgentListResponseItemSourcesAllow struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -593,16 +713,18 @@ type TaskAgentListResponseSourcesAllow struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItemSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItemSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Lenient response shape — domains are plain strings (no re-validation).
-type TaskAgentListResponseSourcesBlock struct {
+type TaskAgentListResponseItemSourcesBlock struct {
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
@@ -614,14 +736,17 @@ type TaskAgentListResponseSourcesBlock struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseSourcesBlock) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItemSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItemSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentListResponseSuggestedQuestion struct {
-	ID       string `json:"id" api:"required"`
-	Order    int64  `json:"order" api:"required"`
+type TaskAgentListResponseItemSuggestedQuestion struct {
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
 	Question string `json:"question" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -634,42 +759,50 @@ type TaskAgentListResponseSuggestedQuestion struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentListResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentListResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
+func (r TaskAgentListResponseItemSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *TaskAgentListResponseItemSuggestedQuestion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentListResponseUseCase string
-
-const (
-	TaskAgentListResponseUseCaseResearch        TaskAgentListResponseUseCase = "research"
-	TaskAgentListResponseUseCaseEnrichment      TaskAgentListResponseUseCase = "enrichment"
-	TaskAgentListResponseUseCaseDatasetBuilding TaskAgentListResponseUseCase = "dataset_building"
-)
-
 type TaskAgentGetResponse struct {
-	ID              string    `json:"id" api:"required"`
-	CreatedAt       time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description     string    `json:"description" api:"required"`
-	DisplayName     string    `json:"display_name" api:"required"`
-	DomainExpertise string    `json:"domain_expertise" api:"required"`
-	// Canonical effort tier names for the research graph.
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort       TaskAgentGetResponseEffort `json:"effort" api:"required"`
-	Goals        []TaskAgentGetResponseGoal `json:"goals" api:"required"`
-	Icon         string                     `json:"icon" api:"required"`
-	IsActive     bool                       `json:"is_active" api:"required"`
-	OutputSchema map[string]any             `json:"output_schema" api:"required"`
-	// Response variant of AgentSources — preserves per-row id on allow rows.
-	Sources            TaskAgentGetResponseSources             `json:"sources" api:"required"`
+	Effort TaskAgentGetResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []TaskAgentGetResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources TaskAgentGetResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
 	SuggestedQuestions []TaskAgentGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
-	UpdatedAt          time.Time                               `json:"updated_at" api:"required" format:"date-time"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase     TaskAgentGetResponseUseCase `json:"use_case" api:"required"`
-	AccountID   string                      `json:"account_id" api:"nullable"`
-	AgentName   string                      `json:"agent_name" api:"nullable"`
-	WorkspaceID string                      `json:"workspace_id" api:"nullable" format:"uuid"`
+	UseCase TaskAgentGetResponseUseCase `json:"use_case" api:"required"`
+	// Account identifier associated with the agent.
+	AccountID string `json:"account_id" api:"nullable"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// Workspace identifier associated with the agent.
+	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -700,7 +833,7 @@ func (r *TaskAgentGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
+// Default effort level for this agent's runs.
 type TaskAgentGetResponseEffort string
 
 const (
@@ -712,9 +845,12 @@ const (
 )
 
 type TaskAgentGetResponseGoal struct {
-	ID    string `json:"id" api:"required"`
-	Goal  string `json:"goal" api:"required"`
-	Order int64  `json:"order" api:"required"`
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -731,12 +867,16 @@ func (r *TaskAgentGetResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Response variant of AgentSources — preserves per-row id on allow rows.
+// Source guidance for the agent.
 type TaskAgentGetResponseSources struct {
-	Allow      []TaskAgentGetResponseSourcesAllow `json:"allow"`
-	Avoid      string                             `json:"avoid" api:"nullable"`
-	Block      []TaskAgentGetResponseSourcesBlock `json:"block"`
-	Prioritize string                             `json:"prioritize" api:"nullable"`
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentGetResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []TaskAgentGetResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Allow       respjson.Field
@@ -755,10 +895,14 @@ func (r *TaskAgentGetResponseSources) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentGetResponseSourcesAllow struct {
-	ID      string   `json:"id" api:"required"`
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -776,11 +920,13 @@ func (r *TaskAgentGetResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Lenient response shape — domains are plain strings (no re-validation).
 type TaskAgentGetResponseSourcesBlock struct {
+	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
-	Order   int64    `json:"order" api:"required"`
-	Title   string   `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Domains     respjson.Field
@@ -798,8 +944,11 @@ func (r *TaskAgentGetResponseSourcesBlock) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentGetResponseSuggestedQuestion struct {
-	ID       string `json:"id" api:"required"`
-	Order    int64  `json:"order" api:"required"`
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
 	Question string `json:"question" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -817,6 +966,7 @@ func (r *TaskAgentGetResponseSuggestedQuestion) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Primary use case supported by the agent.
 type TaskAgentGetResponseUseCase string
 
 const (
@@ -825,35 +975,35 @@ const (
 	TaskAgentGetResponseUseCaseDatasetBuilding TaskAgentGetResponseUseCase = "dataset_building"
 )
 
-// Task run status returned by list/create/get endpoints.
 type TaskAgentRunResponse struct {
 	// Run identifier, format "task*run*{uuid}".
-	ID        string    `json:"id" api:"required"`
+	ID string `json:"id" api:"required"`
+	// When the run was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Canonical effort tier names for the research graph.
+	// Effort level used for the run.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
 	Effort TaskAgentRunResponseEffort `json:"effort" api:"required"`
-	// Interaction ID — pass as previous_interaction_id to reuse context.
+	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
 	// True while status is 'queued' or 'running'.
 	IsActive bool `json:"is_active" api:"required"`
-	// Lowercase status values used in API responses (distinct from the DB-level
-	// TaskRunStatus enum).
+	// Current run status.
 	//
 	// Any of "queued", "running", "completed", "failed", "cancelled".
 	Status TaskAgentRunResponseStatus `json:"status" api:"required"`
-	// Web Search Agent instance this run belongs to. Every task run is agent-bound
-	// (see AGENTS-1666). Use this to build the nested URL
-	// /api/v2/web-search-agents/{web_search_agent_id}/runs/{id}.
-	WebSearchAgentID string    `json:"web_search_agent_id" api:"required"`
-	CompletedAt      time.Time `json:"completed_at" api:"nullable" format:"date-time"`
-	// Error detail for a failed run.
+	// Web Search Agent instance this run belongs to.
+	WebSearchAgentID string `json:"web_search_agent_id" api:"required"`
+	// When the run completed.
+	CompletedAt time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error details when the run failed.
 	Error TaskAgentRunResponseError `json:"error" api:"nullable"`
-	// Original user prompt before enrichment. Populated for Web Search Agent runs.
-	Prompt      string    `json:"prompt" api:"nullable"`
-	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
-	WorkspaceID string    `json:"workspace_id" api:"nullable" format:"uuid"`
+	// Prompt submitted for the run.
+	Prompt string `json:"prompt" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	// Workspace identifier associated with the run.
+	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -879,7 +1029,7 @@ func (r *TaskAgentRunResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
+// Effort level used for the run.
 type TaskAgentRunResponseEffort string
 
 const (
@@ -890,8 +1040,7 @@ const (
 	TaskAgentRunResponseEffortMax    TaskAgentRunResponseEffort = "max"
 )
 
-// Lowercase status values used in API responses (distinct from the DB-level
-// TaskRunStatus enum).
+// Current run status.
 type TaskAgentRunResponseStatus string
 
 const (
@@ -902,7 +1051,7 @@ const (
 	TaskAgentRunResponseStatusCancelled TaskAgentRunResponseStatus = "cancelled"
 )
 
-// Error detail for a failed run.
+// Error details when the run failed.
 type TaskAgentRunResponseError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
@@ -924,27 +1073,39 @@ func (r *TaskAgentRunResponseError) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentNewParams struct {
-	AgentName       param.Opt[string] `json:"agent_name,omitzero"`
-	Description     param.Opt[string] `json:"description,omitzero"`
-	DisplayName     param.Opt[string] `json:"display_name,omitzero"`
+	// Stable agent name.
+	AgentName param.Opt[string] `json:"agent_name,omitzero"`
+	// Agent description shown to users.
+	Description param.Opt[string] `json:"description,omitzero"`
+	// Human-friendly agent name shown to users.
+	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	// Domain expertise or operating context for the agent.
 	DomainExpertise param.Opt[string] `json:"domain_expertise,omitzero"`
-	Icon            param.Opt[string] `json:"icon,omitzero"`
+	// Icon identifier used when presenting the agent.
+	Icon param.Opt[string] `json:"icon,omitzero"`
 	// Template name to materialize this instance from. When set, the scalar fields and
 	// child rows are copied from the template.
-	Template     param.Opt[string] `json:"template,omitzero"`
-	WorkspaceID  param.Opt[string] `json:"workspace_id,omitzero" format:"uuid"`
-	IsActive     param.Opt[bool]   `json:"is_active,omitzero"`
-	OutputSchema map[string]any    `json:"output_schema,omitzero"`
+	Template param.Opt[string] `json:"template,omitzero"`
+	// Workspace identifier to associate with the agent.
+	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero" format:"uuid"`
+	// Whether the agent can be used to start new runs.
+	IsActive param.Opt[bool] `json:"is_active,omitzero"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema,omitzero"`
+	// Primary use case supported by the agent.
+	//
 	// Any of "research", "enrichment", "dataset_building".
 	UseCase TaskAgentNewParamsUseCase `json:"use_case,omitzero"`
-	// Canonical effort tier names for the research graph.
+	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
 	Effort TaskAgentNewParamsEffort `json:"effort,omitzero"`
-	Goals  []string                 `json:"goals,omitzero"`
-	// Source preferences for a web search agent instance.
-	Sources            TaskAgentNewParamsSources `json:"sources,omitzero"`
-	SuggestedQuestions []string                  `json:"suggested_questions,omitzero"`
+	// Ordered goals for the agent to follow.
+	Goals []string `json:"goals,omitzero"`
+	// Source guidance for the agent.
+	Sources TaskAgentNewParamsSources `json:"sources,omitzero"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []string `json:"suggested_questions,omitzero"`
 	paramObj
 }
 
@@ -956,7 +1117,7 @@ func (r *TaskAgentNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Canonical effort tier names for the research graph.
+// Default effort level for this agent's runs.
 type TaskAgentNewParamsEffort string
 
 const (
@@ -967,12 +1128,16 @@ const (
 	TaskAgentNewParamsEffortMax    TaskAgentNewParamsEffort = "max"
 )
 
-// Source preferences for a web search agent instance.
+// Source guidance for the agent.
 type TaskAgentNewParamsSources struct {
-	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
-	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
-	Allow      []TaskAgentNewParamsSourcesAllow `json:"allow,omitzero"`
-	Block      []TaskAgentNewParamsSourcesBlock `json:"block,omitzero"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid param.Opt[string] `json:"avoid,omitzero"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize param.Opt[string] `json:"prioritize,omitzero"`
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentNewParamsSourcesAllow `json:"allow,omitzero"`
+	// Source groups the agent should not use.
+	Block []TaskAgentNewParamsSourcesBlock `json:"block,omitzero"`
 	paramObj
 }
 
@@ -986,9 +1151,12 @@ func (r *TaskAgentNewParamsSources) UnmarshalJSON(data []byte) error {
 
 // The properties Domains, Title are required.
 type TaskAgentNewParamsSourcesAllow struct {
-	Domains []string         `json:"domains,omitzero" api:"required"`
-	Title   string           `json:"title" api:"required"`
-	Order   param.Opt[int64] `json:"order,omitzero"`
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
 	paramObj
 }
 
@@ -1002,9 +1170,12 @@ func (r *TaskAgentNewParamsSourcesAllow) UnmarshalJSON(data []byte) error {
 
 // The properties Domains, Title are required.
 type TaskAgentNewParamsSourcesBlock struct {
-	Domains []string         `json:"domains,omitzero" api:"required"`
-	Title   string           `json:"title" api:"required"`
-	Order   param.Opt[int64] `json:"order,omitzero"`
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
 	paramObj
 }
 
@@ -1016,6 +1187,7 @@ func (r *TaskAgentNewParamsSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Primary use case supported by the agent.
 type TaskAgentNewParamsUseCase string
 
 const (
@@ -1067,12 +1239,6 @@ type TaskAgentListParams struct {
 	WorkspaceID param.Opt[string] `query:"workspace_id,omitzero" format:"uuid" json:"-"`
 	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	Offset      param.Opt[int64]  `query:"offset,omitzero" json:"-"`
-	// Canonical effort tier names for the research graph.
-	//
-	// Any of "low", "medium", "high", "x-high", "max".
-	FilterEffort TaskAgentListParamsFilterEffort `query:"filter_effort,omitzero" json:"-"`
-	// Any of "research", "enrichment", "dataset_building".
-	FilterUseCase TaskAgentListParamsFilterUseCase `query:"filter_use_case,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1084,35 +1250,23 @@ func (r TaskAgentListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Canonical effort tier names for the research graph.
-type TaskAgentListParamsFilterEffort string
-
-const (
-	TaskAgentListParamsFilterEffortLow    TaskAgentListParamsFilterEffort = "low"
-	TaskAgentListParamsFilterEffortMedium TaskAgentListParamsFilterEffort = "medium"
-	TaskAgentListParamsFilterEffortHigh   TaskAgentListParamsFilterEffort = "high"
-	TaskAgentListParamsFilterEffortXHigh  TaskAgentListParamsFilterEffort = "x-high"
-	TaskAgentListParamsFilterEffortMax    TaskAgentListParamsFilterEffort = "max"
-)
-
-type TaskAgentListParamsFilterUseCase string
-
-const (
-	TaskAgentListParamsFilterUseCaseResearch        TaskAgentListParamsFilterUseCase = "research"
-	TaskAgentListParamsFilterUseCaseEnrichment      TaskAgentListParamsFilterUseCase = "enrichment"
-	TaskAgentListParamsFilterUseCaseDatasetBuilding TaskAgentListParamsFilterUseCase = "dataset_building"
-)
-
 type TaskAgentRunParams struct {
-	Input                 string            `json:"input" api:"required"`
+	// User prompt or task instructions for the run.
+	Input string `json:"input" api:"required"`
+	// Previous interaction identifier used to continue a conversation.
 	PreviousInteractionID param.Opt[string] `json:"previous_interaction_id,omitzero"`
-	EnableEvents          param.Opt[bool]   `json:"enable_events,omitzero"`
+	// Whether to stream run events when supported.
+	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
 	// Canonical effort tier names for the research graph.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort       TaskAgentRunParamsEffort `json:"effort,omitzero"`
-	OutputSchema map[string]any           `json:"output_schema,omitzero"`
-	// Source preferences for a web search agent instance.
+	Effort TaskAgentRunParamsEffort `json:"effort,omitzero"`
+	// Existing records to ENRICH: a list of partial rows, or a single object,
+	// mirroring output_schema's shape.
+	InputData TaskAgentRunParamsInputDataUnion `json:"input_data,omitzero"`
+	// JSON schema overriding the agent's default structured output for this run.
+	OutputSchema map[string]any `json:"output_schema,omitzero"`
+	// Source guidance overriding the agent default.
 	Sources TaskAgentRunParamsSources `json:"sources,omitzero"`
 	paramObj
 }
@@ -1136,12 +1290,41 @@ const (
 	TaskAgentRunParamsEffortMax    TaskAgentRunParamsEffort = "max"
 )
 
-// Source preferences for a web search agent instance.
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type TaskAgentRunParamsInputDataUnion struct {
+	OfMapOfAnyMap []map[string]any `json:",omitzero,inline"`
+	OfAnyMap      map[string]any   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u TaskAgentRunParamsInputDataUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfMapOfAnyMap, u.OfAnyMap)
+}
+func (u *TaskAgentRunParamsInputDataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *TaskAgentRunParamsInputDataUnion) asAny() any {
+	if !param.IsOmitted(u.OfMapOfAnyMap) {
+		return &u.OfMapOfAnyMap
+	} else if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	}
+	return nil
+}
+
+// Source guidance overriding the agent default.
 type TaskAgentRunParamsSources struct {
-	Avoid      param.Opt[string]                `json:"avoid,omitzero"`
-	Prioritize param.Opt[string]                `json:"prioritize,omitzero"`
-	Allow      []TaskAgentRunParamsSourcesAllow `json:"allow,omitzero"`
-	Block      []TaskAgentRunParamsSourcesBlock `json:"block,omitzero"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid param.Opt[string] `json:"avoid,omitzero"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize param.Opt[string] `json:"prioritize,omitzero"`
+	// Source groups the agent is allowed to use.
+	Allow []TaskAgentRunParamsSourcesAllow `json:"allow,omitzero"`
+	// Source groups the agent should not use.
+	Block []TaskAgentRunParamsSourcesBlock `json:"block,omitzero"`
 	paramObj
 }
 
@@ -1155,9 +1338,12 @@ func (r *TaskAgentRunParamsSources) UnmarshalJSON(data []byte) error {
 
 // The properties Domains, Title are required.
 type TaskAgentRunParamsSourcesAllow struct {
-	Domains []string         `json:"domains,omitzero" api:"required"`
-	Title   string           `json:"title" api:"required"`
-	Order   param.Opt[int64] `json:"order,omitzero"`
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
 	paramObj
 }
 
@@ -1171,9 +1357,12 @@ func (r *TaskAgentRunParamsSourcesAllow) UnmarshalJSON(data []byte) error {
 
 // The properties Domains, Title are required.
 type TaskAgentRunParamsSourcesBlock struct {
-	Domains []string         `json:"domains,omitzero" api:"required"`
-	Title   string           `json:"title" api:"required"`
-	Order   param.Opt[int64] `json:"order,omitzero"`
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
 	paramObj
 }
 
