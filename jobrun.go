@@ -41,6 +41,8 @@ func NewJobRunService(opts ...option.RequestOption) (r JobRunService) {
 }
 
 // List Runs for Job
+//
+// Deprecated: deprecated
 func (r *JobRunService) List(ctx context.Context, jobID string, query JobRunListParams, opts ...option.RequestOption) (res *JobRunListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
@@ -53,6 +55,8 @@ func (r *JobRunService) List(ctx context.Context, jobID string, query JobRunList
 }
 
 // Cancel Run
+//
+// Deprecated: deprecated
 func (r *JobRunService) Cancel(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunCancelResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -65,6 +69,8 @@ func (r *JobRunService) Cancel(ctx context.Context, runID string, opts ...option
 }
 
 // Get Run
+//
+// Deprecated: deprecated
 func (r *JobRunService) Get(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -80,18 +86,18 @@ func (r *JobRunService) Get(ctx context.Context, runID string, opts ...option.Re
 type JobRunListResponse struct {
 	// Runs on this page.
 	Items []JobRunListResponseItem `json:"items" api:"required"`
-	// Current page number.
-	Page int64 `json:"page" api:"required"`
-	// Number of items per page.
-	PerPage int64 `json:"per_page" api:"required"`
 	// Total number of runs matching the query.
 	Total int64 `json:"total" api:"required"`
+	// Current page number.
+	Page int64 `json:"page"`
+	// Number of items per page.
+	PerPage int64 `json:"per_page"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
+		Total       respjson.Field
 		Page        respjson.Field
 		PerPage     respjson.Field
-		Total       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`

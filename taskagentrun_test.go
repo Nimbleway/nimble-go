@@ -30,10 +30,8 @@ func TestTaskAgentRunListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
 		githubcomnimblewaynimblego.TaskAgentRunListParams{
-			Limit:  githubcomnimblewaynimblego.Int(0),
+			Limit:  githubcomnimblewaynimblego.Int(1),
 			Offset: githubcomnimblewaynimblego.Int(0),
-			Q:      githubcomnimblewaynimblego.String("q"),
-			Status: githubcomnimblewaynimblego.String("status"),
 		},
 	)
 	if err != nil {

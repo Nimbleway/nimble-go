@@ -56,13 +56,13 @@ func TestAgentGenerateWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agent.Generate(context.TODO(), githubcomnimblewaynimblego.AgentGenerateParams{
-		OfCrustCreateAgentGenerationRequest: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCrustCreateAgentGenerationRequest{
+		OfCreateTemplateGenerationRequestPublicV1: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1{
 			Prompt: "prompt",
 			URL:    "url",
 			InputSchema: map[string]any{
 				"foo": "bar",
 			},
-			Metadata: githubcomnimblewaynimblego.AgentGenerateParamsBodyCrustCreateAgentGenerationRequestMetadata{
+			Metadata: githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata{
 				Description: githubcomnimblewaynimblego.String("description"),
 				DisplayName: githubcomnimblewaynimblego.String("display_name"),
 				Tags:        []string{"string"},

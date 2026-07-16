@@ -27,10 +27,8 @@ func TestTaskAgentTemplateListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.TaskAgent.Templates.List(context.TODO(), githubcomnimblewaynimblego.TaskAgentTemplateListParams{
-		FilterEffort:  githubcomnimblewaynimblego.TaskAgentTemplateListParamsFilterEffortLow,
-		FilterUseCase: githubcomnimblewaynimblego.TaskAgentTemplateListParamsFilterUseCaseResearch,
-		Limit:         githubcomnimblewaynimblego.Int(0),
-		Offset:        githubcomnimblewaynimblego.Int(0),
+		Limit:  githubcomnimblewaynimblego.Int(1),
+		Offset: githubcomnimblewaynimblego.Int(0),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

@@ -114,11 +114,9 @@ func TestTaskAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.TaskAgent.List(context.TODO(), githubcomnimblewaynimblego.TaskAgentListParams{
-		FilterEffort:  githubcomnimblewaynimblego.TaskAgentListParamsFilterEffortLow,
-		FilterUseCase: githubcomnimblewaynimblego.TaskAgentListParamsFilterUseCaseResearch,
-		Limit:         githubcomnimblewaynimblego.Int(0),
-		Offset:        githubcomnimblewaynimblego.Int(0),
-		WorkspaceID:   githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
+		Limit:       githubcomnimblewaynimblego.Int(1),
+		Offset:      githubcomnimblewaynimblego.Int(0),
+		WorkspaceID: githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -195,6 +193,11 @@ func TestTaskAgentRunWithOptionalParams(t *testing.T) {
 			Input:        "input",
 			Effort:       githubcomnimblewaynimblego.TaskAgentRunParamsEffortLow,
 			EnableEvents: githubcomnimblewaynimblego.Bool(true),
+			InputData: githubcomnimblewaynimblego.TaskAgentRunParamsInputDataUnion{
+				OfMapOfAnyMap: []map[string]any{{
+					"foo": "bar",
+				}},
+			},
 			OutputSchema: map[string]any{
 				"foo": "bar",
 			},
