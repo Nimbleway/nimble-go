@@ -128,19 +128,20 @@ func (r *TaskAgentRunService) GetResult(ctx context.Context, runID string, query
 // SSE stream of real-time progress events for a run on this instance.
 //
 // Deprecated: deprecated
-func (r *TaskAgentRunService) StreamEvents(ctx context.Context, runID string, query TaskAgentRunStreamEventsParams, opts ...option.RequestOption) (res *TaskAgentRunStreamEventsResponse, err error) {
+func (r *TaskAgentRunService) StreamEvents(ctx context.Context, runID string, query TaskAgentRunStreamEventsParams, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if query.AgentID == "" {
 		err = errors.New("missing required agent_id parameter")
-		return nil, err
+		return err
 	}
 	if runID == "" {
 		err = errors.New("missing required run_id parameter")
-		return nil, err
+		return err
 	}
 	path := fmt.Sprintf("v1/task-agents/%s/runs/%s/events", query.AgentID, runID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return res, err
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, nil, opts...)
+	return err
 }
 
 type TaskAgentRunListResponse struct {
@@ -829,8 +830,6 @@ func (r TaskAgentRunGetResultResponseTaskRunFailedResultPublicV1RunError) RawJSO
 func (r *TaskAgentRunGetResultResponseTaskRunFailedResultPublicV1RunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type TaskAgentRunStreamEventsResponse = any
 
 type TaskAgentRunListParams struct {
 	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
