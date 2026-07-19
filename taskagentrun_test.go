@@ -143,7 +143,7 @@ func TestTaskAgentRunStreamEvents(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.TaskAgent.Runs.StreamEvents(
+	err := client.TaskAgent.Runs.StreamEvents(
 		context.TODO(),
 		"run_id",
 		githubcomnimblewaynimblego.TaskAgentRunStreamEventsParams{
