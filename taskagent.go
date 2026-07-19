@@ -158,12 +158,8 @@ type TaskAgentNewResponse struct {
 	//
 	// Any of "research", "enrichment", "dataset_building".
 	UseCase TaskAgentNewResponseUseCase `json:"use_case" api:"required"`
-	// Account identifier associated with the agent.
-	AccountID string `json:"account_id" api:"nullable"`
 	// Stable agent name.
 	AgentName string `json:"agent_name" api:"nullable"`
-	// Workspace identifier associated with the agent.
-	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -180,9 +176,7 @@ type TaskAgentNewResponse struct {
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
 		UseCase            respjson.Field
-		AccountID          respjson.Field
 		AgentName          respjson.Field
-		WorkspaceID        respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -282,6 +276,8 @@ func (r *TaskAgentNewResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentNewResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
 	// Zero-based source group position.
@@ -290,6 +286,7 @@ type TaskAgentNewResponseSourcesBlock struct {
 	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		ID          respjson.Field
 		Domains     respjson.Field
 		Order       respjson.Field
 		Title       respjson.Field
@@ -369,12 +366,8 @@ type TaskAgentUpdateResponse struct {
 	//
 	// Any of "research", "enrichment", "dataset_building".
 	UseCase TaskAgentUpdateResponseUseCase `json:"use_case" api:"required"`
-	// Account identifier associated with the agent.
-	AccountID string `json:"account_id" api:"nullable"`
 	// Stable agent name.
 	AgentName string `json:"agent_name" api:"nullable"`
-	// Workspace identifier associated with the agent.
-	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -391,9 +384,7 @@ type TaskAgentUpdateResponse struct {
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
 		UseCase            respjson.Field
-		AccountID          respjson.Field
 		AgentName          respjson.Field
-		WorkspaceID        respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -493,6 +484,8 @@ func (r *TaskAgentUpdateResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentUpdateResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
 	// Zero-based source group position.
@@ -501,6 +494,7 @@ type TaskAgentUpdateResponseSourcesBlock struct {
 	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		ID          respjson.Field
 		Domains     respjson.Field
 		Order       respjson.Field
 		Title       respjson.Field
@@ -606,12 +600,8 @@ type TaskAgentListResponseItem struct {
 	//
 	// Any of "research", "enrichment", "dataset_building".
 	UseCase string `json:"use_case" api:"required"`
-	// Account identifier associated with the agent.
-	AccountID string `json:"account_id" api:"nullable"`
 	// Stable agent name.
 	AgentName string `json:"agent_name" api:"nullable"`
-	// Workspace identifier associated with the agent.
-	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -628,9 +618,7 @@ type TaskAgentListResponseItem struct {
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
 		UseCase            respjson.Field
-		AccountID          respjson.Field
 		AgentName          respjson.Field
-		WorkspaceID        respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -719,6 +707,8 @@ func (r *TaskAgentListResponseItemSourcesAllow) UnmarshalJSON(data []byte) error
 }
 
 type TaskAgentListResponseItemSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
 	// Zero-based source group position.
@@ -727,6 +717,7 @@ type TaskAgentListResponseItemSourcesBlock struct {
 	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		ID          respjson.Field
 		Domains     respjson.Field
 		Order       respjson.Field
 		Title       respjson.Field
@@ -797,12 +788,8 @@ type TaskAgentGetResponse struct {
 	//
 	// Any of "research", "enrichment", "dataset_building".
 	UseCase TaskAgentGetResponseUseCase `json:"use_case" api:"required"`
-	// Account identifier associated with the agent.
-	AccountID string `json:"account_id" api:"nullable"`
 	// Stable agent name.
 	AgentName string `json:"agent_name" api:"nullable"`
-	// Workspace identifier associated with the agent.
-	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -819,9 +806,7 @@ type TaskAgentGetResponse struct {
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
 		UseCase            respjson.Field
-		AccountID          respjson.Field
 		AgentName          respjson.Field
-		WorkspaceID        respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -921,6 +906,8 @@ func (r *TaskAgentGetResponseSourcesAllow) UnmarshalJSON(data []byte) error {
 }
 
 type TaskAgentGetResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
 	Domains []string `json:"domains" api:"required"`
 	// Zero-based source group position.
@@ -929,6 +916,7 @@ type TaskAgentGetResponseSourcesBlock struct {
 	Title string `json:"title" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		ID          respjson.Field
 		Domains     respjson.Field
 		Order       respjson.Field
 		Title       respjson.Field
@@ -1002,8 +990,6 @@ type TaskAgentRunResponse struct {
 	Prompt string `json:"prompt" api:"nullable"`
 	// When the run started executing.
 	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
-	// Workspace identifier associated with the run.
-	WorkspaceID string `json:"workspace_id" api:"nullable" format:"uuid"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID               respjson.Field
@@ -1017,7 +1003,6 @@ type TaskAgentRunResponse struct {
 		Error            respjson.Field
 		Prompt           respjson.Field
 		StartedAt        respjson.Field
-		WorkspaceID      respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
 	} `json:"-"`
@@ -1086,8 +1071,6 @@ type TaskAgentNewParams struct {
 	// Template name to materialize this instance from. When set, the scalar fields and
 	// child rows are copied from the template.
 	Template param.Opt[string] `json:"template,omitzero"`
-	// Workspace identifier to associate with the agent.
-	WorkspaceID param.Opt[string] `json:"workspace_id,omitzero" format:"uuid"`
 	// Whether the agent can be used to start new runs.
 	IsActive param.Opt[bool] `json:"is_active,omitzero"`
 	// JSON schema describing the structured output the agent should produce.

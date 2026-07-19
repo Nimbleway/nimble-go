@@ -841,12 +841,9 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Search(context.TODO(), githubcomnimblewaynimblego.SearchParams{
-		Query:       "x",
-		ContentType: []string{"string"},
-		Country:     githubcomnimblewaynimblego.String("country"),
-		DebugParams: map[string]any{
-			"foo": "bar",
-		},
+		Query:          "x",
+		ContentType:    []string{"string"},
+		Country:        githubcomnimblewaynimblego.String("country"),
 		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
 		EndDate:        githubcomnimblewaynimblego.String("end_date"),
 		ExcludeDomains: []string{"string"},

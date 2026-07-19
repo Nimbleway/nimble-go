@@ -8042,8 +8042,6 @@ type SearchParams struct {
 	// groups ('documents', 'spreadsheets', 'presentations') and specific formats
 	// ('pdf', 'docx', 'xlsx', etc.)
 	ContentType []string `json:"content_type,omitzero"`
-	// Internal-only. Gated to allowlisted accounts; ignored otherwise.
-	DebugParams map[string]any `json:"debug_params,omitzero"`
 	// List of domains to exclude from search results. Maximum 50 domains.
 	ExcludeDomains []string `json:"exclude_domains,omitzero"`
 	// List of domains to include in search results. Maximum 50 domains.
