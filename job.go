@@ -99,8 +99,6 @@ type JobNewResponse struct {
 	ID string `json:"id" api:"required"`
 	// Job name.
 	Name string `json:"name" api:"required"`
-	// Name of the agent this job runs.
-	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
 	// Free-text description of the job.
@@ -109,6 +107,8 @@ type JobNewResponse struct {
 	Destination JobNewResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
 	DisplayName string `json:"display_name" api:"nullable"`
+	// Name of the extract template this job runs.
+	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
 	// Configuration for the input data a job processes.
 	Inputs JobNewResponseInputs `json:"inputs" api:"nullable"`
 	// Timestamp of the most recent run.
@@ -124,20 +124,20 @@ type JobNewResponse struct {
 	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		Name          respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		Description   respjson.Field
-		Destination   respjson.Field
-		DisplayName   respjson.Field
-		Inputs        respjson.Field
-		LastRunAt     respjson.Field
-		LastRunStatus respjson.Field
-		Schedule      respjson.Field
-		UpdatedAt     respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
+		ID                  respjson.Field
+		Name                respjson.Field
+		CreatedAt           respjson.Field
+		Description         respjson.Field
+		Destination         respjson.Field
+		DisplayName         respjson.Field
+		ExtractTemplateName respjson.Field
+		Inputs              respjson.Field
+		LastRunAt           respjson.Field
+		LastRunStatus       respjson.Field
+		Schedule            respjson.Field
+		UpdatedAt           respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -243,8 +243,6 @@ type JobUpdateResponse struct {
 	ID string `json:"id" api:"required"`
 	// Job name.
 	Name string `json:"name" api:"required"`
-	// Name of the agent this job runs.
-	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
 	// Free-text description of the job.
@@ -253,6 +251,8 @@ type JobUpdateResponse struct {
 	Destination JobUpdateResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
 	DisplayName string `json:"display_name" api:"nullable"`
+	// Name of the extract template this job runs.
+	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
 	// Configuration for the input data a job processes.
 	Inputs JobUpdateResponseInputs `json:"inputs" api:"nullable"`
 	// Timestamp of the most recent run.
@@ -268,20 +268,20 @@ type JobUpdateResponse struct {
 	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		Name          respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		Description   respjson.Field
-		Destination   respjson.Field
-		DisplayName   respjson.Field
-		Inputs        respjson.Field
-		LastRunAt     respjson.Field
-		LastRunStatus respjson.Field
-		Schedule      respjson.Field
-		UpdatedAt     respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
+		ID                  respjson.Field
+		Name                respjson.Field
+		CreatedAt           respjson.Field
+		Description         respjson.Field
+		Destination         respjson.Field
+		DisplayName         respjson.Field
+		ExtractTemplateName respjson.Field
+		Inputs              respjson.Field
+		LastRunAt           respjson.Field
+		LastRunStatus       respjson.Field
+		Schedule            respjson.Field
+		UpdatedAt           respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -413,8 +413,6 @@ type JobListResponseItem struct {
 	ID string `json:"id" api:"required"`
 	// Job name.
 	Name string `json:"name" api:"required"`
-	// Name of the agent this job runs.
-	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
 	// Free-text description of the job.
@@ -423,6 +421,8 @@ type JobListResponseItem struct {
 	Destination JobListResponseItemDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
 	DisplayName string `json:"display_name" api:"nullable"`
+	// Name of the extract template this job runs.
+	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
 	// Configuration for the input data a job processes.
 	Inputs JobListResponseItemInputs `json:"inputs" api:"nullable"`
 	// Timestamp of the most recent run.
@@ -438,20 +438,20 @@ type JobListResponseItem struct {
 	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		Name          respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		Description   respjson.Field
-		Destination   respjson.Field
-		DisplayName   respjson.Field
-		Inputs        respjson.Field
-		LastRunAt     respjson.Field
-		LastRunStatus respjson.Field
-		Schedule      respjson.Field
-		UpdatedAt     respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
+		ID                  respjson.Field
+		Name                respjson.Field
+		CreatedAt           respjson.Field
+		Description         respjson.Field
+		Destination         respjson.Field
+		DisplayName         respjson.Field
+		ExtractTemplateName respjson.Field
+		Inputs              respjson.Field
+		LastRunAt           respjson.Field
+		LastRunStatus       respjson.Field
+		Schedule            respjson.Field
+		UpdatedAt           respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -544,8 +544,6 @@ type JobGetResponse struct {
 	ID string `json:"id" api:"required"`
 	// Job name.
 	Name string `json:"name" api:"required"`
-	// Name of the agent this job runs.
-	AgentName string `json:"agent_name" api:"nullable"`
 	// When the job was created.
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
 	// Free-text description of the job.
@@ -554,6 +552,8 @@ type JobGetResponse struct {
 	Destination JobGetResponseDestination `json:"destination" api:"nullable"`
 	// Human-friendly job name shown in the UI.
 	DisplayName string `json:"display_name" api:"nullable"`
+	// Name of the extract template this job runs.
+	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
 	// Configuration for the input data a job processes.
 	Inputs JobGetResponseInputs `json:"inputs" api:"nullable"`
 	// Timestamp of the most recent run.
@@ -569,20 +569,20 @@ type JobGetResponse struct {
 	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		Name          respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		Description   respjson.Field
-		Destination   respjson.Field
-		DisplayName   respjson.Field
-		Inputs        respjson.Field
-		LastRunAt     respjson.Field
-		LastRunStatus respjson.Field
-		Schedule      respjson.Field
-		UpdatedAt     respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
+		ID                  respjson.Field
+		Name                respjson.Field
+		CreatedAt           respjson.Field
+		Description         respjson.Field
+		Destination         respjson.Field
+		DisplayName         respjson.Field
+		ExtractTemplateName respjson.Field
+		Inputs              respjson.Field
+		LastRunAt           respjson.Field
+		LastRunStatus       respjson.Field
+		Schedule            respjson.Field
+		UpdatedAt           respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -683,8 +683,8 @@ func (r *JobGetResponseSchedule) UnmarshalJSON(data []byte) error {
 }
 
 type JobNewParams struct {
-	// Name of the agent to run.
-	AgentName string `json:"agent_name" api:"required"`
+	// Name of the extract template to run.
+	ExtractTemplateName string `json:"extract_template_name" api:"required"`
 	// Job name.
 	Name string `json:"name" api:"required"`
 	// Free-text description of the job.
