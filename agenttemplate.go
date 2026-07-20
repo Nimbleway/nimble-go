@@ -19,52 +19,49 @@ import (
 	"github.com/Nimbleway/nimble-go/packages/respjson"
 )
 
-// TaskAgentTemplateService contains methods and other services that help with
+// AgentTemplateService contains methods and other services that help with
 // interacting with the nimble API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewTaskAgentTemplateService] method instead.
-type TaskAgentTemplateService struct {
+// the [NewAgentTemplateService] method instead.
+type AgentTemplateService struct {
 	Options []option.RequestOption
 }
 
-// NewTaskAgentTemplateService generates a new service that applies the given
-// options to each request. These options are applied after the parent client's
-// options (if there is one), and before any request-specific options.
-func NewTaskAgentTemplateService(opts ...option.RequestOption) (r TaskAgentTemplateService) {
-	r = TaskAgentTemplateService{}
+// NewAgentTemplateService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewAgentTemplateService(opts ...option.RequestOption) (r AgentTemplateService) {
+	r = AgentTemplateService{}
 	r.Options = opts
 	return
 }
 
-// List Templates
-//
-// Deprecated: deprecated
-func (r *TaskAgentTemplateService) List(ctx context.Context, query TaskAgentTemplateListParams, opts ...option.RequestOption) (res *TaskAgentTemplateListResponse, err error) {
+// List the pre-built agent templates available to your account. Use a template's
+// `template_name` with `POST /v2/agents` to create an agent instance from it.
+func (r *AgentTemplateService) List(ctx context.Context, query AgentTemplateListParams, opts ...option.RequestOption) (res *AgentTemplateListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/task-agents/templates"
+	path := "v2/agents/templates"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
 
-// Get Template
-//
-// Deprecated: deprecated
-func (r *TaskAgentTemplateService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *TaskAgentTemplateGetResponse, err error) {
+// Retrieve a single agent template by its stable `template_name`.
+func (r *AgentTemplateService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentTemplateGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if templateName == "" {
 		err = errors.New("missing required template_name parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/task-agents/templates/%s", templateName)
+	path := fmt.Sprintf("v2/agents/templates/%s", templateName)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-type TaskAgentTemplateListResponse struct {
+type AgentTemplateListResponse struct {
 	// Items returned in this page.
-	Items []TaskAgentTemplateListResponseItem `json:"items" api:"required"`
+	Items []AgentTemplateListResponseItem `json:"items" api:"required"`
 	// Maximum number of items returned.
 	Limit int64 `json:"limit" api:"required"`
 	// Number of items skipped before this page.
@@ -83,12 +80,12 @@ type TaskAgentTemplateListResponse struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateListResponse) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateListResponse) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateListResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateListResponseItem struct {
+type AgentTemplateListResponseItem struct {
 	// Unique template identifier (wsat\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// When the template was created.
@@ -104,15 +101,15 @@ type TaskAgentTemplateListResponseItem struct {
 	// Any of "low", "medium", "high", "x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Ordered goals for the template.
-	Goals []TaskAgentTemplateListResponseItemGoal `json:"goals" api:"required"`
+	Goals []AgentTemplateListResponseItemGoal `json:"goals" api:"required"`
 	// Icon identifier used when presenting the template.
 	Icon string `json:"icon" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
 	// Ordered source groups for the template.
-	Sources []TaskAgentTemplateListResponseItemSource `json:"sources" api:"required"`
+	Sources []AgentTemplateListResponseItemSource `json:"sources" api:"required"`
 	// Suggested prompts for the template.
-	SuggestedQuestions []TaskAgentTemplateListResponseItemSuggestedQuestion `json:"suggested_questions" api:"required"`
+	SuggestedQuestions []AgentTemplateListResponseItemSuggestedQuestion `json:"suggested_questions" api:"required"`
 	// Stable template name used to create agent instances.
 	TemplateName string `json:"template_name" api:"required"`
 	// When the template was last updated.
@@ -143,12 +140,12 @@ type TaskAgentTemplateListResponseItem struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateListResponseItem) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateListResponseItem) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateListResponseItem) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateListResponseItemGoal struct {
+type AgentTemplateListResponseItemGoal struct {
 	// Unique goal identifier (wsag\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Goal text.
@@ -166,12 +163,12 @@ type TaskAgentTemplateListResponseItemGoal struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateListResponseItemGoal) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateListResponseItemGoal) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateListResponseItemGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateListResponseItemGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateListResponseItemSource struct {
+type AgentTemplateListResponseItemSource struct {
 	// Unique source group identifier (wsas\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
@@ -192,12 +189,12 @@ type TaskAgentTemplateListResponseItemSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateListResponseItemSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateListResponseItemSource) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateListResponseItemSource) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateListResponseItemSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateListResponseItemSuggestedQuestion struct {
+type AgentTemplateListResponseItemSuggestedQuestion struct {
 	// Unique suggested question identifier (wsasq\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Zero-based suggested question position.
@@ -215,12 +212,12 @@ type TaskAgentTemplateListResponseItemSuggestedQuestion struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateListResponseItemSuggestedQuestion) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateListResponseItemSuggestedQuestion) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateListResponseItemSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateListResponseItemSuggestedQuestion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateGetResponse struct {
+type AgentTemplateGetResponse struct {
 	// Unique template identifier (wsat\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// When the template was created.
@@ -234,17 +231,17 @@ type TaskAgentTemplateGetResponse struct {
 	// Default effort level for runs created from this template.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
-	Effort TaskAgentTemplateGetResponseEffort `json:"effort" api:"required"`
+	Effort AgentTemplateGetResponseEffort `json:"effort" api:"required"`
 	// Ordered goals for the template.
-	Goals []TaskAgentTemplateGetResponseGoal `json:"goals" api:"required"`
+	Goals []AgentTemplateGetResponseGoal `json:"goals" api:"required"`
 	// Icon identifier used when presenting the template.
 	Icon string `json:"icon" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
 	// Ordered source groups for the template.
-	Sources []TaskAgentTemplateGetResponseSource `json:"sources" api:"required"`
+	Sources []AgentTemplateGetResponseSource `json:"sources" api:"required"`
 	// Suggested prompts for the template.
-	SuggestedQuestions []TaskAgentTemplateGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
+	SuggestedQuestions []AgentTemplateGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
 	// Stable template name used to create agent instances.
 	TemplateName string `json:"template_name" api:"required"`
 	// When the template was last updated.
@@ -252,7 +249,7 @@ type TaskAgentTemplateGetResponse struct {
 	// Primary use case supported by the template.
 	//
 	// Any of "research", "enrichment", "dataset_building".
-	UseCase TaskAgentTemplateGetResponseUseCase `json:"use_case" api:"required"`
+	UseCase AgentTemplateGetResponseUseCase `json:"use_case" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -275,23 +272,23 @@ type TaskAgentTemplateGetResponse struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateGetResponse) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateGetResponse) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateGetResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Default effort level for runs created from this template.
-type TaskAgentTemplateGetResponseEffort string
+type AgentTemplateGetResponseEffort string
 
 const (
-	TaskAgentTemplateGetResponseEffortLow    TaskAgentTemplateGetResponseEffort = "low"
-	TaskAgentTemplateGetResponseEffortMedium TaskAgentTemplateGetResponseEffort = "medium"
-	TaskAgentTemplateGetResponseEffortHigh   TaskAgentTemplateGetResponseEffort = "high"
-	TaskAgentTemplateGetResponseEffortXHigh  TaskAgentTemplateGetResponseEffort = "x-high"
-	TaskAgentTemplateGetResponseEffortMax    TaskAgentTemplateGetResponseEffort = "max"
+	AgentTemplateGetResponseEffortLow    AgentTemplateGetResponseEffort = "low"
+	AgentTemplateGetResponseEffortMedium AgentTemplateGetResponseEffort = "medium"
+	AgentTemplateGetResponseEffortHigh   AgentTemplateGetResponseEffort = "high"
+	AgentTemplateGetResponseEffortXHigh  AgentTemplateGetResponseEffort = "x-high"
+	AgentTemplateGetResponseEffortMax    AgentTemplateGetResponseEffort = "max"
 )
 
-type TaskAgentTemplateGetResponseGoal struct {
+type AgentTemplateGetResponseGoal struct {
 	// Unique goal identifier (wsag\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Goal text.
@@ -309,12 +306,12 @@ type TaskAgentTemplateGetResponseGoal struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateGetResponseGoal) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateGetResponseGoal) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateGetResponseGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateGetResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateGetResponseSource struct {
+type AgentTemplateGetResponseSource struct {
 	// Unique source group identifier (wsas\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Domains included in this source group.
@@ -335,12 +332,12 @@ type TaskAgentTemplateGetResponseSource struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateGetResponseSource) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateGetResponseSource) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateGetResponseSource) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateGetResponseSource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type TaskAgentTemplateGetResponseSuggestedQuestion struct {
+type AgentTemplateGetResponseSuggestedQuestion struct {
 	// Unique suggested question identifier (wsasq\_<uuid>).
 	ID string `json:"id" api:"required"`
 	// Zero-based suggested question position.
@@ -358,29 +355,29 @@ type TaskAgentTemplateGetResponseSuggestedQuestion struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TaskAgentTemplateGetResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
-func (r *TaskAgentTemplateGetResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
+func (r AgentTemplateGetResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentTemplateGetResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Primary use case supported by the template.
-type TaskAgentTemplateGetResponseUseCase string
+type AgentTemplateGetResponseUseCase string
 
 const (
-	TaskAgentTemplateGetResponseUseCaseResearch        TaskAgentTemplateGetResponseUseCase = "research"
-	TaskAgentTemplateGetResponseUseCaseEnrichment      TaskAgentTemplateGetResponseUseCase = "enrichment"
-	TaskAgentTemplateGetResponseUseCaseDatasetBuilding TaskAgentTemplateGetResponseUseCase = "dataset_building"
+	AgentTemplateGetResponseUseCaseResearch        AgentTemplateGetResponseUseCase = "research"
+	AgentTemplateGetResponseUseCaseEnrichment      AgentTemplateGetResponseUseCase = "enrichment"
+	AgentTemplateGetResponseUseCaseDatasetBuilding AgentTemplateGetResponseUseCase = "dataset_building"
 )
 
-type TaskAgentTemplateListParams struct {
+type AgentTemplateListParams struct {
 	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [TaskAgentTemplateListParams]'s query parameters as
+// URLQuery serializes [AgentTemplateListParams]'s query parameters as
 // `url.Values`.
-func (r TaskAgentTemplateListParams) URLQuery() (v url.Values, err error) {
+func (r AgentTemplateListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

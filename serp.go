@@ -38,7 +38,7 @@ func NewSerpService(opts ...option.RequestOption) (r SerpService) {
 // SERP
 func (r *SerpService) Run(ctx context.Context, body SerpRunParams, opts ...option.RequestOption) (res *SerpRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/serp"
+	path := "v2/serp"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -46,7 +46,7 @@ func (r *SerpService) Run(ctx context.Context, body SerpRunParams, opts ...optio
 // SERP Async Endpoint
 func (r *SerpService) RunAsync(ctx context.Context, body SerpRunAsyncParams, opts ...option.RequestOption) (res *SerpRunAsyncResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/serp/async"
+	path := "v2/serp/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -54,7 +54,7 @@ func (r *SerpService) RunAsync(ctx context.Context, body SerpRunAsyncParams, opt
 // SERP Batch Endpoint
 func (r *SerpService) RunBatch(ctx context.Context, body SerpRunBatchParams, opts ...option.RequestOption) (res *SerpRunBatchResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/serp/batch"
+	path := "v2/serp/batch"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

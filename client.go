@@ -18,7 +18,8 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options         []option.RequestOption
-	Agent           AgentService
+	Extract         ExtractService
+	Agents          AgentService
 	Crawl           CrawlService
 	Tasks           TaskService
 	Batches         BatchService
@@ -26,7 +27,6 @@ type Client struct {
 	Media           MediaService
 	Serp            SerpService
 	FastSerp        FastSerpService
-	TaskAgent       TaskAgentService
 	Jobs            JobService
 }
 
@@ -64,7 +64,8 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Agent = NewAgentService(opts...)
+	r.Extract = NewExtractService(opts...)
+	r.Agents = NewAgentService(opts...)
 	r.Crawl = NewCrawlService(opts...)
 	r.Tasks = NewTaskService(opts...)
 	r.Batches = NewBatchService(opts...)
@@ -72,7 +73,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Media = NewMediaService(opts...)
 	r.Serp = NewSerpService(opts...)
 	r.FastSerp = NewFastSerpService(opts...)
-	r.TaskAgent = NewTaskAgentService(opts...)
 	r.Jobs = NewJobService(opts...)
 
 	return
@@ -147,34 +147,10 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
 }
 
-// Extract
-func (r *Client) Extract(ctx context.Context, body ExtractParams, opts ...option.RequestOption) (res *ExtractResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
-// Extract Async Endpoint
-func (r *Client) ExtractAsync(ctx context.Context, body ExtractAsyncParams, opts ...option.RequestOption) (res *ExtractAsyncResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract/async"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
-// Extract Batch Endpoint
-func (r *Client) ExtractBatch(ctx context.Context, body ExtractBatchParams, opts ...option.RequestOption) (res *ExtractBatchResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/extract/batch"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
 // Create map task
 func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.RequestOption) (res *MapResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/map"
+	path := "v2/map"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -182,7 +158,7 @@ func (r *Client) Map(ctx context.Context, body MapParams, opts ...option.Request
 // Search
 func (r *Client) Search(ctx context.Context, body SearchParams, opts ...option.RequestOption) (res *SearchResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/search"
+	path := "v2/search"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

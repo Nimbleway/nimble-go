@@ -40,64 +40,137 @@ func NewJobRunService(opts ...option.RequestOption) (r JobRunService) {
 	return
 }
 
-// List Runs for Job
-//
-// Deprecated: deprecated
+// Trigger Job Run Public V2
+func (r *JobRunService) New(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobRunNewResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if jobID == "" {
+		err = errors.New("missing required job_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v2/jobs/%s/runs", jobID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
+// List Job Runs Public V2
 func (r *JobRunService) List(ctx context.Context, jobID string, query JobRunListParams, opts ...option.RequestOption) (res *JobRunListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
 		err = errors.New("missing required job_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/%s/runs", jobID)
+	path := fmt.Sprintf("v2/jobs/%s/runs", jobID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
 
-// Cancel Run
-//
-// Deprecated: deprecated
+// Cancel Run Public V2
 func (r *JobRunService) Cancel(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunCancelResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/cancel", runID)
+	path := fmt.Sprintf("v2/jobs/runs/%s/cancel", runID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
 
-// Get Run
-//
-// Deprecated: deprecated
+// Get Run Public V2
 func (r *JobRunService) Get(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s", runID)
+	path := fmt.Sprintf("v2/jobs/runs/%s", runID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// A page of job runs.
+// A single execution of a job.
+type JobRunNewResponse struct {
+	// Unique run identifier (run\_<n>).
+	ID string `json:"id" api:"required"`
+	// When the run was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Identifier of the job this run belongs to.
+	JobID string `json:"job_id" api:"required"`
+	// Current run status.
+	//
+	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
+	// "WARNING".
+	Status JobRunNewResponseStatus `json:"status" api:"required"`
+	// What triggered the run: 'schedule' or 'manual'.
+	//
+	// Any of "schedule", "manual".
+	TriggeredBy JobRunNewResponseTriggeredBy `json:"triggered_by" api:"required"`
+	// When the run finished.
+	FinishedAt time.Time `json:"finished_at" api:"nullable" format:"date-time"`
+	// Number of input records processed.
+	InputCount int64 `json:"input_count" api:"nullable"`
+	// Number of result records produced.
+	ResultCount int64 `json:"result_count" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		CreatedAt   respjson.Field
+		JobID       respjson.Field
+		Status      respjson.Field
+		TriggeredBy respjson.Field
+		FinishedAt  respjson.Field
+		InputCount  respjson.Field
+		ResultCount respjson.Field
+		StartedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r JobRunNewResponse) RawJSON() string { return r.JSON.raw }
+func (r *JobRunNewResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Current run status.
+type JobRunNewResponseStatus string
+
+const (
+	JobRunNewResponseStatusPending   JobRunNewResponseStatus = "PENDING"
+	JobRunNewResponseStatusRunning   JobRunNewResponseStatus = "RUNNING"
+	JobRunNewResponseStatusSuccess   JobRunNewResponseStatus = "SUCCESS"
+	JobRunNewResponseStatusFailed    JobRunNewResponseStatus = "FAILED"
+	JobRunNewResponseStatusCancelled JobRunNewResponseStatus = "CANCELLED"
+	JobRunNewResponseStatusTimeout   JobRunNewResponseStatus = "TIMEOUT"
+	JobRunNewResponseStatusWarning   JobRunNewResponseStatus = "WARNING"
+)
+
+// What triggered the run: 'schedule' or 'manual'.
+type JobRunNewResponseTriggeredBy string
+
+const (
+	JobRunNewResponseTriggeredBySchedule JobRunNewResponseTriggeredBy = "schedule"
+	JobRunNewResponseTriggeredByManual   JobRunNewResponseTriggeredBy = "manual"
+)
+
 type JobRunListResponse struct {
-	// Runs on this page.
+	// Items returned in this page.
 	Items []JobRunListResponseItem `json:"items" api:"required"`
-	// Total number of runs matching the query.
+	// Maximum number of items returned.
+	Limit int64 `json:"limit" api:"required"`
+	// Number of items skipped before this page.
+	Offset int64 `json:"offset" api:"required"`
+	// Total number of items matching the query.
 	Total int64 `json:"total" api:"required"`
-	// Current page number.
-	Page int64 `json:"page"`
-	// Number of items per page.
-	PerPage int64 `json:"per_page"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
+		Limit       respjson.Field
+		Offset      respjson.Field
 		Total       respjson.Field
-		Page        respjson.Field
-		PerPage     respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -365,10 +438,8 @@ func (r *JobRunGetResponseSummary) UnmarshalJSON(data []byte) error {
 }
 
 type JobRunListParams struct {
-	// Filter by status
-	Status  param.Opt[string] `query:"status,omitzero" json:"-"`
-	Page    param.Opt[int64]  `query:"page,omitzero" json:"-"`
-	PerPage param.Opt[int64]  `query:"per_page,omitzero" json:"-"`
+	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 
