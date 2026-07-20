@@ -51,7 +51,7 @@ func TestJobRunArtifactDownloadURL(t *testing.T) {
 	)
 	_, err := client.Jobs.Runs.Artifacts.DownloadURL(
 		context.TODO(),
-		"artifact_id",
+		0,
 		githubcomnimblewaynimblego.JobRunArtifactDownloadURLParams{
 			RunID: "run_id",
 		},
@@ -80,7 +80,7 @@ func TestJobRunArtifactGet(t *testing.T) {
 	)
 	_, err := client.Jobs.Runs.Artifacts.Get(
 		context.TODO(),
-		"artifact_id",
+		0,
 		githubcomnimblewaynimblego.JobRunArtifactGetParams{
 			RunID: "run_id",
 		},
@@ -109,7 +109,7 @@ func TestJobRunArtifactPreview(t *testing.T) {
 	)
 	_, err := client.Jobs.Runs.Artifacts.Preview(
 		context.TODO(),
-		"artifact_id",
+		0,
 		githubcomnimblewaynimblego.JobRunArtifactPreviewParams{
 			RunID: "run_id",
 		},

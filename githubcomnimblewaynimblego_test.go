@@ -29,6 +29,14 @@ func TestExtractWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
 		URL: "url",
+		AutoDriverConfiguration: map[string]int64{
+			"vx10":        2,
+			"vx10-pro":    0,
+			"vx6-fast":    1,
+			"vx6-stealth": 1,
+			"vx8":         5,
+			"vx8-pro":     5,
+		},
 		Body: map[string]any{
 			"key": "value",
 		},
@@ -184,6 +192,7 @@ func TestExtractWithOptionalParams(t *testing.T) {
 		Session: githubcomnimblewaynimblego.ExtractParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
 			PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+			RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 			Retry:               githubcomnimblewaynimblego.Bool(true),
 			Timeout:             githubcomnimblewaynimblego.Float(1),
 		},
@@ -217,6 +226,14 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractAsync(context.TODO(), githubcomnimblewaynimblego.ExtractAsyncParams{
 		URL: "url",
+		AutoDriverConfiguration: map[string]int64{
+			"vx10":        2,
+			"vx10-pro":    0,
+			"vx6-fast":    1,
+			"vx6-stealth": 1,
+			"vx8":         5,
+			"vx8-pro":     5,
+		},
 		Body: map[string]any{
 			"key": "value",
 		},
@@ -373,6 +390,7 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 		Session: githubcomnimblewaynimblego.ExtractAsyncParamsSession{
 			ID:                  githubcomnimblewaynimblego.String("id"),
 			PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+			RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 			Retry:               githubcomnimblewaynimblego.Bool(true),
 			Timeout:             githubcomnimblewaynimblego.Float(1),
 		},
@@ -410,6 +428,14 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ExtractBatch(context.TODO(), githubcomnimblewaynimblego.ExtractBatchParams{
 		Inputs: []githubcomnimblewaynimblego.ExtractBatchParamsInput{{
+			AutoDriverConfiguration: map[string]int64{
+				"vx10":        2,
+				"vx10-pro":    0,
+				"vx6-fast":    1,
+				"vx6-stealth": 1,
+				"vx8":         5,
+				"vx8-pro":     5,
+			},
 			Body: map[string]any{
 				"key": "value",
 			},
@@ -566,6 +592,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsInputSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
 				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 				Retry:               githubcomnimblewaynimblego.Bool(true),
 				Timeout:             githubcomnimblewaynimblego.Float(1),
 			},
@@ -581,6 +608,14 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			URL:               githubcomnimblewaynimblego.String("url"),
 		}},
 		SharedInputs: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputs{
+			AutoDriverConfiguration: map[string]int64{
+				"vx10":        2,
+				"vx10-pro":    0,
+				"vx6-fast":    1,
+				"vx6-stealth": 1,
+				"vx8":         5,
+				"vx8-pro":     5,
+			},
 			Body: map[string]any{
 				"key": "value",
 			},
@@ -737,6 +772,7 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 			Session: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsSession{
 				ID:                  githubcomnimblewaynimblego.String("id"),
 				PrefetchUserbrowser: githubcomnimblewaynimblego.Bool(true),
+				RenewOnBlocked:      githubcomnimblewaynimblego.Bool(true),
 				Retry:               githubcomnimblewaynimblego.Bool(true),
 				Timeout:             githubcomnimblewaynimblego.Float(1),
 			},
@@ -805,12 +841,9 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Search(context.TODO(), githubcomnimblewaynimblego.SearchParams{
-		Query:       "x",
-		ContentType: []string{"string"},
-		Country:     githubcomnimblewaynimblego.String("country"),
-		DebugParams: map[string]any{
-			"foo": "bar",
-		},
+		Query:          "x",
+		ContentType:    []string{"string"},
+		Country:        githubcomnimblewaynimblego.String("country"),
 		DeepSearch:     githubcomnimblewaynimblego.Bool(true),
 		EndDate:        githubcomnimblewaynimblego.String("end_date"),
 		ExcludeDomains: []string{"string"},

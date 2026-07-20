@@ -41,6 +41,8 @@ func NewAgentService(opts ...option.RequestOption) (r AgentService) {
 }
 
 // List Agent Templates
+//
+// Deprecated: deprecated
 func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...option.RequestOption) (res *[]AgentListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents"
@@ -49,6 +51,8 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 }
 
 // Create Agent Generation
+//
+// Deprecated: deprecated
 func (r *AgentService) Generate(ctx context.Context, body AgentGenerateParams, opts ...option.RequestOption) (res *AgentGenerateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/agents/generations"
@@ -57,6 +61,8 @@ func (r *AgentService) Generate(ctx context.Context, body AgentGenerateParams, o
 }
 
 // Get Agent Template
+//
+// Deprecated: deprecated
 func (r *AgentService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if templateName == "" {
@@ -69,6 +75,8 @@ func (r *AgentService) Get(ctx context.Context, templateName string, opts ...opt
 }
 
 // Get Agent Generation
+//
+// Deprecated: deprecated
 func (r *AgentService) GetGeneration(ctx context.Context, generationID string, opts ...option.RequestOption) (res *AgentGetGenerationResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if generationID == "" {
@@ -1174,27 +1182,29 @@ type AgentRunBatchResponseTask struct {
 	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
-	// Any of "pending", "success", "error".
+	// Any of "pending", "queued", "in_progress", "success", "error".
 	State string `json:"state" api:"required"`
 	// URL for checking the task status.
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp".
+	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
+	// Queue name the task was submitted to.
+	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
 	StatusCode float64 `json:"status_code"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1213,6 +1223,7 @@ type AgentRunBatchResponseTask struct {
 		ErrorType   respjson.Field
 		ModifiedAt  respjson.Field
 		OutputURL   respjson.Field
+		Queue       respjson.Field
 		StatusCode  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -1276,66 +1287,66 @@ type AgentGenerateParams struct {
 	//
 
 	// This field is a request body variant, only one variant field can be set.
-	OfCreateAgentGenerationRequest *AgentGenerateParamsBodyCreateAgentGenerationRequest `json:",inline"`
+	OfCreateTemplateGenerationRequestPublicV1 *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1 `json:",inline"`
 	// This field is a request body variant, only one variant field can be set.
-	OfCreateAgentRefinementRequest *AgentGenerateParamsBodyCreateAgentRefinementRequest `json:",inline"`
+	OfCreateTemplateRefinementRequestPublicV1 *AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1 `json:",inline"`
 
 	paramObj
 }
 
 func (u AgentGenerateParams) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCreateAgentGenerationRequest, u.OfCreateAgentRefinementRequest)
+	return param.MarshalUnion(u, u.OfCreateTemplateGenerationRequestPublicV1, u.OfCreateTemplateRefinementRequestPublicV1)
 }
 func (r *AgentGenerateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Prompt, URL are required.
-type AgentGenerateParamsBodyCreateAgentGenerationRequest struct {
-	Prompt       string                                                      `json:"prompt" api:"required"`
-	URL          string                                                      `json:"url" api:"required"`
-	AgentName    param.Opt[string]                                           `json:"agent_name,omitzero"`
-	Metadata     AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata `json:"metadata,omitzero"`
-	InputSchema  map[string]any                                              `json:"input_schema,omitzero"`
-	OutputSchema map[string]any                                              `json:"output_schema,omitzero"`
+type AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1 struct {
+	Prompt       string                                                                 `json:"prompt" api:"required"`
+	URL          string                                                                 `json:"url" api:"required"`
+	Name         param.Opt[string]                                                      `json:"name,omitzero"`
+	Metadata     AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata `json:"metadata,omitzero"`
+	InputSchema  map[string]any                                                         `json:"input_schema,omitzero"`
+	OutputSchema map[string]any                                                         `json:"output_schema,omitzero"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentGenerationRequest) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentGenerationRequest
+func (r AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentGenerationRequest) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata struct {
+type AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata struct {
 	Description param.Opt[string] `json:"description,omitzero"`
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
 	Tags        []string          `json:"tags,omitzero"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata
+func (r AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentGenerationRequestMetadata) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties FromAgent, Prompt are required.
-type AgentGenerateParamsBodyCreateAgentRefinementRequest struct {
+type AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1 struct {
 	FromAgent string `json:"from_agent" api:"required"`
 	Prompt    string `json:"prompt" api:"required"`
 	paramObj
 }
 
-func (r AgentGenerateParamsBodyCreateAgentRefinementRequest) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateAgentRefinementRequest
+func (r AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1) MarshalJSON() (data []byte, err error) {
+	type shadow AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *AgentGenerateParamsBodyCreateAgentRefinementRequest) UnmarshalJSON(data []byte) error {
+func (r *AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

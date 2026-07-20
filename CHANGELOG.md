@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.19.0 (2026-07-19)
+
+Full Changelog: [v0.18.0...v0.19.0](https://github.com/Nimbleway/nimble-go/compare/v0.18.0...v0.19.0)
+
+### Features
+
+* **api:** api update ([7ef5377](https://github.com/Nimbleway/nimble-go/commit/7ef5377daaa49118931724d72aff15f66a668e5c))
+* **api:** api update ([f87143b](https://github.com/Nimbleway/nimble-go/commit/f87143b1e4ba7f932d57433ed108ec29659a58e9))
+* **api:** api update ([397dec3](https://github.com/Nimbleway/nimble-go/commit/397dec3f5f1a11a4c40d8ef1eaaefa416193faec))
+* **api:** api update ([191a4c4](https://github.com/Nimbleway/nimble-go/commit/191a4c4f4c9f611657bf9f76dd1e35fee32bf4b0))
+* **api:** api update ([2b2dae6](https://github.com/Nimbleway/nimble-go/commit/2b2dae635ded6be964ee50d5d59c9dedb3940211))
+* **api:** api update ([895779e](https://github.com/Nimbleway/nimble-go/commit/895779e313364dbcbc905185ada8291bb204326c))
+* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([aeaf953](https://github.com/Nimbleway/nimble-go/commit/aeaf9530ae4d121c7ecf2839647542820fed82c3))
+
 ## 0.18.0 (2026-06-22)
 
 Full Changelog: [v0.17.0...v0.18.0](https://github.com/Nimbleway/nimble-go/compare/v0.17.0...v0.18.0)

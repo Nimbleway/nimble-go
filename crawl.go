@@ -1137,6 +1137,11 @@ type CrawlRunParamsExtractOptions struct {
 	Tag param.Opt[string] `json:"tag,omitzero"`
 	// Target URL to scrape
 	URL param.Opt[string] `json:"url,omitzero"`
+	// Custom flow for the optimization engine: maps candidate names to the number of
+	// attempts to spend on each candidate before advancing (0 skips it). Key order
+	// defines the flow order. Providing it opts the request into 'auto' driver
+	// selection.
+	AutoDriverConfiguration map[string]int64 `json:"auto_driver_configuration,omitzero"`
 	// Request body for POST, PUT, PATCH methods
 	Body any `json:"body,omitzero"`
 	// Browser type to emulate
@@ -1174,8 +1179,8 @@ type CrawlRunParamsExtractOptions struct {
 	Device string `json:"device,omitzero"`
 	// Browser driver to use
 	//
-	// Any of "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
-	// "media-vx6".
+	// Any of "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro",
+	// "media-vx6", "fast-vx6".
 	Driver string `json:"driver,omitzero"`
 	// Expected HTTP status codes for successful requests
 	ExpectedStatusCodes []int64 `json:"expected_status_codes,omitzero"`
@@ -1301,7 +1306,7 @@ func init() {
 		"device", "desktop", "mobile", "tablet",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
-		"driver", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6",
+		"driver", "auto", "vx6", "vx8", "vx8-pro", "vx10", "vx10-pro", "vx12", "vx12-pro", "media-vx6", "fast-vx6",
 	)
 	apijson.RegisterFieldValidator[CrawlRunParamsExtractOptions](
 		"markdown_backend", "full_page", "main_content",
@@ -2527,6 +2532,7 @@ func (u *CrawlRunParamsExtractOptionsRenderUnion) asAny() any {
 type CrawlRunParamsExtractOptionsSession struct {
 	ID                  param.Opt[string]  `json:"id,omitzero"`
 	PrefetchUserbrowser param.Opt[bool]    `json:"prefetch_userbrowser,omitzero"`
+	RenewOnBlocked      param.Opt[bool]    `json:"renew_on_blocked,omitzero"`
 	Retry               param.Opt[bool]    `json:"retry,omitzero"`
 	Timeout             param.Opt[float64] `json:"timeout,omitzero"`
 	paramObj

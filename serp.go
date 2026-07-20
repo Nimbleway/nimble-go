@@ -723,27 +723,29 @@ type SerpRunAsyncResponseTask struct {
 	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
-	// Any of "pending", "success", "error".
+	// Any of "pending", "queued", "in_progress", "success", "error".
 	State string `json:"state" api:"required"`
 	// URL for checking the task status.
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp".
+	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
+	// Queue name the task was submitted to.
+	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
 	StatusCode float64 `json:"status_code"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -762,6 +764,7 @@ type SerpRunAsyncResponseTask struct {
 		ErrorType   respjson.Field
 		ModifiedAt  respjson.Field
 		OutputURL   respjson.Field
+		Queue       respjson.Field
 		StatusCode  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -808,27 +811,29 @@ type SerpRunBatchResponseTask struct {
 	Input any `json:"input" api:"required"`
 	// Current state of the task.
 	//
-	// Any of "pending", "success", "error".
+	// Any of "pending", "queued", "in_progress", "success", "error".
 	State string `json:"state" api:"required"`
 	// URL for checking the task status.
 	StatusURL string `json:"status_url" api:"required" format:"uri"`
 	// Account name that owns the task.
 	AccountName string `json:"account_name"`
 	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp".
+	// "fast-serp", "labs".
 	APIType string `json:"api_type"`
 	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id"`
+	BatchID string `json:"batch_id" api:"nullable"`
 	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" format:"uri"`
+	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
 	// Error message if the task failed.
-	Error string `json:"error"`
+	Error string `json:"error" api:"nullable"`
 	// Classification of the error type.
-	ErrorType string `json:"error_type"`
+	ErrorType string `json:"error_type" api:"nullable"`
 	// Timestamp when the task was last modified.
 	ModifiedAt string `json:"modified_at"`
 	// Storage location of the output data.
-	OutputURL string `json:"output_url"`
+	OutputURL string `json:"output_url" api:"nullable"`
+	// Queue name the task was submitted to.
+	Queue string `json:"queue"`
 	// HTTP status code from the task execution.
 	StatusCode float64 `json:"status_code"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -847,6 +852,7 @@ type SerpRunBatchResponseTask struct {
 		ErrorType   respjson.Field
 		ModifiedAt  respjson.Field
 		OutputURL   respjson.Field
+		Queue       respjson.Field
 		StatusCode  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

@@ -41,6 +41,8 @@ func NewJobRunService(opts ...option.RequestOption) (r JobRunService) {
 }
 
 // List Runs for Job
+//
+// Deprecated: deprecated
 func (r *JobRunService) List(ctx context.Context, jobID string, query JobRunListParams, opts ...option.RequestOption) (res *JobRunListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
@@ -53,6 +55,8 @@ func (r *JobRunService) List(ctx context.Context, jobID string, query JobRunList
 }
 
 // Cancel Run
+//
+// Deprecated: deprecated
 func (r *JobRunService) Cancel(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunCancelResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -65,6 +69,8 @@ func (r *JobRunService) Cancel(ctx context.Context, runID string, opts ...option
 }
 
 // Get Run
+//
+// Deprecated: deprecated
 func (r *JobRunService) Get(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -76,17 +82,22 @@ func (r *JobRunService) Get(ctx context.Context, runID string, opts ...option.Re
 	return res, err
 }
 
+// A page of job runs.
 type JobRunListResponse struct {
-	Items   []JobRunListResponseItem `json:"items" api:"required"`
-	Page    int64                    `json:"page" api:"required"`
-	PerPage int64                    `json:"per_page" api:"required"`
-	Total   int64                    `json:"total" api:"required"`
+	// Runs on this page.
+	Items []JobRunListResponseItem `json:"items" api:"required"`
+	// Total number of runs matching the query.
+	Total int64 `json:"total" api:"required"`
+	// Current page number.
+	Page int64 `json:"page"`
+	// Number of items per page.
+	PerPage int64 `json:"per_page"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
+		Total       respjson.Field
 		Page        respjson.Field
 		PerPage     respjson.Field
-		Total       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -98,19 +109,31 @@ func (r *JobRunListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A single execution of a job.
 type JobRunListResponseItem struct {
-	ID        string    `json:"id" api:"required"`
+	// Unique run identifier (run\_<n>).
+	ID string `json:"id" api:"required"`
+	// When the run was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	JobID     string    `json:"job_id" api:"required"`
+	// Identifier of the job this run belongs to.
+	JobID string `json:"job_id" api:"required"`
+	// Current run status.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	Status string `json:"status" api:"required"`
+	// What triggered the run: 'schedule' or 'manual'.
+	//
 	// Any of "schedule", "manual".
-	TriggeredBy string    `json:"triggered_by" api:"required"`
-	FinishedAt  time.Time `json:"finished_at" api:"nullable" format:"date-time"`
-	InputCount  int64     `json:"input_count" api:"nullable"`
-	ResultCount int64     `json:"result_count" api:"nullable"`
-	StartedAt   time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	TriggeredBy string `json:"triggered_by" api:"required"`
+	// When the run finished.
+	FinishedAt time.Time `json:"finished_at" api:"nullable" format:"date-time"`
+	// Number of input records processed.
+	InputCount int64 `json:"input_count" api:"nullable"`
+	// Number of result records produced.
+	ResultCount int64 `json:"result_count" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -133,8 +156,12 @@ func (r *JobRunListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Result of cancelling a run.
 type JobRunCancelResponse struct {
+	// Identifier of the cancelled run.
 	ID string `json:"id" api:"required"`
+	// Run status after cancellation.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	Status JobRunCancelResponseStatus `json:"status" api:"required"`
@@ -153,6 +180,7 @@ func (r *JobRunCancelResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Run status after cancellation.
 type JobRunCancelResponseStatus string
 
 const (
@@ -165,20 +193,33 @@ const (
 	JobRunCancelResponseStatusWarning   JobRunCancelResponseStatus = "WARNING"
 )
 
+// Full detail for a single run.
 type JobRunGetResponse struct {
-	ID        string               `json:"id" api:"required"`
-	CreatedAt time.Time            `json:"created_at" api:"required" format:"date-time"`
-	Job       JobRunGetResponseJob `json:"job" api:"required"`
+	// Unique run identifier (run\_<n>).
+	ID string `json:"id" api:"required"`
+	// When the run was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Context of the job this run belongs to.
+	Job JobRunGetResponseJob `json:"job" api:"required"`
+	// Current run status.
+	//
 	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
 	// "WARNING".
 	Status JobRunGetResponseStatus `json:"status" api:"required"`
+	// What triggered the run: 'schedule' or 'manual'.
+	//
 	// Any of "schedule", "manual".
-	TriggeredBy  JobRunGetResponseTriggeredBy `json:"triggered_by" api:"required"`
-	Error        JobRunGetResponseError       `json:"error" api:"nullable"`
-	FinishedAt   time.Time                    `json:"finished_at" api:"nullable" format:"date-time"`
-	InputsSample []any                        `json:"inputs_sample" api:"nullable"`
-	StartedAt    time.Time                    `json:"started_at" api:"nullable" format:"date-time"`
-	Summary      JobRunGetResponseSummary     `json:"summary" api:"nullable"`
+	TriggeredBy JobRunGetResponseTriggeredBy `json:"triggered_by" api:"required"`
+	// Error details for a failed run.
+	Error JobRunGetResponseError `json:"error" api:"nullable"`
+	// When the run finished.
+	FinishedAt time.Time `json:"finished_at" api:"nullable" format:"date-time"`
+	// Sample of the run's input records.
+	InputsSample []any `json:"inputs_sample" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	// Aggregate metrics for a run.
+	Summary JobRunGetResponseSummary `json:"summary" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID           respjson.Field
@@ -202,12 +243,18 @@ func (r *JobRunGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Context of the job this run belongs to.
 type JobRunGetResponseJob struct {
-	ID          string                       `json:"id" api:"required"`
-	Name        string                       `json:"name" api:"required"`
-	AgentName   string                       `json:"agent_name" api:"nullable"`
-	DisplayName string                       `json:"display_name" api:"nullable"`
-	Schedule    JobRunGetResponseJobSchedule `json:"schedule" api:"nullable"`
+	// Unique job identifier (job\_<n>).
+	ID string `json:"id" api:"required"`
+	// Internal job name.
+	Name string `json:"name" api:"required"`
+	// Name of the agent this job runs.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// Human-friendly job name shown in the UI.
+	DisplayName string `json:"display_name" api:"nullable"`
+	// Cron-based schedule controlling when a job runs automatically.
+	Schedule JobRunGetResponseJobSchedule `json:"schedule" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -226,9 +273,12 @@ func (r *JobRunGetResponseJob) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Cron-based schedule controlling when a job runs automatically.
 type JobRunGetResponseJobSchedule struct {
-	Cron    string `json:"cron" api:"required"`
-	Enabled bool   `json:"enabled" api:"required"`
+	// Cron expression defining when the job runs.
+	Cron string `json:"cron" api:"required"`
+	// Whether the schedule is currently active.
+	Enabled bool `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Cron        respjson.Field
@@ -244,6 +294,7 @@ func (r *JobRunGetResponseJobSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Current run status.
 type JobRunGetResponseStatus string
 
 const (
@@ -256,6 +307,7 @@ const (
 	JobRunGetResponseStatusWarning   JobRunGetResponseStatus = "WARNING"
 )
 
+// What triggered the run: 'schedule' or 'manual'.
 type JobRunGetResponseTriggeredBy string
 
 const (
@@ -263,10 +315,14 @@ const (
 	JobRunGetResponseTriggeredByManual   JobRunGetResponseTriggeredBy = "manual"
 )
 
+// Error details for a failed run.
 type JobRunGetResponseError struct {
+	// Sample of individual error records from the run.
 	ErrorsSample []map[string]any `json:"errors_sample" api:"nullable"`
-	Message      string           `json:"message" api:"nullable"`
-	Step         string           `json:"step" api:"nullable"`
+	// Human-readable error message.
+	Message string `json:"message" api:"nullable"`
+	// Pipeline step where the error occurred.
+	Step string `json:"step" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorsSample respjson.Field
@@ -283,10 +339,15 @@ func (r *JobRunGetResponseError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Aggregate metrics for a run.
 type JobRunGetResponseSummary struct {
-	InputCount  int64   `json:"input_count" api:"nullable"`
-	MatchRate   float64 `json:"match_rate" api:"nullable"`
-	ResultCount int64   `json:"result_count" api:"nullable"`
+	// Number of input records processed.
+	InputCount int64 `json:"input_count" api:"nullable"`
+	// Fraction of inputs that produced a result (result_count / input_count), from 0.0
+	// to 1.0.
+	MatchRate float64 `json:"match_rate" api:"nullable"`
+	// Number of result records produced.
+	ResultCount int64 `json:"result_count" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		InputCount  respjson.Field

@@ -36,6 +36,8 @@ func NewJobRunArtifactService(opts ...option.RequestOption) (r JobRunArtifactSer
 }
 
 // List Run Artifacts
+//
+// Deprecated: deprecated
 func (r *JobRunArtifactService) List(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunArtifactListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
@@ -48,54 +50,50 @@ func (r *JobRunArtifactService) List(ctx context.Context, runID string, opts ...
 }
 
 // Get Run Artifact Download URL
-func (r *JobRunArtifactService) DownloadURL(ctx context.Context, artifactID string, query JobRunArtifactDownloadURLParams, opts ...option.RequestOption) (res *JobRunArtifactDownloadURLResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) DownloadURL(ctx context.Context, artifactID int64, query JobRunArtifactDownloadURLParams, opts ...option.RequestOption) (res *JobRunArtifactDownloadURLResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s/download-url", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/download-url", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Get Run Artifact
-func (r *JobRunArtifactService) Get(ctx context.Context, artifactID string, query JobRunArtifactGetParams, opts ...option.RequestOption) (res *JobRunArtifactGetResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) Get(ctx context.Context, artifactID int64, query JobRunArtifactGetParams, opts ...option.RequestOption) (res *JobRunArtifactGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Preview Run Artifact
-func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID string, query JobRunArtifactPreviewParams, opts ...option.RequestOption) (res *JobRunArtifactPreviewResponse, err error) {
+//
+// Deprecated: deprecated
+func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID int64, query JobRunArtifactPreviewParams, opts ...option.RequestOption) (res *JobRunArtifactPreviewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
-		err = errors.New("missing required artifact_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%s/preview", query.RunID, artifactID)
+	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/preview", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
+// Artifacts produced by a run.
 type JobRunArtifactListResponse struct {
+	// Artifacts produced by the run.
 	Items []JobRunArtifactListResponseItem `json:"items" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -111,11 +109,16 @@ func (r *JobRunArtifactListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A file produced by a run.
 type JobRunArtifactListResponseItem struct {
-	ID          string    `json:"id" api:"required"`
-	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description string    `json:"description" api:"required"`
-	Type        string    `json:"type" api:"required"`
+	// Artifact identifier.
+	ID string `json:"id" api:"required"`
+	// When the artifact was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Human-readable artifact description.
+	Description string `json:"description" api:"required"`
+	// Artifact type.
+	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -133,9 +136,12 @@ func (r *JobRunArtifactListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A pre-signed URL for downloading an artifact.
 type JobRunArtifactDownloadURLResponse struct {
+	// When the download URL expires.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
-	URL       string    `json:"url" api:"required"`
+	// Pre-signed URL to download the artifact.
+	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ExpiresAt   respjson.Field
@@ -151,11 +157,16 @@ func (r *JobRunArtifactDownloadURLResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A file produced by a run.
 type JobRunArtifactGetResponse struct {
-	ID          string    `json:"id" api:"required"`
-	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
-	Description string    `json:"description" api:"required"`
-	Type        string    `json:"type" api:"required"`
+	// Artifact identifier.
+	ID string `json:"id" api:"required"`
+	// When the artifact was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Human-readable artifact description.
+	Description string `json:"description" api:"required"`
+	// Artifact type.
+	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -173,10 +184,14 @@ func (r *JobRunArtifactGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A tabular preview of an artifact's contents.
 type JobRunArtifactPreviewResponse struct {
-	Columns  []string         `json:"columns" api:"required"`
-	RowCount int64            `json:"row_count" api:"required"`
-	Rows     []map[string]any `json:"rows" api:"required"`
+	// Column names in the preview.
+	Columns []string `json:"columns" api:"required"`
+	// Total number of rows in the artifact.
+	RowCount int64 `json:"row_count" api:"required"`
+	// Sample rows from the artifact.
+	Rows []map[string]any `json:"rows" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Columns     respjson.Field
