@@ -27,9 +27,9 @@ func TestJobNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Jobs.New(context.TODO(), githubcomnimblewaynimblego.JobNewParams{
-		AgentName:   "agent_name",
-		Name:        "name",
-		Description: githubcomnimblewaynimblego.String("description"),
+		ExtractTemplateName: "extract_template_name",
+		Name:                "name",
+		Description:         githubcomnimblewaynimblego.String("description"),
 		Destination: githubcomnimblewaynimblego.JobNewParamsDestination{
 			Path:   "path",
 			Type:   "file",
