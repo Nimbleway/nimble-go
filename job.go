@@ -40,43 +40,35 @@ func NewJobService(opts ...option.RequestOption) (r JobService) {
 	return
 }
 
-// Create Job
-//
-// Deprecated: deprecated
+// Create Job Public V2
 func (r *JobService) New(ctx context.Context, body JobNewParams, opts ...option.RequestOption) (res *JobNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/jobs"
+	path := "v2/jobs"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
-// Update Job
-//
-// Deprecated: deprecated
+// Update Job Public V2
 func (r *JobService) Update(ctx context.Context, jobID string, body JobUpdateParams, opts ...option.RequestOption) (res *JobUpdateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
 		err = errors.New("missing required job_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/%s", jobID)
+	path := fmt.Sprintf("v2/jobs/%s", jobID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
-// List Jobs
-//
-// Deprecated: deprecated
+// List Jobs Public V2
 func (r *JobService) List(ctx context.Context, query JobListParams, opts ...option.RequestOption) (res *JobListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/jobs"
+	path := "v2/jobs"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
 
-// Delete Job
-//
-// Deprecated: deprecated
+// Delete Job Public V2
 func (r *JobService) Delete(ctx context.Context, jobID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
@@ -84,36 +76,20 @@ func (r *JobService) Delete(ctx context.Context, jobID string, opts ...option.Re
 		err = errors.New("missing required job_id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/jobs/%s", jobID)
+	path := fmt.Sprintf("v2/jobs/%s", jobID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
-// Get Job
-//
-// Deprecated: deprecated
+// Get Job Public V2
 func (r *JobService) Get(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
 		err = errors.New("missing required job_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/%s", jobID)
+	path := fmt.Sprintf("v2/jobs/%s", jobID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return res, err
-}
-
-// Trigger Run
-//
-// Deprecated: deprecated
-func (r *JobService) Run(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobRunResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if jobID == "" {
-		err = errors.New("missing required job_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/jobs/%s/runs", jobID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
 
@@ -405,22 +381,21 @@ func (r *JobUpdateResponseSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A page of jobs.
 type JobListResponse struct {
-	// Jobs on this page.
+	// Items returned in this page.
 	Items []JobListResponseItem `json:"items" api:"required"`
-	// Total number of jobs matching the query.
+	// Maximum number of items returned.
+	Limit int64 `json:"limit" api:"required"`
+	// Number of items skipped before this page.
+	Offset int64 `json:"offset" api:"required"`
+	// Total number of items matching the query.
 	Total int64 `json:"total" api:"required"`
-	// Current page number.
-	Page int64 `json:"page"`
-	// Number of items per page.
-	PerPage int64 `json:"per_page"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
+		Limit       respjson.Field
+		Offset      respjson.Field
 		Total       respjson.Field
-		Page        respjson.Field
-		PerPage     respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -707,74 +682,6 @@ func (r *JobGetResponseSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A single execution of a job.
-type JobRunResponse struct {
-	// Unique run identifier (run\_<n>).
-	ID string `json:"id" api:"required"`
-	// When the run was created.
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Identifier of the job this run belongs to.
-	JobID string `json:"job_id" api:"required"`
-	// Current run status.
-	//
-	// Any of "PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT",
-	// "WARNING".
-	Status JobRunResponseStatus `json:"status" api:"required"`
-	// What triggered the run: 'schedule' or 'manual'.
-	//
-	// Any of "schedule", "manual".
-	TriggeredBy JobRunResponseTriggeredBy `json:"triggered_by" api:"required"`
-	// When the run finished.
-	FinishedAt time.Time `json:"finished_at" api:"nullable" format:"date-time"`
-	// Number of input records processed.
-	InputCount int64 `json:"input_count" api:"nullable"`
-	// Number of result records produced.
-	ResultCount int64 `json:"result_count" api:"nullable"`
-	// When the run started executing.
-	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID          respjson.Field
-		CreatedAt   respjson.Field
-		JobID       respjson.Field
-		Status      respjson.Field
-		TriggeredBy respjson.Field
-		FinishedAt  respjson.Field
-		InputCount  respjson.Field
-		ResultCount respjson.Field
-		StartedAt   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r JobRunResponse) RawJSON() string { return r.JSON.raw }
-func (r *JobRunResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Current run status.
-type JobRunResponseStatus string
-
-const (
-	JobRunResponseStatusPending   JobRunResponseStatus = "PENDING"
-	JobRunResponseStatusRunning   JobRunResponseStatus = "RUNNING"
-	JobRunResponseStatusSuccess   JobRunResponseStatus = "SUCCESS"
-	JobRunResponseStatusFailed    JobRunResponseStatus = "FAILED"
-	JobRunResponseStatusCancelled JobRunResponseStatus = "CANCELLED"
-	JobRunResponseStatusTimeout   JobRunResponseStatus = "TIMEOUT"
-	JobRunResponseStatusWarning   JobRunResponseStatus = "WARNING"
-)
-
-// What triggered the run: 'schedule' or 'manual'.
-type JobRunResponseTriggeredBy string
-
-const (
-	JobRunResponseTriggeredBySchedule JobRunResponseTriggeredBy = "schedule"
-	JobRunResponseTriggeredByManual   JobRunResponseTriggeredBy = "manual"
-)
-
 type JobNewParams struct {
 	// Name of the agent to run.
 	AgentName string `json:"agent_name" api:"required"`
@@ -992,12 +899,8 @@ func (r *JobUpdateParamsSchedule) UnmarshalJSON(data []byte) error {
 }
 
 type JobListParams struct {
-	// Filter by agent name
-	AgentName param.Opt[string] `query:"agent_name,omitzero" json:"-"`
-	// Search by name or display name
-	Q       param.Opt[string] `query:"q,omitzero" json:"-"`
-	Page    param.Opt[int64]  `query:"page,omitzero" json:"-"`
-	PerPage param.Opt[int64]  `query:"per_page,omitzero" json:"-"`
+	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 

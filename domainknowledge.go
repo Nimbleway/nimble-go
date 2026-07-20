@@ -39,7 +39,7 @@ func NewDomainKnowledgeService(opts ...option.RequestOption) (r DomainKnowledgeS
 // `url` or `agent` must be provided.
 func (r *DomainKnowledgeService) GetDriver(ctx context.Context, query DomainKnowledgeGetDriverParams, opts ...option.RequestOption) (res *DomainKnowledgeGetDriverResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/domain-knowledge/driver"
+	path := "v2/domain-knowledge/driver"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }

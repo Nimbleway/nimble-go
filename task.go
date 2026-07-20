@@ -40,7 +40,7 @@ func NewTaskService(opts ...option.RequestOption) (r TaskService) {
 // Retrieve a paginated list of tasks for the authenticated account.
 func (r *TaskService) List(ctx context.Context, query TaskListParams, opts ...option.RequestOption) (res *TaskListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/tasks"
+	path := "v2/tasks"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
@@ -52,7 +52,7 @@ func (r *TaskService) Get(ctx context.Context, taskID string, opts ...option.Req
 		err = errors.New("missing required task_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tasks/%s", taskID)
+	path := fmt.Sprintf("v2/tasks/%s", taskID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -64,7 +64,7 @@ func (r *TaskService) Results(ctx context.Context, taskID string, opts ...option
 		err = errors.New("missing required task_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tasks/%s/results", taskID)
+	path := fmt.Sprintf("v2/tasks/%s/results", taskID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

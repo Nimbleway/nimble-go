@@ -4,7 +4,6 @@ package githubcomnimblewaynimblego
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,11 +13,11 @@ import (
 
 	"github.com/Nimbleway/nimble-go/internal/apijson"
 	"github.com/Nimbleway/nimble-go/internal/apiquery"
+	shimjson "github.com/Nimbleway/nimble-go/internal/encoding/json"
 	"github.com/Nimbleway/nimble-go/internal/requestconfig"
 	"github.com/Nimbleway/nimble-go/option"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
-	"github.com/Nimbleway/nimble-go/shared/constant"
 )
 
 // AgentService contains methods and other services that help with interacting with
@@ -28,7 +27,9 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAgentService] method instead.
 type AgentService struct {
-	Options []option.RequestOption
+	Options   []option.RequestOption
+	Templates AgentTemplateService
+	Runs      AgentRunService
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -37,100 +38,505 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r AgentService) {
 	r = AgentService{}
 	r.Options = opts
+	r.Templates = NewAgentTemplateService(opts...)
+	r.Runs = NewAgentRunService(opts...)
 	return
 }
 
-// List Agent Templates
-//
-// Deprecated: deprecated
-func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...option.RequestOption) (res *[]AgentListResponse, err error) {
+// Create a Web Search Agent. Either pass `template` to materialize a pre-built
+// template (its fields, goals, sources, and suggested questions are copied), or
+// define the agent from scratch with `display_name`, `goals`, `sources`, and an
+// optional `output_schema` for structured results.
+func (r *AgentService) New(ctx context.Context, body AgentNewParams, opts ...option.RequestOption) (res *AgentNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents"
+	path := "v2/agents"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Update an agent with a
+// [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) document — an array
+// of `{op, path, value}` operations applied to the agent, e.g.
+// `[{"op": "replace", "path": "/display_name", "value": "My agent"}]`. Returns the
+// updated agent.
+func (r *AgentService) Update(ctx context.Context, agentID string, body AgentUpdateParams, opts ...option.RequestOption) (res *AgentUpdateResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentID == "" {
+		err = errors.New("missing required agent_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v2/agents/%s", agentID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	return res, err
+}
+
+// List the active Web Search Agents in your account. Results are scoped to the
+// workspace resolved from your token (or the optional `workspace_id` query
+// parameter) and paginated with `offset`/`limit`.
+func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...option.RequestOption) (res *AgentListResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v2/agents"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
 
-// Create Agent Generation
-//
-// Deprecated: deprecated
-func (r *AgentService) Generate(ctx context.Context, body AgentGenerateParams, opts ...option.RequestOption) (res *AgentGenerateResponse, err error) {
+// Deactivate an agent. This is a soft delete: the agent can no longer start new
+// runs, but its existing runs and their results remain retrievable.
+func (r *AgentService) Delete(ctx context.Context, agentID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents/generations"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if agentID == "" {
+		err = errors.New("missing required agent_id parameter")
+		return err
+	}
+	path := fmt.Sprintf("v2/agents/%s", agentID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
+	return err
 }
 
-// Get Agent Template
-//
-// Deprecated: deprecated
-func (r *AgentService) Get(ctx context.Context, templateName string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
+// Retrieve a single Web Search Agent by ID.
+func (r *AgentService) Get(ctx context.Context, agentID string, opts ...option.RequestOption) (res *AgentGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if templateName == "" {
-		err = errors.New("missing required template_name parameter")
+	if agentID == "" {
+		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", templateName)
+	path := fmt.Sprintf("v2/agents/%s", agentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Get Agent Generation
-//
-// Deprecated: deprecated
-func (r *AgentService) GetGeneration(ctx context.Context, generationID string, opts ...option.RequestOption) (res *AgentGetGenerationResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if generationID == "" {
-		err = errors.New("missing required generation_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/agents/generations/%s", generationID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return res, err
-}
-
-// Execute WSA Realtime Endpoint
-func (r *AgentService) Run(ctx context.Context, body AgentRunParams, opts ...option.RequestOption) (res *AgentRunResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents/run"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
-// Execute WSA Async Endpoint
-func (r *AgentService) RunAsync(ctx context.Context, body AgentRunAsyncParams, opts ...option.RequestOption) (res *AgentRunAsyncResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents/async"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
-// Execute WSA Batch Endpoint
-func (r *AgentService) RunBatch(ctx context.Context, body AgentRunBatchParams, opts ...option.RequestOption) (res *AgentRunBatchResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents/batch"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return res, err
-}
-
-type AgentListResponse struct {
+type AgentNewResponse struct {
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	IsPublic    bool   `json:"is_public" api:"required"`
-	Name        string `json:"name" api:"required"`
-	Description string `json:"description" api:"nullable"`
-	Domain      string `json:"domain" api:"nullable"`
-	EntityType  string `json:"entity_type" api:"nullable"`
-	ManagedBy   string `json:"managed_by" api:"nullable"`
-	Vertical    string `json:"vertical" api:"nullable"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentNewResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []AgentNewResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources AgentNewResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []AgentNewResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase AgentNewResponseUseCase `json:"use_case" api:"required"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		DisplayName respjson.Field
-		IsPublic    respjson.Field
-		Name        respjson.Field
-		Description respjson.Field
-		Domain      respjson.Field
-		EntityType  respjson.Field
-		ManagedBy   respjson.Field
-		Vertical    respjson.Field
+		ID                 respjson.Field
+		CreatedAt          respjson.Field
+		Description        respjson.Field
+		DisplayName        respjson.Field
+		DomainExpertise    respjson.Field
+		Effort             respjson.Field
+		Goals              respjson.Field
+		Icon               respjson.Field
+		IsActive           respjson.Field
+		OutputSchema       respjson.Field
+		Sources            respjson.Field
+		SuggestedQuestions respjson.Field
+		UpdatedAt          respjson.Field
+		UseCase            respjson.Field
+		AgentName          respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Default effort level for this agent's runs.
+type AgentNewResponseEffort string
+
+const (
+	AgentNewResponseEffortLow    AgentNewResponseEffort = "low"
+	AgentNewResponseEffortMedium AgentNewResponseEffort = "medium"
+	AgentNewResponseEffortHigh   AgentNewResponseEffort = "high"
+	AgentNewResponseEffortXHigh  AgentNewResponseEffort = "x-high"
+	AgentNewResponseEffortMax    AgentNewResponseEffort = "max"
+)
+
+type AgentNewResponseGoal struct {
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Goal        respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponseGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponseGoal) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Source guidance for the agent.
+type AgentNewResponseSources struct {
+	// Source groups the agent is allowed to use.
+	Allow []AgentNewResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []AgentNewResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentNewResponseSourcesAllow struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentNewResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponseSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentNewResponseSuggestedQuestion struct {
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
+	Question string `json:"question" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Order       respjson.Field
+		Question    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentNewResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentNewResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Primary use case supported by the agent.
+type AgentNewResponseUseCase string
+
+const (
+	AgentNewResponseUseCaseResearch        AgentNewResponseUseCase = "research"
+	AgentNewResponseUseCaseEnrichment      AgentNewResponseUseCase = "enrichment"
+	AgentNewResponseUseCaseDatasetBuilding AgentNewResponseUseCase = "dataset_building"
+)
+
+type AgentUpdateResponse struct {
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentUpdateResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []AgentUpdateResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources AgentUpdateResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []AgentUpdateResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase AgentUpdateResponseUseCase `json:"use_case" api:"required"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                 respjson.Field
+		CreatedAt          respjson.Field
+		Description        respjson.Field
+		DisplayName        respjson.Field
+		DomainExpertise    respjson.Field
+		Effort             respjson.Field
+		Goals              respjson.Field
+		Icon               respjson.Field
+		IsActive           respjson.Field
+		OutputSchema       respjson.Field
+		Sources            respjson.Field
+		SuggestedQuestions respjson.Field
+		UpdatedAt          respjson.Field
+		UseCase            respjson.Field
+		AgentName          respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Default effort level for this agent's runs.
+type AgentUpdateResponseEffort string
+
+const (
+	AgentUpdateResponseEffortLow    AgentUpdateResponseEffort = "low"
+	AgentUpdateResponseEffortMedium AgentUpdateResponseEffort = "medium"
+	AgentUpdateResponseEffortHigh   AgentUpdateResponseEffort = "high"
+	AgentUpdateResponseEffortXHigh  AgentUpdateResponseEffort = "x-high"
+	AgentUpdateResponseEffortMax    AgentUpdateResponseEffort = "max"
+)
+
+type AgentUpdateResponseGoal struct {
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Goal        respjson.Field
+		Order       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponseGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponseGoal) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Source guidance for the agent.
+type AgentUpdateResponseSources struct {
+	// Source groups the agent is allowed to use.
+	Allow []AgentUpdateResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []AgentUpdateResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentUpdateResponseSourcesAllow struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentUpdateResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponseSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentUpdateResponseSuggestedQuestion struct {
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
+	Question string `json:"question" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Order       respjson.Field
+		Question    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentUpdateResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentUpdateResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Primary use case supported by the agent.
+type AgentUpdateResponseUseCase string
+
+const (
+	AgentUpdateResponseUseCaseResearch        AgentUpdateResponseUseCase = "research"
+	AgentUpdateResponseUseCaseEnrichment      AgentUpdateResponseUseCase = "enrichment"
+	AgentUpdateResponseUseCaseDatasetBuilding AgentUpdateResponseUseCase = "dataset_building"
+)
+
+type AgentListResponse struct {
+	// Items returned in this page.
+	Items []AgentListResponseItem `json:"items" api:"required"`
+	// Maximum number of items returned.
+	Limit int64 `json:"limit" api:"required"`
+	// Number of items skipped before this page.
+	Offset int64 `json:"offset" api:"required"`
+	// Total number of items matching the query.
+	Total int64 `json:"total" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		Limit       respjson.Field
+		Offset      respjson.Field
+		Total       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -142,145 +548,248 @@ func (r *AgentListResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGenerateResponse struct {
-	ID                 string                                `json:"id" api:"required" format:"uuid"`
-	Status             string                                `json:"status" api:"required"`
-	AgentName          string                                `json:"agent_name" api:"nullable"`
-	CompletedAt        time.Time                             `json:"completed_at" api:"nullable" format:"date-time"`
-	CreatedAt          time.Time                             `json:"created_at" api:"nullable" format:"date-time"`
-	Error              string                                `json:"error" api:"nullable"`
-	GeneratedVersion   AgentGenerateResponseGeneratedVersion `json:"generated_version" api:"nullable"`
-	GeneratedVersionID string                                `json:"generated_version_id" api:"nullable" format:"uuid"`
-	SourceVersionID    string                                `json:"source_version_id" api:"nullable" format:"uuid"`
-	StartedAt          time.Time                             `json:"started_at" api:"nullable" format:"date-time"`
-	Summary            string                                `json:"summary" api:"nullable"`
+type AgentListResponseItem struct {
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort string `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []AgentListResponseItemGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources AgentListResponseItemSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []AgentListResponseItemSuggestedQuestion `json:"suggested_questions" api:"required"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase string `json:"use_case" api:"required"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
-		Status             respjson.Field
-		AgentName          respjson.Field
-		CompletedAt        respjson.Field
 		CreatedAt          respjson.Field
-		Error              respjson.Field
-		GeneratedVersion   respjson.Field
-		GeneratedVersionID respjson.Field
-		SourceVersionID    respjson.Field
-		StartedAt          respjson.Field
-		Summary            respjson.Field
+		Description        respjson.Field
+		DisplayName        respjson.Field
+		DomainExpertise    respjson.Field
+		Effort             respjson.Field
+		Goals              respjson.Field
+		Icon               respjson.Field
+		IsActive           respjson.Field
+		OutputSchema       respjson.Field
+		Sources            respjson.Field
+		SuggestedQuestions respjson.Field
+		UpdatedAt          respjson.Field
+		UseCase            respjson.Field
+		AgentName          respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentGenerateResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentGenerateResponse) UnmarshalJSON(data []byte) error {
+func (r AgentListResponseItem) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGenerateResponseGeneratedVersion struct {
-	ID            string                                        `json:"id" api:"required" format:"uuid"`
-	AgentName     string                                        `json:"agent_name" api:"required"`
-	CreatedAt     time.Time                                     `json:"created_at" api:"required" format:"date-time"`
-	InputSchema   map[string]any                                `json:"input_schema" api:"required"`
-	Metadata      AgentGenerateResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
-	OutputSchema  map[string]any                                `json:"output_schema" api:"required"`
-	VersionNumber int64                                         `json:"version_number" api:"required"`
-	Samples       []AgentGenerateResponseGeneratedVersionSample `json:"samples" api:"nullable"`
+type AgentListResponseItemGoal struct {
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		InputSchema   respjson.Field
-		Metadata      respjson.Field
-		OutputSchema  respjson.Field
-		VersionNumber respjson.Field
-		Samples       respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGenerateResponseGeneratedVersion) RawJSON() string { return r.JSON.raw }
-func (r *AgentGenerateResponseGeneratedVersion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGenerateResponseGeneratedVersionMetadata struct {
-	DataSource  string   `json:"data_source" api:"nullable"`
-	Description string   `json:"description" api:"nullable"`
-	DisplayName string   `json:"display_name" api:"nullable"`
-	Domain      string   `json:"domain" api:"nullable"`
-	EntityType  string   `json:"entity_type" api:"nullable"`
-	Tags        []string `json:"tags"`
-	Vertical    string   `json:"vertical" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		DataSource  respjson.Field
-		Description respjson.Field
-		DisplayName respjson.Field
-		Domain      respjson.Field
-		EntityType  respjson.Field
-		Tags        respjson.Field
-		Vertical    respjson.Field
+		ID          respjson.Field
+		Goal        respjson.Field
+		Order       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentGenerateResponseGeneratedVersionMetadata) RawJSON() string { return r.JSON.raw }
-func (r *AgentGenerateResponseGeneratedVersionMetadata) UnmarshalJSON(data []byte) error {
+func (r AgentListResponseItemGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItemGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGenerateResponseGeneratedVersionSample struct {
-	Input  any `json:"input"`
-	Output any `json:"output"`
+// Source guidance for the agent.
+type AgentListResponseItemSources struct {
+	// Source groups the agent is allowed to use.
+	Allow []AgentListResponseItemSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []AgentListResponseItemSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Input       respjson.Field
-		Output      respjson.Field
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentGenerateResponseGeneratedVersionSample) RawJSON() string { return r.JSON.raw }
-func (r *AgentGenerateResponseGeneratedVersionSample) UnmarshalJSON(data []byte) error {
+func (r AgentListResponseItemSources) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItemSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentListResponseItemSourcesAllow struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentListResponseItemSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItemSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentListResponseItemSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentListResponseItemSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItemSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentListResponseItemSuggestedQuestion struct {
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
+	Question string `json:"question" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Order       respjson.Field
+		Question    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentListResponseItemSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentListResponseItemSuggestedQuestion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 type AgentGetResponse struct {
-	DisplayName     string                          `json:"display_name" api:"required"`
-	IsPublic        bool                            `json:"is_public" api:"required"`
-	Name            string                          `json:"name" api:"required"`
-	Description     string                          `json:"description" api:"nullable"`
-	Domain          string                          `json:"domain" api:"nullable"`
-	EntityType      string                          `json:"entity_type" api:"nullable"`
-	FeatureFlags    AgentGetResponseFeatureFlags    `json:"feature_flags"`
-	InputProperties []AgentGetResponseInputProperty `json:"input_properties" api:"nullable"`
-	ManagedBy       string                          `json:"managed_by" api:"nullable"`
-	OutputSchema    map[string]any                  `json:"output_schema" api:"nullable"`
-	Vertical        string                          `json:"vertical" api:"nullable"`
+	// Unique web search agent identifier (wsa\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// When the agent was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Agent description shown to users.
+	Description string `json:"description" api:"required"`
+	// Human-friendly agent name shown to users.
+	DisplayName string `json:"display_name" api:"required"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise string `json:"domain_expertise" api:"required"`
+	// Default effort level for this agent's runs.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentGetResponseEffort `json:"effort" api:"required"`
+	// Ordered goals for the agent to follow.
+	Goals []AgentGetResponseGoal `json:"goals" api:"required"`
+	// Icon identifier used when presenting the agent.
+	Icon string `json:"icon" api:"required"`
+	// Whether the agent can be used to start new runs.
+	IsActive bool `json:"is_active" api:"required"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Source guidance for the agent.
+	Sources AgentGetResponseSources `json:"sources" api:"required"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []AgentGetResponseSuggestedQuestion `json:"suggested_questions" api:"required"`
+	// When the agent was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// Primary use case supported by the agent.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase AgentGetResponseUseCase `json:"use_case" api:"required"`
+	// Stable agent name.
+	AgentName string `json:"agent_name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		DisplayName     respjson.Field
-		IsPublic        respjson.Field
-		Name            respjson.Field
-		Description     respjson.Field
-		Domain          respjson.Field
-		EntityType      respjson.Field
-		FeatureFlags    respjson.Field
-		InputProperties respjson.Field
-		ManagedBy       respjson.Field
-		OutputSchema    respjson.Field
-		Vertical        respjson.Field
-		ExtraFields     map[string]respjson.Field
-		raw             string
+		ID                 respjson.Field
+		CreatedAt          respjson.Field
+		Description        respjson.Field
+		DisplayName        respjson.Field
+		DomainExpertise    respjson.Field
+		Effort             respjson.Field
+		Goals              respjson.Field
+		Icon               respjson.Field
+		IsActive           respjson.Field
+		OutputSchema       respjson.Field
+		Sources            respjson.Field
+		SuggestedQuestions respjson.Field
+		UpdatedAt          respjson.Field
+		UseCase            respjson.Field
+		AgentName          respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -290,967 +799,316 @@ func (r *AgentGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type AgentGetResponseFeatureFlags struct {
-	IsLocalizationSupported bool `json:"is_localization_supported"`
-	IsPaginationSupported   bool `json:"is_pagination_supported"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		IsLocalizationSupported respjson.Field
-		IsPaginationSupported   respjson.Field
-		ExtraFields             map[string]respjson.Field
-		raw                     string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetResponseFeatureFlags) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetResponseFeatureFlags) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGetResponseInputProperty struct {
-	Default             AgentGetResponseInputPropertyDefaultUnion `json:"default" api:"nullable"`
-	Description         string                                    `json:"description" api:"nullable"`
-	Examples            []any                                     `json:"examples" api:"nullable"`
-	IsLocalizationParam bool                                      `json:"is_localization_param"`
-	IsPaginationParam   bool                                      `json:"is_pagination_param"`
-	Name                string                                    `json:"name"`
-	Required            bool                                      `json:"required"`
-	Rules               []string                                  `json:"rules" api:"nullable"`
-	Type                string                                    `json:"type"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Default             respjson.Field
-		Description         respjson.Field
-		Examples            respjson.Field
-		IsLocalizationParam respjson.Field
-		IsPaginationParam   respjson.Field
-		Name                respjson.Field
-		Required            respjson.Field
-		Rules               respjson.Field
-		Type                respjson.Field
-		ExtraFields         map[string]respjson.Field
-		raw                 string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetResponseInputProperty) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetResponseInputProperty) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// AgentGetResponseInputPropertyDefaultUnion contains all possible properties and
-// values from [string], [bool], [float64].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfString OfBool OfFloat]
-type AgentGetResponseInputPropertyDefaultUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfString string `json:",inline"`
-	// This field will be present if the value is a [bool] instead of an object.
-	OfBool bool `json:",inline"`
-	// This field will be present if the value is a [float64] instead of an object.
-	OfFloat float64 `json:",inline"`
-	JSON    struct {
-		OfString respjson.Field
-		OfBool   respjson.Field
-		OfFloat  respjson.Field
-		raw      string
-	} `json:"-"`
-}
-
-func (u AgentGetResponseInputPropertyDefaultUnion) AsString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentGetResponseInputPropertyDefaultUnion) AsBool() (v bool) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentGetResponseInputPropertyDefaultUnion) AsFloat() (v float64) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentGetResponseInputPropertyDefaultUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *AgentGetResponseInputPropertyDefaultUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGetGenerationResponse struct {
-	ID                 string                                     `json:"id" api:"required" format:"uuid"`
-	Status             string                                     `json:"status" api:"required"`
-	AgentName          string                                     `json:"agent_name" api:"nullable"`
-	CompletedAt        time.Time                                  `json:"completed_at" api:"nullable" format:"date-time"`
-	CreatedAt          time.Time                                  `json:"created_at" api:"nullable" format:"date-time"`
-	Error              string                                     `json:"error" api:"nullable"`
-	GeneratedVersion   AgentGetGenerationResponseGeneratedVersion `json:"generated_version" api:"nullable"`
-	GeneratedVersionID string                                     `json:"generated_version_id" api:"nullable" format:"uuid"`
-	SourceVersionID    string                                     `json:"source_version_id" api:"nullable" format:"uuid"`
-	StartedAt          time.Time                                  `json:"started_at" api:"nullable" format:"date-time"`
-	Summary            string                                     `json:"summary" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID                 respjson.Field
-		Status             respjson.Field
-		AgentName          respjson.Field
-		CompletedAt        respjson.Field
-		CreatedAt          respjson.Field
-		Error              respjson.Field
-		GeneratedVersion   respjson.Field
-		GeneratedVersionID respjson.Field
-		SourceVersionID    respjson.Field
-		StartedAt          respjson.Field
-		Summary            respjson.Field
-		ExtraFields        map[string]respjson.Field
-		raw                string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetGenerationResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetGenerationResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGetGenerationResponseGeneratedVersion struct {
-	ID            string                                             `json:"id" api:"required" format:"uuid"`
-	AgentName     string                                             `json:"agent_name" api:"required"`
-	CreatedAt     time.Time                                          `json:"created_at" api:"required" format:"date-time"`
-	InputSchema   map[string]any                                     `json:"input_schema" api:"required"`
-	Metadata      AgentGetGenerationResponseGeneratedVersionMetadata `json:"metadata" api:"required"`
-	OutputSchema  map[string]any                                     `json:"output_schema" api:"required"`
-	VersionNumber int64                                              `json:"version_number" api:"required"`
-	Samples       []AgentGetGenerationResponseGeneratedVersionSample `json:"samples" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID            respjson.Field
-		AgentName     respjson.Field
-		CreatedAt     respjson.Field
-		InputSchema   respjson.Field
-		Metadata      respjson.Field
-		OutputSchema  respjson.Field
-		VersionNumber respjson.Field
-		Samples       respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetGenerationResponseGeneratedVersion) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetGenerationResponseGeneratedVersion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGetGenerationResponseGeneratedVersionMetadata struct {
-	DataSource  string   `json:"data_source" api:"nullable"`
-	Description string   `json:"description" api:"nullable"`
-	DisplayName string   `json:"display_name" api:"nullable"`
-	Domain      string   `json:"domain" api:"nullable"`
-	EntityType  string   `json:"entity_type" api:"nullable"`
-	Tags        []string `json:"tags"`
-	Vertical    string   `json:"vertical" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		DataSource  respjson.Field
-		Description respjson.Field
-		DisplayName respjson.Field
-		Domain      respjson.Field
-		EntityType  respjson.Field
-		Tags        respjson.Field
-		Vertical    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetGenerationResponseGeneratedVersionMetadata) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetGenerationResponseGeneratedVersionMetadata) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGetGenerationResponseGeneratedVersionSample struct {
-	Input  any `json:"input"`
-	Output any `json:"output"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Input       respjson.Field
-		Output      respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentGetGenerationResponseGeneratedVersionSample) RawJSON() string { return r.JSON.raw }
-func (r *AgentGetGenerationResponseGeneratedVersionSample) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponse struct {
-	Data     AgentRunResponseData     `json:"data" api:"required"`
-	Metadata AgentRunResponseMetadata `json:"metadata" api:"required"`
-	// The status of the task.
-	//
-	// Any of "success", "skipped", "fatal", "error", "postponed", "ignored",
-	// "rejected", "blocked".
-	Status AgentRunResponseStatus `json:"status" api:"required"`
-	// Unique identifier for the task.
-	TaskID string `json:"task_id" api:"required"`
-	// The final URL.
-	URL   string                `json:"url" api:"required"`
-	Debug AgentRunResponseDebug `json:"debug"`
-	// Pagination information if applicable.
-	Pagination AgentRunResponsePaginationUnion `json:"pagination"`
-	// The HTTP status code of the task.
-	StatusCode float64 `json:"status_code"`
-	// List of warnings generated during the task.
-	Warnings []string `json:"warnings"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Data        respjson.Field
-		Metadata    respjson.Field
-		Status      respjson.Field
-		TaskID      respjson.Field
-		URL         respjson.Field
-		Debug       respjson.Field
-		Pagination  respjson.Field
-		StatusCode  respjson.Field
-		Warnings    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseData struct {
-	// Browser actions execution results. Present only when browser_actions were
-	// specified in the request.
-	BrowserActions AgentRunResponseDataBrowserActions `json:"browser_actions"`
-	// The cookies collected from browser actions during the task.
-	Cookies []any `json:"cookies"`
-	// The evaluation results from browser actions during the task.
-	Eval []any `json:"eval"`
-	// The http requests from browser actions made during the task.
-	Fetch []any `json:"fetch"`
-	// The headers received during the task.
-	Headers map[string]string `json:"headers"`
-	// The HTML content of the page.
-	HTML string `json:"html"`
-	// List of all unique URLs found on the page.
-	Links []string `json:"links"`
-	// The Markdown version of the HTML content.
-	Markdown string `json:"markdown"`
-	// The network capture data collected during the task.
-	NetworkCapture []AgentRunResponseDataNetworkCapture `json:"network_capture"`
-	// Individual HTML content of each pagination page, before merging.
-	PagesHTML []string `json:"pages_html"`
-	// The parsing results extracted from the HTML & network content.
-	Parsing AgentRunResponseDataParsingUnion `json:"parsing"`
-	// The list of redirects that occurred during the task.
-	Redirects []AgentRunResponseDataRedirect `json:"redirects"`
-	// Screenshots taken during the task, from browser actions, or the screenshot
-	// format.
-	Screenshots []any `json:"screenshots"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		BrowserActions respjson.Field
-		Cookies        respjson.Field
-		Eval           respjson.Field
-		Fetch          respjson.Field
-		Headers        respjson.Field
-		HTML           respjson.Field
-		Links          respjson.Field
-		Markdown       respjson.Field
-		NetworkCapture respjson.Field
-		PagesHTML      respjson.Field
-		Parsing        respjson.Field
-		Redirects      respjson.Field
-		Screenshots    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseData) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Browser actions execution results. Present only when browser_actions were
-// specified in the request.
-type AgentRunResponseDataBrowserActions struct {
-	Results       []AgentRunResponseDataBrowserActionsResult `json:"results" api:"required"`
-	Success       bool                                       `json:"success" api:"required"`
-	TotalDuration float64                                    `json:"total_duration" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Results       respjson.Field
-		Success       respjson.Field
-		TotalDuration respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataBrowserActions) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataBrowserActions) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataBrowserActionsResult struct {
-	Duration float64 `json:"duration" api:"required"`
-	// Any of "goto", "wait", "wait_for_element", "wait_for_navigation", "click",
-	// "fill", "press", "scroll", "auto_scroll", "screenshot", "get_cookies", "eval",
-	// "fetch".
-	Name string `json:"name" api:"required"`
-	// Any of "no-run", "in-progress", "done", "error", "skipped".
-	Status string `json:"status" api:"required"`
-	Error  string `json:"error"`
-	Result any    `json:"result"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Duration    respjson.Field
-		Name        respjson.Field
-		Status      respjson.Field
-		Error       respjson.Field
-		Result      respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataBrowserActionsResult) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataBrowserActionsResult) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCapture struct {
-	Filter       AgentRunResponseDataNetworkCaptureFilter   `json:"filter" api:"required"`
-	Results      []AgentRunResponseDataNetworkCaptureResult `json:"results" api:"required"`
-	ErrorMessage string                                     `json:"errorMessage"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Filter       respjson.Field
-		Results      respjson.Field
-		ErrorMessage respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCapture) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCapture) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCaptureFilter struct {
-	Validation           bool    `json:"validation" api:"required"`
-	WaitForRequestsCount float64 `json:"wait_for_requests_count" api:"required"`
-	// Any of "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE",
-	// "PATCH".
-	Method string `json:"method"`
-	// Resource type for network capture filtering
-	ResourceType                AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion `json:"resource_type"`
-	StatusCode                  AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion   `json:"status_code"`
-	URL                         AgentRunResponseDataNetworkCaptureFilterURL               `json:"url"`
-	WaitForRequestsCountTimeout float64                                                   `json:"wait_for_requests_count_timeout"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Validation                  respjson.Field
-		WaitForRequestsCount        respjson.Field
-		Method                      respjson.Field
-		ResourceType                respjson.Field
-		StatusCode                  respjson.Field
-		URL                         respjson.Field
-		WaitForRequestsCountTimeout respjson.Field
-		ExtraFields                 map[string]respjson.Field
-		raw                         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCaptureFilter) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCaptureFilter) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion contains all possible
-// properties and values from [string], [[]string].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfAgentRunResponseDataNetworkCaptureFilterResourceTypeString
-// OfAgentRunResponseDataNetworkCaptureFilterResourceTypeArrayItemArray]
-type AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion struct {
-	// This field will be present if the value is a [string] instead of an object.
-	OfAgentRunResponseDataNetworkCaptureFilterResourceTypeString string `json:",inline"`
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfAgentRunResponseDataNetworkCaptureFilterResourceTypeArrayItemArray []string `json:",inline"`
-	JSON                                                                 struct {
-		OfAgentRunResponseDataNetworkCaptureFilterResourceTypeString         respjson.Field
-		OfAgentRunResponseDataNetworkCaptureFilterResourceTypeArrayItemArray respjson.Field
-		raw                                                                  string
-	} `json:"-"`
-}
-
-func (u AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion) AsAgentRunResponseDataNetworkCaptureFilterResourceTypeString() (v string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion) AsAgentRunResponseDataNetworkCaptureFilterResourceTypeArrayItemArray() (v []string) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *AgentRunResponseDataNetworkCaptureFilterResourceTypeUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Resource type for network capture filtering
-type AgentRunResponseDataNetworkCaptureFilterResourceTypeString string
+// Default effort level for this agent's runs.
+type AgentGetResponseEffort string
 
 const (
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringDocument           AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "document"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringStylesheet         AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "stylesheet"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringImage              AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "image"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringMedia              AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "media"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringFont               AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "font"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringScript             AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "script"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringTexttrack          AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "texttrack"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringXhr                AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "xhr"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringFetch              AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "fetch"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringPrefetch           AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "prefetch"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringEventsource        AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "eventsource"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringWebsocket          AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "websocket"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringManifest           AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "manifest"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringSignedexchange     AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "signedexchange"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringPing               AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "ping"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringCspviolationreport AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "cspviolationreport"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringPreflight          AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "preflight"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringOther              AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "other"
-	AgentRunResponseDataNetworkCaptureFilterResourceTypeStringFedcm              AgentRunResponseDataNetworkCaptureFilterResourceTypeString = "fedcm"
+	AgentGetResponseEffortLow    AgentGetResponseEffort = "low"
+	AgentGetResponseEffortMedium AgentGetResponseEffort = "medium"
+	AgentGetResponseEffortHigh   AgentGetResponseEffort = "high"
+	AgentGetResponseEffortXHigh  AgentGetResponseEffort = "x-high"
+	AgentGetResponseEffortMax    AgentGetResponseEffort = "max"
 )
 
-// AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion contains all possible
-// properties and values from [float64], [[]float64].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfFloat OfFloatArray]
-type AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion struct {
-	// This field will be present if the value is a [float64] instead of an object.
-	OfFloat float64 `json:",inline"`
-	// This field will be present if the value is a [[]float64] instead of an object.
-	OfFloatArray []float64 `json:",inline"`
-	JSON         struct {
-		OfFloat      respjson.Field
-		OfFloatArray respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-func (u AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloat() (v float64) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion) AsFloatArray() (v []float64) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *AgentRunResponseDataNetworkCaptureFilterStatusCodeUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCaptureFilterURL struct {
-	// Any of "exact", "contains".
-	Type  string `json:"type" api:"required"`
-	Value string `json:"value" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Type        respjson.Field
-		Value       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCaptureFilterURL) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCaptureFilterURL) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCaptureResult struct {
-	Request  AgentRunResponseDataNetworkCaptureResultRequest  `json:"request" api:"required"`
-	Response AgentRunResponseDataNetworkCaptureResultResponse `json:"response" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Request     respjson.Field
-		Response    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCaptureResult) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCaptureResult) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCaptureResultRequest struct {
-	Headers map[string]string `json:"headers" api:"required"`
-	Method  string            `json:"method" api:"required"`
-	// Resource type for network capture filtering
-	//
-	// Any of "document", "stylesheet", "image", "media", "font", "script",
-	// "texttrack", "xhr", "fetch", "prefetch", "eventsource", "websocket", "manifest",
-	// "signedexchange", "ping", "cspviolationreport", "preflight", "other", "fedcm".
-	ResourceType string `json:"resource_type" api:"required"`
-	URL          string `json:"url" api:"required"`
-	Body         string `json:"body"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Headers      respjson.Field
-		Method       respjson.Field
-		ResourceType respjson.Field
-		URL          respjson.Field
-		Body         respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCaptureResultRequest) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCaptureResultRequest) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataNetworkCaptureResultResponse struct {
-	Body    string            `json:"body" api:"required"`
-	Headers map[string]string `json:"headers" api:"required"`
-	// Any of "none", "base64".
-	Serialization string  `json:"serialization" api:"required"`
-	Status        float64 `json:"status" api:"required"`
-	StatusText    string  `json:"status_text" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Body          respjson.Field
-		Headers       respjson.Field
-		Serialization respjson.Field
-		Status        respjson.Field
-		StatusText    respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataNetworkCaptureResultResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataNetworkCaptureResultResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// AgentRunResponseDataParsingUnion contains all possible properties and values
-// from [AgentRunResponseDataParsingParsingSuccessResult],
-// [AgentRunResponseDataParsingParsingErrorResult], [map[string]any].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfAgentRunResponseDataParsingMapItem]
-type AgentRunResponseDataParsingUnion struct {
-	// This field will be present if the value is a [any] instead of an object.
-	OfAgentRunResponseDataParsingMapItem any `json:",inline"`
-	// This field is from variant [AgentRunResponseDataParsingParsingSuccessResult].
-	Entities map[string]any `json:"entities"`
-	Status   string         `json:"status"`
-	// This field is from variant [AgentRunResponseDataParsingParsingErrorResult].
-	Error string `json:"error"`
-	JSON  struct {
-		OfAgentRunResponseDataParsingMapItem respjson.Field
-		Entities                             respjson.Field
-		Status                               respjson.Field
-		Error                                respjson.Field
-		raw                                  string
-	} `json:"-"`
-}
-
-func (u AgentRunResponseDataParsingUnion) AsAgentRunResponseDataParsingParsingSuccessResult() (v AgentRunResponseDataParsingParsingSuccessResult) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentRunResponseDataParsingUnion) AsAgentRunResponseDataParsingParsingErrorResult() (v AgentRunResponseDataParsingParsingErrorResult) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentRunResponseDataParsingUnion) AsAnyMap() (v map[string]any) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentRunResponseDataParsingUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *AgentRunResponseDataParsingUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataParsingParsingSuccessResult struct {
-	Entities map[string]any   `json:"entities" api:"required"`
-	Status   constant.Success `json:"status" default:"success"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Entities    respjson.Field
-		Status      respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataParsingParsingSuccessResult) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataParsingParsingSuccessResult) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataParsingParsingErrorResult struct {
-	Error  string         `json:"error" api:"required"`
-	Status constant.Error `json:"status" default:"error"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Error       respjson.Field
-		Status      respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataParsingParsingErrorResult) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataParsingParsingErrorResult) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseDataRedirect struct {
-	StatusCode float64 `json:"status_code" api:"required"`
-	URL        string  `json:"url" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		StatusCode  respjson.Field
-		URL         respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDataRedirect) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDataRedirect) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponseMetadata struct {
-	// The name of the agent used for the query.
-	Agent string `json:"agent"`
-	// The driver used for the task.
-	Driver string `json:"driver"`
-	// The localization identifier for the query.
-	LocalizationID string `json:"localization_id"`
-	// The duration in milliseconds of the query processing.
-	QueryDuration float64 `json:"query_duration"`
-	// The time when the query was received.
-	QueryTime string `json:"query_time"`
-	// Additional response parameters.
-	ResponseParameters any `json:"response_parameters"`
-	// A tag associated with the query.
-	Tag string `json:"tag"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Agent              respjson.Field
-		Driver             respjson.Field
-		LocalizationID     respjson.Field
-		QueryDuration      respjson.Field
-		QueryTime          respjson.Field
-		ResponseParameters respjson.Field
-		Tag                respjson.Field
-		ExtraFields        map[string]respjson.Field
-		raw                string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseMetadata) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseMetadata) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The status of the task.
-type AgentRunResponseStatus string
-
-const (
-	AgentRunResponseStatusSuccess   AgentRunResponseStatus = "success"
-	AgentRunResponseStatusSkipped   AgentRunResponseStatus = "skipped"
-	AgentRunResponseStatusFatal     AgentRunResponseStatus = "fatal"
-	AgentRunResponseStatusError     AgentRunResponseStatus = "error"
-	AgentRunResponseStatusPostponed AgentRunResponseStatus = "postponed"
-	AgentRunResponseStatusIgnored   AgentRunResponseStatus = "ignored"
-	AgentRunResponseStatusRejected  AgentRunResponseStatus = "rejected"
-	AgentRunResponseStatusBlocked   AgentRunResponseStatus = "blocked"
-)
-
-type AgentRunResponseDebug struct {
-	// Performance metrics collected during the task.
-	PerformanceMetrics map[string]float64 `json:"performance_metrics"`
-	// Total bytes used by the proxy during the task.
-	ProxyTotalBytesUsage float64 `json:"proxy_total_bytes_usage"`
-	// The transformed output after applying any transformations.
-	TransformedOutput any `json:"transformed_output"`
-	// The userbrowser instance using during the task.
-	Userbrowser any `json:"userbrowser"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		PerformanceMetrics   respjson.Field
-		ProxyTotalBytesUsage respjson.Field
-		TransformedOutput    respjson.Field
-		Userbrowser          respjson.Field
-		ExtraFields          map[string]respjson.Field
-		raw                  string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponseDebug) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponseDebug) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// AgentRunResponsePaginationUnion contains all possible properties and values from
-// [AgentRunResponsePaginationNextPageParams],
-// [[]AgentRunResponsePaginationArrayItem].
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-//
-// If the underlying value is not a json object, one of the following properties
-// will be valid: OfAgentRunResponsePaginationArray]
-type AgentRunResponsePaginationUnion struct {
-	// This field will be present if the value is a
-	// [[]AgentRunResponsePaginationArrayItem] instead of an object.
-	OfAgentRunResponsePaginationArray []AgentRunResponsePaginationArrayItem `json:",inline"`
-	// This field is from variant [AgentRunResponsePaginationNextPageParams].
-	NextPageParams map[string]any `json:"next_page_params"`
-	JSON           struct {
-		OfAgentRunResponsePaginationArray respjson.Field
-		NextPageParams                    respjson.Field
-		raw                               string
-	} `json:"-"`
-}
-
-func (u AgentRunResponsePaginationUnion) AsAgentRunResponsePaginationNextPageParams() (v AgentRunResponsePaginationNextPageParams) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u AgentRunResponsePaginationUnion) AsAgentRunResponsePaginationArray() (v []AgentRunResponsePaginationArrayItem) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u AgentRunResponsePaginationUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *AgentRunResponsePaginationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponsePaginationNextPageParams struct {
-	NextPageParams map[string]any `json:"next_page_params" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		NextPageParams respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponsePaginationNextPageParams) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponsePaginationNextPageParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunResponsePaginationArrayItem struct {
-	NextPageParams map[string]any `json:"next_page_params" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		NextPageParams respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunResponsePaginationArrayItem) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunResponsePaginationArrayItem) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunAsyncResponse struct {
-	Status constant.Success `json:"status" default:"success"`
-	Task   map[string]any   `json:"task" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Status      respjson.Field
-		Task        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunAsyncResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunAsyncResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Response when a batch of extract tasks is created successfully.
-type AgentRunBatchResponse struct {
-	// Unique identifier for the batch.
-	BatchID string `json:"batch_id" api:"required"`
-	// Number of tasks in the batch.
-	BatchSize float64 `json:"batch_size" api:"required"`
-	// List of created tasks.
-	Tasks []AgentRunBatchResponseTask `json:"tasks" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		BatchID     respjson.Field
-		BatchSize   respjson.Field
-		Tasks       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AgentRunBatchResponse) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunBatchResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunBatchResponseTask struct {
-	// Unique task identifier.
-	ID    string `json:"id" api:"required"`
-	Query any    `json:"_query" api:"required"`
-	// Timestamp when the task was created.
-	CreatedAt string `json:"created_at" api:"required"`
-	// Original input data for the task.
-	Input any `json:"input" api:"required"`
-	// Current state of the task.
-	//
-	// Any of "pending", "queued", "in_progress", "success", "error".
-	State string `json:"state" api:"required"`
-	// URL for checking the task status.
-	StatusURL string `json:"status_url" api:"required" format:"uri"`
-	// Account name that owns the task.
-	AccountName string `json:"account_name"`
-	// Any of "web", "serp", "ecommerce", "social", "media", "agent", "extract",
-	// "fast-serp", "labs".
-	APIType string `json:"api_type"`
-	// Batch ID if this task is part of a batch.
-	BatchID string `json:"batch_id" api:"nullable"`
-	// URL for downloading the task results.
-	DownloadURL string `json:"download_url" api:"nullable" format:"uri"`
-	// Error message if the task failed.
-	Error string `json:"error" api:"nullable"`
-	// Classification of the error type.
-	ErrorType string `json:"error_type" api:"nullable"`
-	// Timestamp when the task was last modified.
-	ModifiedAt string `json:"modified_at"`
-	// Storage location of the output data.
-	OutputURL string `json:"output_url" api:"nullable"`
-	// Queue name the task was submitted to.
-	Queue string `json:"queue"`
-	// HTTP status code from the task execution.
-	StatusCode float64 `json:"status_code"`
+type AgentGetResponseGoal struct {
+	// Unique goal identifier (wsag\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Goal text.
+	Goal string `json:"goal" api:"required"`
+	// Zero-based goal position.
+	Order int64 `json:"order" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
-		Query       respjson.Field
-		CreatedAt   respjson.Field
-		Input       respjson.Field
-		State       respjson.Field
-		StatusURL   respjson.Field
-		AccountName respjson.Field
-		APIType     respjson.Field
-		BatchID     respjson.Field
-		DownloadURL respjson.Field
-		Error       respjson.Field
-		ErrorType   respjson.Field
-		ModifiedAt  respjson.Field
-		OutputURL   respjson.Field
-		Queue       respjson.Field
-		StatusCode  respjson.Field
+		Goal        respjson.Field
+		Order       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r AgentRunBatchResponseTask) RawJSON() string { return r.JSON.raw }
-func (r *AgentRunBatchResponseTask) UnmarshalJSON(data []byte) error {
+func (r AgentGetResponseGoal) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetResponseGoal) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Source guidance for the agent.
+type AgentGetResponseSources struct {
+	// Source groups the agent is allowed to use.
+	Allow []AgentGetResponseSourcesAllow `json:"allow"`
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid string `json:"avoid" api:"nullable"`
+	// Source groups the agent should not use.
+	Block []AgentGetResponseSourcesBlock `json:"block"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize string `json:"prioritize" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Allow       respjson.Field
+		Avoid       respjson.Field
+		Block       respjson.Field
+		Prioritize  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGetResponseSources) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetResponseSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGetResponseSourcesAllow struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGetResponseSourcesAllow) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetResponseSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGetResponseSourcesBlock struct {
+	// Unique source group identifier (wsas\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Domains included in this source group.
+	Domains []string `json:"domains" api:"required"`
+	// Zero-based source group position.
+	Order int64 `json:"order" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Domains     respjson.Field
+		Order       respjson.Field
+		Title       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGetResponseSourcesBlock) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetResponseSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGetResponseSuggestedQuestion struct {
+	// Unique suggested question identifier (wsasq\_<uuid>).
+	ID string `json:"id" api:"required"`
+	// Zero-based suggested question position.
+	Order int64 `json:"order" api:"required"`
+	// Suggested prompt text.
+	Question string `json:"question" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Order       respjson.Field
+		Question    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentGetResponseSuggestedQuestion) RawJSON() string { return r.JSON.raw }
+func (r *AgentGetResponseSuggestedQuestion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Primary use case supported by the agent.
+type AgentGetResponseUseCase string
+
+const (
+	AgentGetResponseUseCaseResearch        AgentGetResponseUseCase = "research"
+	AgentGetResponseUseCaseEnrichment      AgentGetResponseUseCase = "enrichment"
+	AgentGetResponseUseCaseDatasetBuilding AgentGetResponseUseCase = "dataset_building"
+)
+
+type AgentNewParams struct {
+	// Stable agent name.
+	AgentName param.Opt[string] `json:"agent_name,omitzero"`
+	// Agent description shown to users.
+	Description param.Opt[string] `json:"description,omitzero"`
+	// Human-friendly agent name shown to users.
+	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	// Domain expertise or operating context for the agent.
+	DomainExpertise param.Opt[string] `json:"domain_expertise,omitzero"`
+	// Icon identifier used when presenting the agent.
+	Icon param.Opt[string] `json:"icon,omitzero"`
+	// Template name to materialize this instance from. When set, the scalar fields and
+	// child rows are copied from the template.
+	Template param.Opt[string] `json:"template,omitzero"`
+	// Whether the agent can be used to start new runs.
+	IsActive param.Opt[bool] `json:"is_active,omitzero"`
+	// JSON schema describing the structured output the agent should produce.
+	OutputSchema map[string]any `json:"output_schema,omitzero"`
+	// Primary use case supported by the agent.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase AgentNewParamsUseCase `json:"use_case,omitzero"`
+	// Default effort level for this agent's runs.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentNewParamsEffort `json:"effort,omitzero"`
+	// Ordered goals for the agent to follow.
+	Goals []string `json:"goals,omitzero"`
+	// Source guidance for the agent.
+	Sources AgentNewParamsSources `json:"sources,omitzero"`
+	// Suggested prompts users can run with this agent.
+	SuggestedQuestions []string `json:"suggested_questions,omitzero"`
+	paramObj
+}
+
+func (r AgentNewParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Default effort level for this agent's runs.
+type AgentNewParamsEffort string
+
+const (
+	AgentNewParamsEffortLow    AgentNewParamsEffort = "low"
+	AgentNewParamsEffortMedium AgentNewParamsEffort = "medium"
+	AgentNewParamsEffortHigh   AgentNewParamsEffort = "high"
+	AgentNewParamsEffortXHigh  AgentNewParamsEffort = "x-high"
+	AgentNewParamsEffortMax    AgentNewParamsEffort = "max"
+)
+
+// Source guidance for the agent.
+type AgentNewParamsSources struct {
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid param.Opt[string] `json:"avoid,omitzero"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize param.Opt[string] `json:"prioritize,omitzero"`
+	// Source groups the agent is allowed to use.
+	Allow []AgentNewParamsSourcesAllow `json:"allow,omitzero"`
+	// Source groups the agent should not use.
+	Block []AgentNewParamsSourcesBlock `json:"block,omitzero"`
+	paramObj
+}
+
+func (r AgentNewParamsSources) MarshalJSON() (data []byte, err error) {
+	type shadow AgentNewParamsSources
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParamsSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type AgentNewParamsSourcesAllow struct {
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r AgentNewParamsSourcesAllow) MarshalJSON() (data []byte, err error) {
+	type shadow AgentNewParamsSourcesAllow
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParamsSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type AgentNewParamsSourcesBlock struct {
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r AgentNewParamsSourcesBlock) MarshalJSON() (data []byte, err error) {
+	type shadow AgentNewParamsSourcesBlock
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParamsSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Primary use case supported by the agent.
+type AgentNewParamsUseCase string
+
+const (
+	AgentNewParamsUseCaseResearch        AgentNewParamsUseCase = "research"
+	AgentNewParamsUseCaseEnrichment      AgentNewParamsUseCase = "enrichment"
+	AgentNewParamsUseCaseDatasetBuilding AgentNewParamsUseCase = "dataset_building"
+)
+
+type AgentUpdateParams struct {
+	// A JSON Patch document per RFC 6902 — a JSON array of patch operations.
+	Body []AgentUpdateParamsBody
+	paramObj
+}
+
+func (r AgentUpdateParams) MarshalJSON() (data []byte, err error) {
+	return shimjson.Marshal(r.Body)
+}
+func (r *AgentUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A single JSON Patch operation per RFC 6902.
+//
+// The properties Op, Path are required.
+type AgentUpdateParamsBody struct {
+	// Any of "add", "remove", "replace", "move", "copy", "test".
+	Op    string            `json:"op,omitzero" api:"required"`
+	Path  string            `json:"path" api:"required"`
+	From  param.Opt[string] `json:"from,omitzero"`
+	Value any               `json:"value,omitzero"`
+	paramObj
+}
+
+func (r AgentUpdateParamsBody) MarshalJSON() (data []byte, err error) {
+	type shadow AgentUpdateParamsBody
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentUpdateParamsBody) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[AgentUpdateParamsBody](
+		"op", "add", "remove", "replace", "move", "copy", "test",
+	)
+}
+
 type AgentListParams struct {
-	// Search templates by name, domain, or vertical
-	Search param.Opt[string] `query:"search,omitzero" json:"-"`
-	// Number of results per page
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Pagination offset
-	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
-	// Filter templates by attribution
-	//
-	// Any of "nimble", "community", "self_managed".
-	ManagedBy AgentListParamsManagedBy `query:"managed_by,omitzero" json:"-"`
-	// Filter by privacy level
-	//
-	// Any of "public", "private", "all".
-	Privacy AgentListParamsPrivacy `query:"privacy,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `query:"workspace_id,omitzero" format:"uuid" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Offset      param.Opt[int64]  `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1260,192 +1118,4 @@ func (r AgentListParams) URLQuery() (v url.Values, err error) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
-}
-
-// Filter templates by attribution
-type AgentListParamsManagedBy string
-
-const (
-	AgentListParamsManagedByNimble      AgentListParamsManagedBy = "nimble"
-	AgentListParamsManagedByCommunity   AgentListParamsManagedBy = "community"
-	AgentListParamsManagedBySelfManaged AgentListParamsManagedBy = "self_managed"
-)
-
-// Filter by privacy level
-type AgentListParamsPrivacy string
-
-const (
-	AgentListParamsPrivacyPublic  AgentListParamsPrivacy = "public"
-	AgentListParamsPrivacyPrivate AgentListParamsPrivacy = "private"
-	AgentListParamsPrivacyAll     AgentListParamsPrivacy = "all"
-)
-
-type AgentGenerateParams struct {
-
-	//
-	// Request body variants
-	//
-
-	// This field is a request body variant, only one variant field can be set.
-	OfCreateTemplateGenerationRequestPublicV1 *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1 `json:",inline"`
-	// This field is a request body variant, only one variant field can be set.
-	OfCreateTemplateRefinementRequestPublicV1 *AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1 `json:",inline"`
-
-	paramObj
-}
-
-func (u AgentGenerateParams) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCreateTemplateGenerationRequestPublicV1, u.OfCreateTemplateRefinementRequestPublicV1)
-}
-func (r *AgentGenerateParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties Prompt, URL are required.
-type AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1 struct {
-	Prompt       string                                                                 `json:"prompt" api:"required"`
-	URL          string                                                                 `json:"url" api:"required"`
-	Name         param.Opt[string]                                                      `json:"name,omitzero"`
-	Metadata     AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata `json:"metadata,omitzero"`
-	InputSchema  map[string]any                                                         `json:"input_schema,omitzero"`
-	OutputSchema map[string]any                                                         `json:"output_schema,omitzero"`
-	paramObj
-}
-
-func (r AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata struct {
-	Description param.Opt[string] `json:"description,omitzero"`
-	DisplayName param.Opt[string] `json:"display_name,omitzero"`
-	Tags        []string          `json:"tags,omitzero"`
-	paramObj
-}
-
-func (r AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties FromAgent, Prompt are required.
-type AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1 struct {
-	FromAgent string `json:"from_agent" api:"required"`
-	Prompt    string `json:"prompt" api:"required"`
-	paramObj
-}
-
-func (r AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1) MarshalJSON() (data []byte, err error) {
-	type shadow AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentGenerateParamsBodyCreateTemplateRefinementRequestPublicV1) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunParams struct {
-	Agent        string          `json:"agent" api:"required"`
-	Params       map[string]any  `json:"params,omitzero" api:"required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	// Response formats to include. All disabled by default.
-	//
-	// Any of "html", "markdown", "screenshot", "headers", "links".
-	Formats []string `json:"formats,omitzero"`
-	paramObj
-}
-
-func (r AgentRunParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunAsyncParams struct {
-	Agent  string         `json:"agent" api:"required"`
-	Params map[string]any `json:"params,omitzero" api:"required"`
-	// URL to call back when async operation completes
-	CallbackURL  param.Opt[string] `json:"callback_url,omitzero"`
-	Localization param.Opt[bool]   `json:"localization,omitzero"`
-	// Whether to compress stored data
-	StorageCompress param.Opt[bool] `json:"storage_compress,omitzero"`
-	// Custom name for the stored object
-	StorageObjectName param.Opt[string] `json:"storage_object_name,omitzero"`
-	// Type of storage to use for results
-	StorageType param.Opt[string] `json:"storage_type,omitzero"`
-	// URL for storage location
-	StorageURL param.Opt[string] `json:"storage_url,omitzero"`
-	// Response formats to include. All disabled by default.
-	//
-	// Any of "html", "markdown", "screenshot", "headers", "links".
-	Formats []string `json:"formats,omitzero"`
-	paramObj
-}
-
-func (r AgentRunAsyncParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunAsyncParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunAsyncParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunBatchParams struct {
-	Inputs       []AgentRunBatchParamsInput      `json:"inputs,omitzero" api:"required"`
-	SharedInputs AgentRunBatchParamsSharedInputs `json:"shared_inputs,omitzero" api:"required"`
-	paramObj
-}
-
-func (r AgentRunBatchParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunBatchParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunBatchParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type AgentRunBatchParamsInput struct {
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	// Response formats to include. All disabled by default.
-	//
-	// Any of "html", "markdown", "screenshot", "headers", "links".
-	Formats []string       `json:"formats,omitzero"`
-	Params  map[string]any `json:"params,omitzero"`
-	paramObj
-}
-
-func (r AgentRunBatchParamsInput) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunBatchParamsInput
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunBatchParamsInput) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The property Agent is required.
-type AgentRunBatchParamsSharedInputs struct {
-	Agent        string          `json:"agent" api:"required"`
-	Localization param.Opt[bool] `json:"localization,omitzero"`
-	// Response formats to include. All disabled by default.
-	//
-	// Any of "html", "markdown", "screenshot", "headers", "links".
-	Formats []string       `json:"formats,omitzero"`
-	Params  map[string]any `json:"params,omitzero"`
-	paramObj
-}
-
-func (r AgentRunBatchParamsSharedInputs) MarshalJSON() (data []byte, err error) {
-	type shadow AgentRunBatchParamsSharedInputs
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *AgentRunBatchParamsSharedInputs) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }

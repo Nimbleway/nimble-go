@@ -39,7 +39,7 @@ func NewBatchService(opts ...option.RequestOption) (r BatchService) {
 func (r *BatchService) List(ctx context.Context, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	path := "v1/batches"
+	path := "v2/batches"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, nil, opts...)
 	return err
 }
@@ -51,7 +51,7 @@ func (r *BatchService) Get(ctx context.Context, batchID string, opts ...option.R
 		err = errors.New("missing required batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/batches/%s", batchID)
+	path := fmt.Sprintf("v2/batches/%s", batchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -64,7 +64,7 @@ func (r *BatchService) Progress(ctx context.Context, batchID string, opts ...opt
 		err = errors.New("missing required batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/batches/%s/progress", batchID)
+	path := fmt.Sprintf("v2/batches/%s/progress", batchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

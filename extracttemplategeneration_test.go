@@ -13,7 +13,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestTaskAgentTemplateListWithOptionalParams(t *testing.T) {
+func TestExtractTemplateGenerationNewWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,9 +26,23 @@ func TestTaskAgentTemplateListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.TaskAgent.Templates.List(context.TODO(), githubcomnimblewaynimblego.TaskAgentTemplateListParams{
-		Limit:  githubcomnimblewaynimblego.Int(1),
-		Offset: githubcomnimblewaynimblego.Int(0),
+	_, err := client.Extract.Templates.Generations.New(context.TODO(), githubcomnimblewaynimblego.ExtractTemplateGenerationNewParams{
+		OfCreateExtractTemplateGenerationRequestPublicV2: &githubcomnimblewaynimblego.ExtractTemplateGenerationNewParamsBodyCreateExtractTemplateGenerationRequestPublicV2{
+			Prompt: "prompt",
+			URL:    "url",
+			InputSchema: map[string]any{
+				"foo": "bar",
+			},
+			Metadata: githubcomnimblewaynimblego.ExtractTemplateGenerationNewParamsBodyCreateExtractTemplateGenerationRequestPublicV2Metadata{
+				Description: githubcomnimblewaynimblego.String("description"),
+				DisplayName: githubcomnimblewaynimblego.String("display_name"),
+				Tags:        []string{"string"},
+			},
+			Name: githubcomnimblewaynimblego.String("name"),
+			OutputSchema: map[string]any{
+				"foo": "bar",
+			},
+		},
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -39,7 +53,7 @@ func TestTaskAgentTemplateListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestTaskAgentTemplateGet(t *testing.T) {
+func TestExtractTemplateGenerationGet(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -52,7 +66,7 @@ func TestTaskAgentTemplateGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.TaskAgent.Templates.Get(context.TODO(), "template_name")
+	_, err := client.Extract.Templates.Generations.Get(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
