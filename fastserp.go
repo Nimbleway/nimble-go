@@ -38,7 +38,7 @@ func NewFastSerpService(opts ...option.RequestOption) (r FastSerpService) {
 // Fast SERP
 func (r *FastSerpService) Run(ctx context.Context, body FastSerpRunParams, opts ...option.RequestOption) (res *FastSerpRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/fast-serp"
+	path := "v2/fast-serp"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

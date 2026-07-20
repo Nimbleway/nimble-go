@@ -25,7 +25,7 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	response, err := client.Extract(context.TODO(), githubcomnimblewaynimblego.ExtractParams{
+	response, err := client.Extract.Run(context.TODO(), githubcomnimblewaynimblego.ExtractRunParams{
 		URL: "https://exapmle.com",
 	})
 	if err != nil {

@@ -117,10 +117,8 @@ func TestJobListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Jobs.List(context.TODO(), githubcomnimblewaynimblego.JobListParams{
-		AgentName: githubcomnimblewaynimblego.String("agent_name"),
-		Page:      githubcomnimblewaynimblego.Int(1),
-		PerPage:   githubcomnimblewaynimblego.Int(1),
-		Q:         githubcomnimblewaynimblego.String("q"),
+		Limit:  githubcomnimblewaynimblego.Int(1),
+		Offset: githubcomnimblewaynimblego.Int(0),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -168,29 +166,6 @@ func TestJobGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Jobs.Get(context.TODO(), "job_id")
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestJobRun(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Jobs.Run(context.TODO(), "job_id")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {

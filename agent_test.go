@@ -13,6 +13,92 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
+func TestAgentNewWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.New(context.TODO(), githubcomnimblewaynimblego.AgentNewParams{
+		AgentName:       githubcomnimblewaynimblego.String("agent_name"),
+		Description:     githubcomnimblewaynimblego.String("description"),
+		DisplayName:     githubcomnimblewaynimblego.String("display_name"),
+		DomainExpertise: githubcomnimblewaynimblego.String("domain_expertise"),
+		Effort:          githubcomnimblewaynimblego.AgentNewParamsEffortLow,
+		Goals:           []string{"string"},
+		Icon:            githubcomnimblewaynimblego.String("icon"),
+		IsActive:        githubcomnimblewaynimblego.Bool(true),
+		OutputSchema: map[string]any{
+			"foo": "bar",
+		},
+		Sources: githubcomnimblewaynimblego.AgentNewParamsSources{
+			Allow: []githubcomnimblewaynimblego.AgentNewParamsSourcesAllow{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Avoid: githubcomnimblewaynimblego.String("avoid"),
+			Block: []githubcomnimblewaynimblego.AgentNewParamsSourcesBlock{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Prioritize: githubcomnimblewaynimblego.String("prioritize"),
+		},
+		SuggestedQuestions: []string{"string"},
+		Template:           githubcomnimblewaynimblego.String("template"),
+		UseCase:            githubcomnimblewaynimblego.AgentNewParamsUseCaseResearch,
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentUpdate(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Update(
+		context.TODO(),
+		"182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
+		githubcomnimblewaynimblego.AgentUpdateParams{
+			Body: []githubcomnimblewaynimblego.AgentUpdateParamsBody{{
+				Op:    "add",
+				Path:  "path",
+				From:  githubcomnimblewaynimblego.String("from"),
+				Value: map[string]any{},
+			}},
+		},
+	)
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestAgentListWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
@@ -26,12 +112,10 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agent.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
-		Limit:     githubcomnimblewaynimblego.Int(1),
-		ManagedBy: githubcomnimblewaynimblego.AgentListParamsManagedByNimble,
-		Offset:    githubcomnimblewaynimblego.Int(0),
-		Privacy:   githubcomnimblewaynimblego.AgentListParamsPrivacyPublic,
-		Search:    githubcomnimblewaynimblego.String("search"),
+	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
+		Limit:       githubcomnimblewaynimblego.Int(1),
+		Offset:      githubcomnimblewaynimblego.Int(0),
+		WorkspaceID: githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
@@ -42,7 +126,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentGenerateWithOptionalParams(t *testing.T) {
+func TestAgentDelete(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -55,24 +139,7 @@ func TestAgentGenerateWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agent.Generate(context.TODO(), githubcomnimblewaynimblego.AgentGenerateParams{
-		OfCreateTemplateGenerationRequestPublicV1: &githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1{
-			Prompt: "prompt",
-			URL:    "url",
-			InputSchema: map[string]any{
-				"foo": "bar",
-			},
-			Metadata: githubcomnimblewaynimblego.AgentGenerateParamsBodyCreateTemplateGenerationRequestPublicV1Metadata{
-				Description: githubcomnimblewaynimblego.String("description"),
-				DisplayName: githubcomnimblewaynimblego.String("display_name"),
-				Tags:        []string{"string"},
-			},
-			Name: githubcomnimblewaynimblego.String("name"),
-			OutputSchema: map[string]any{
-				"foo": "bar",
-			},
-		},
-	})
+	err := client.Agents.Delete(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {
@@ -95,134 +162,7 @@ func TestAgentGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agent.Get(context.TODO(), "template_name")
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentGetGeneration(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agent.GetGeneration(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentRunWithOptionalParams(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agent.Run(context.TODO(), githubcomnimblewaynimblego.AgentRunParams{
-		Agent: "agent",
-		Params: map[string]any{
-			"foo": "bar",
-		},
-		Formats:      []string{"html", "markdown"},
-		Localization: githubcomnimblewaynimblego.Bool(true),
-	})
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentRunAsyncWithOptionalParams(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agent.RunAsync(context.TODO(), githubcomnimblewaynimblego.AgentRunAsyncParams{
-		Agent: "agent",
-		Params: map[string]any{
-			"foo": "bar",
-		},
-		CallbackURL:       githubcomnimblewaynimblego.String("https://example.com/webhook/callback"),
-		Formats:           []string{"html", "markdown"},
-		Localization:      githubcomnimblewaynimblego.Bool(true),
-		StorageCompress:   githubcomnimblewaynimblego.Bool(true),
-		StorageObjectName: githubcomnimblewaynimblego.String("result-2024-01-15.json"),
-		StorageType:       githubcomnimblewaynimblego.String("s3"),
-		StorageURL:        githubcomnimblewaynimblego.String("s3://bucket-name/path/to/object"),
-	})
-	if err != nil {
-		var apierr *githubcomnimblewaynimblego.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentRunBatchWithOptionalParams(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := githubcomnimblewaynimblego.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agent.RunBatch(context.TODO(), githubcomnimblewaynimblego.AgentRunBatchParams{
-		Inputs: []githubcomnimblewaynimblego.AgentRunBatchParamsInput{{
-			Formats:      []string{"html", "markdown"},
-			Localization: githubcomnimblewaynimblego.Bool(true),
-			Params: map[string]any{
-				"foo": "bar",
-			},
-		}},
-		SharedInputs: githubcomnimblewaynimblego.AgentRunBatchParamsSharedInputs{
-			Agent:        "agent",
-			Formats:      []string{"html", "markdown"},
-			Localization: githubcomnimblewaynimblego.Bool(true),
-			Params: map[string]any{
-				"foo": "bar",
-			},
-		},
-	})
+	_, err := client.Agents.Get(context.TODO(), "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e")
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {

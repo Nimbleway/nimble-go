@@ -35,58 +35,50 @@ func NewJobRunArtifactService(opts ...option.RequestOption) (r JobRunArtifactSer
 	return
 }
 
-// List Run Artifacts
-//
-// Deprecated: deprecated
+// List Run Artifacts Public V2
 func (r *JobRunArtifactService) List(ctx context.Context, runID string, opts ...option.RequestOption) (res *JobRunArtifactListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if runID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts", runID)
+	path := fmt.Sprintf("v2/jobs/runs/%s/artifacts", runID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Get Run Artifact Download URL
-//
-// Deprecated: deprecated
+// Get Run Artifact Download Url Public V2
 func (r *JobRunArtifactService) DownloadURL(ctx context.Context, artifactID int64, query JobRunArtifactDownloadURLParams, opts ...option.RequestOption) (res *JobRunArtifactDownloadURLResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/download-url", query.RunID, artifactID)
+	path := fmt.Sprintf("v2/jobs/runs/%s/artifacts/%v/download-url", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Get Run Artifact
-//
-// Deprecated: deprecated
+// Get Run Artifact Public V2
 func (r *JobRunArtifactService) Get(ctx context.Context, artifactID int64, query JobRunArtifactGetParams, opts ...option.RequestOption) (res *JobRunArtifactGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v", query.RunID, artifactID)
+	path := fmt.Sprintf("v2/jobs/runs/%s/artifacts/%v", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Preview Run Artifact
-//
-// Deprecated: deprecated
+// Preview Run Artifact Public V2
 func (r *JobRunArtifactService) Preview(ctx context.Context, artifactID int64, query JobRunArtifactPreviewParams, opts ...option.RequestOption) (res *JobRunArtifactPreviewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.RunID == "" {
 		err = errors.New("missing required run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/jobs/runs/%s/artifacts/%v/preview", query.RunID, artifactID)
+	path := fmt.Sprintf("v2/jobs/runs/%s/artifacts/%v/preview", query.RunID, artifactID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

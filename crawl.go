@@ -43,7 +43,7 @@ func NewCrawlService(opts ...option.RequestOption) (r CrawlService) {
 // Crawl by Filter
 func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...option.RequestOption) (res *CrawlListResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/crawl"
+	path := "v2/crawl"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }
@@ -51,7 +51,7 @@ func (r *CrawlService) List(ctx context.Context, query CrawlListParams, opts ...
 // Create crawl task
 func (r *CrawlService) Run(ctx context.Context, body CrawlRunParams, opts ...option.RequestOption) (res *CrawlRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/crawl"
+	path := "v2/crawl"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -63,7 +63,7 @@ func (r *CrawlService) Status(ctx context.Context, id string, opts ...option.Req
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/crawl/%s", id)
+	path := fmt.Sprintf("v2/crawl/%s", id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -75,7 +75,7 @@ func (r *CrawlService) Terminate(ctx context.Context, id string, opts ...option.
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/crawl/%s", id)
+	path := fmt.Sprintf("v2/crawl/%s", id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

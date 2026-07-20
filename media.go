@@ -38,7 +38,7 @@ func NewMediaService(opts ...option.RequestOption) (r MediaService) {
 // Download media from a URL. Waits for the result before responding.
 func (r *MediaService) Run(ctx context.Context, body MediaRunParams, opts ...option.RequestOption) (res *MediaRunResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/media"
+	path := "v2/media"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -46,7 +46,7 @@ func (r *MediaService) Run(ctx context.Context, body MediaRunParams, opts ...opt
 // Download media from a URL asynchronously. Returns a task ID immediately.
 func (r *MediaService) RunAsync(ctx context.Context, body MediaRunAsyncParams, opts ...option.RequestOption) (res *MediaRunAsyncResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/media/async"
+	path := "v2/media/async"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
