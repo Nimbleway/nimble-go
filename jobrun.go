@@ -322,21 +322,21 @@ type JobRunGetResponseJob struct {
 	ID string `json:"id" api:"required"`
 	// Internal job name.
 	Name string `json:"name" api:"required"`
-	// Name of the agent this job runs.
-	AgentName string `json:"agent_name" api:"nullable"`
 	// Human-friendly job name shown in the UI.
 	DisplayName string `json:"display_name" api:"nullable"`
+	// Name of the extract template this job runs.
+	ExtractTemplateName string `json:"extract_template_name" api:"nullable"`
 	// Cron-based schedule controlling when a job runs automatically.
 	Schedule JobRunGetResponseJobSchedule `json:"schedule" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		Name        respjson.Field
-		AgentName   respjson.Field
-		DisplayName respjson.Field
-		Schedule    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID                  respjson.Field
+		Name                respjson.Field
+		DisplayName         respjson.Field
+		ExtractTemplateName respjson.Field
+		Schedule            respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
