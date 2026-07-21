@@ -115,8 +115,6 @@ type AgentNewResponse struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly agent name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the agent.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -129,6 +127,8 @@ type AgentNewResponse struct {
 	IsActive bool `json:"is_active" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the agent.
+	Skill string `json:"skill" api:"required"`
 	// Source guidance for the agent.
 	Sources AgentNewResponseSources `json:"sources" api:"required"`
 	// Suggested prompts users can run with this agent.
@@ -147,12 +147,12 @@ type AgentNewResponse struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		IsActive           respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
@@ -323,8 +323,6 @@ type AgentUpdateResponse struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly agent name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the agent.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -337,6 +335,8 @@ type AgentUpdateResponse struct {
 	IsActive bool `json:"is_active" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the agent.
+	Skill string `json:"skill" api:"required"`
 	// Source guidance for the agent.
 	Sources AgentUpdateResponseSources `json:"sources" api:"required"`
 	// Suggested prompts users can run with this agent.
@@ -355,12 +355,12 @@ type AgentUpdateResponse struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		IsActive           respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
@@ -557,8 +557,6 @@ type AgentListResponseItem struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly agent name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the agent.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -571,6 +569,8 @@ type AgentListResponseItem struct {
 	IsActive bool `json:"is_active" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the agent.
+	Skill string `json:"skill" api:"required"`
 	// Source guidance for the agent.
 	Sources AgentListResponseItemSources `json:"sources" api:"required"`
 	// Suggested prompts users can run with this agent.
@@ -589,12 +589,12 @@ type AgentListResponseItem struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		IsActive           respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
@@ -745,8 +745,6 @@ type AgentGetResponse struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly agent name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the agent.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for this agent's runs.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -759,6 +757,8 @@ type AgentGetResponse struct {
 	IsActive bool `json:"is_active" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the agent.
+	Skill string `json:"skill" api:"required"`
 	// Source guidance for the agent.
 	Sources AgentGetResponseSources `json:"sources" api:"required"`
 	// Suggested prompts users can run with this agent.
@@ -777,12 +777,12 @@ type AgentGetResponse struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		IsActive           respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		UpdatedAt          respjson.Field
@@ -951,10 +951,10 @@ type AgentNewParams struct {
 	Description param.Opt[string] `json:"description,omitzero"`
 	// Human-friendly agent name shown to users.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
-	// Domain expertise or operating context for the agent.
-	DomainExpertise param.Opt[string] `json:"domain_expertise,omitzero"`
 	// Icon identifier used when presenting the agent.
 	Icon param.Opt[string] `json:"icon,omitzero"`
+	// Skill or operating context for the agent.
+	Skill param.Opt[string] `json:"skill,omitzero"`
 	// Template name to materialize this instance from. When set, the scalar fields and
 	// child rows are copied from the template.
 	Template param.Opt[string] `json:"template,omitzero"`

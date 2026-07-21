@@ -94,8 +94,6 @@ type AgentTemplateListResponseItem struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly template name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the template.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for runs created from this template.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -106,6 +104,8 @@ type AgentTemplateListResponseItem struct {
 	Icon string `json:"icon" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the template.
+	Skill string `json:"skill" api:"required"`
 	// Ordered source groups for the template.
 	Sources []AgentTemplateListResponseItemSource `json:"sources" api:"required"`
 	// Suggested prompts for the template.
@@ -124,11 +124,11 @@ type AgentTemplateListResponseItem struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		TemplateName       respjson.Field
@@ -226,8 +226,6 @@ type AgentTemplateGetResponse struct {
 	Description string `json:"description" api:"required"`
 	// Human-friendly template name shown to users.
 	DisplayName string `json:"display_name" api:"required"`
-	// Domain expertise or operating context for the template.
-	DomainExpertise string `json:"domain_expertise" api:"required"`
 	// Default effort level for runs created from this template.
 	//
 	// Any of "low", "medium", "high", "x-high", "max".
@@ -238,6 +236,8 @@ type AgentTemplateGetResponse struct {
 	Icon string `json:"icon" api:"required"`
 	// JSON schema describing the structured output the agent should produce.
 	OutputSchema map[string]any `json:"output_schema" api:"required"`
+	// Skill or operating context for the template.
+	Skill string `json:"skill" api:"required"`
 	// Ordered source groups for the template.
 	Sources []AgentTemplateGetResponseSource `json:"sources" api:"required"`
 	// Suggested prompts for the template.
@@ -256,11 +256,11 @@ type AgentTemplateGetResponse struct {
 		CreatedAt          respjson.Field
 		Description        respjson.Field
 		DisplayName        respjson.Field
-		DomainExpertise    respjson.Field
 		Effort             respjson.Field
 		Goals              respjson.Field
 		Icon               respjson.Field
 		OutputSchema       respjson.Field
+		Skill              respjson.Field
 		Sources            respjson.Field
 		SuggestedQuestions respjson.Field
 		TemplateName       respjson.Field

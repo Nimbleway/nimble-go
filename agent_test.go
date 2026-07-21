@@ -27,17 +27,17 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.New(context.TODO(), githubcomnimblewaynimblego.AgentNewParams{
-		AgentName:       githubcomnimblewaynimblego.String("agent_name"),
-		Description:     githubcomnimblewaynimblego.String("description"),
-		DisplayName:     githubcomnimblewaynimblego.String("display_name"),
-		DomainExpertise: githubcomnimblewaynimblego.String("domain_expertise"),
-		Effort:          githubcomnimblewaynimblego.AgentNewParamsEffortLow,
-		Goals:           []string{"string"},
-		Icon:            githubcomnimblewaynimblego.String("icon"),
-		IsActive:        githubcomnimblewaynimblego.Bool(true),
+		AgentName:   githubcomnimblewaynimblego.String("agent_name"),
+		Description: githubcomnimblewaynimblego.String("description"),
+		DisplayName: githubcomnimblewaynimblego.String("display_name"),
+		Effort:      githubcomnimblewaynimblego.AgentNewParamsEffortLow,
+		Goals:       []string{"string"},
+		Icon:        githubcomnimblewaynimblego.String("icon"),
+		IsActive:    githubcomnimblewaynimblego.Bool(true),
 		OutputSchema: map[string]any{
 			"foo": "bar",
 		},
+		Skill: githubcomnimblewaynimblego.String("skill"),
 		Sources: githubcomnimblewaynimblego.AgentNewParamsSources{
 			Allow: []githubcomnimblewaynimblego.AgentNewParamsSourcesAllow{{
 				Domains: []string{"string"},
