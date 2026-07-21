@@ -106,6 +106,15 @@ func (r *AgentService) Get(ctx context.Context, agentID string, opts ...option.R
 	return res, err
 }
 
+// Creates a minimal persistent Web Search Agent and starts a run for it. The
+// response includes `web_search_agent_id` for later agent and run queries.
+func (r *AgentService) Run(ctx context.Context, body AgentRunParams, opts ...option.RequestOption) (res *AgentRunResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v2/agents/runs"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 type AgentNewResponse struct {
 	// Unique web search agent identifier (wsa\_<uuid>).
 	ID string `json:"id" api:"required"`
@@ -944,6 +953,100 @@ const (
 	AgentGetResponseUseCaseDatasetBuilding AgentGetResponseUseCase = "dataset_building"
 )
 
+type AgentRunResponse struct {
+	// Run identifier, format "task*run*{uuid}".
+	ID string `json:"id" api:"required"`
+	// When the run was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Effort level used for the run.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentRunResponseEffort `json:"effort" api:"required"`
+	// Interaction ID.
+	InteractionID string `json:"interaction_id" api:"required"`
+	// True while status is 'queued' or 'running'.
+	IsActive bool `json:"is_active" api:"required"`
+	// Current run status.
+	//
+	// Any of "queued", "running", "completed", "failed", "cancelled".
+	Status AgentRunResponseStatus `json:"status" api:"required"`
+	// Web Search Agent instance this run belongs to.
+	WebSearchAgentID string `json:"web_search_agent_id" api:"required"`
+	// When the run completed.
+	CompletedAt time.Time `json:"completed_at" api:"nullable" format:"date-time"`
+	// Error details when the run failed.
+	Error AgentRunResponseError `json:"error" api:"nullable"`
+	// Prompt submitted for the run.
+	Prompt string `json:"prompt" api:"nullable"`
+	// When the run started executing.
+	StartedAt time.Time `json:"started_at" api:"nullable" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID               respjson.Field
+		CreatedAt        respjson.Field
+		Effort           respjson.Field
+		InteractionID    respjson.Field
+		IsActive         respjson.Field
+		Status           respjson.Field
+		WebSearchAgentID respjson.Field
+		CompletedAt      respjson.Field
+		Error            respjson.Field
+		Prompt           respjson.Field
+		StartedAt        respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentRunResponse) RawJSON() string { return r.JSON.raw }
+func (r *AgentRunResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Effort level used for the run.
+type AgentRunResponseEffort string
+
+const (
+	AgentRunResponseEffortLow    AgentRunResponseEffort = "low"
+	AgentRunResponseEffortMedium AgentRunResponseEffort = "medium"
+	AgentRunResponseEffortHigh   AgentRunResponseEffort = "high"
+	AgentRunResponseEffortXHigh  AgentRunResponseEffort = "x-high"
+	AgentRunResponseEffortMax    AgentRunResponseEffort = "max"
+)
+
+// Current run status.
+type AgentRunResponseStatus string
+
+const (
+	AgentRunResponseStatusQueued    AgentRunResponseStatus = "queued"
+	AgentRunResponseStatusRunning   AgentRunResponseStatus = "running"
+	AgentRunResponseStatusCompleted AgentRunResponseStatus = "completed"
+	AgentRunResponseStatusFailed    AgentRunResponseStatus = "failed"
+	AgentRunResponseStatusCancelled AgentRunResponseStatus = "cancelled"
+)
+
+// Error details when the run failed.
+type AgentRunResponseError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// Reference ID (equals the run id).
+	RefID string `json:"ref_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message     respjson.Field
+		RefID       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AgentRunResponseError) RawJSON() string { return r.JSON.raw }
+func (r *AgentRunResponseError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type AgentNewParams struct {
 	// Stable agent name.
 	AgentName param.Opt[string] `json:"agent_name,omitzero"`
@@ -1118,4 +1221,128 @@ func (r AgentListParams) URLQuery() (v url.Values, err error) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type AgentRunParams struct {
+	// User prompt or task instructions for the run.
+	Input string `json:"input" api:"required"`
+	// Previous interaction identifier used to continue a conversation.
+	PreviousInteractionID param.Opt[string] `json:"previous_interaction_id,omitzero"`
+	// Whether to stream run events when supported.
+	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
+	// Canonical effort tier names for the research graph.
+	//
+	// Any of "low", "medium", "high", "x-high", "max".
+	Effort AgentRunParamsEffort `json:"effort,omitzero"`
+	// Existing records to ENRICH: a list of partial rows, or a single object,
+	// mirroring output_schema's shape.
+	InputData AgentRunParamsInputDataUnion `json:"input_data,omitzero"`
+	// JSON schema overriding the agent's default structured output for this run.
+	OutputSchema map[string]any `json:"output_schema,omitzero"`
+	// Source guidance overriding the agent default.
+	Sources AgentRunParamsSources `json:"sources,omitzero"`
+	paramObj
+}
+
+func (r AgentRunParams) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Canonical effort tier names for the research graph.
+type AgentRunParamsEffort string
+
+const (
+	AgentRunParamsEffortLow    AgentRunParamsEffort = "low"
+	AgentRunParamsEffortMedium AgentRunParamsEffort = "medium"
+	AgentRunParamsEffortHigh   AgentRunParamsEffort = "high"
+	AgentRunParamsEffortXHigh  AgentRunParamsEffort = "x-high"
+	AgentRunParamsEffortMax    AgentRunParamsEffort = "max"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type AgentRunParamsInputDataUnion struct {
+	OfMapOfAnyMap []map[string]any `json:",omitzero,inline"`
+	OfAnyMap      map[string]any   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u AgentRunParamsInputDataUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfMapOfAnyMap, u.OfAnyMap)
+}
+func (u *AgentRunParamsInputDataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *AgentRunParamsInputDataUnion) asAny() any {
+	if !param.IsOmitted(u.OfMapOfAnyMap) {
+		return &u.OfMapOfAnyMap
+	} else if !param.IsOmitted(u.OfAnyMap) {
+		return &u.OfAnyMap
+	}
+	return nil
+}
+
+// Source guidance overriding the agent default.
+type AgentRunParamsSources struct {
+	// Free-text guidance describing sources or domains to avoid.
+	Avoid param.Opt[string] `json:"avoid,omitzero"`
+	// Free-text guidance describing sources or domains to prioritize.
+	Prioritize param.Opt[string] `json:"prioritize,omitzero"`
+	// Source groups the agent is allowed to use.
+	Allow []AgentRunParamsSourcesAllow `json:"allow,omitzero"`
+	// Source groups the agent should not use.
+	Block []AgentRunParamsSourcesBlock `json:"block,omitzero"`
+	paramObj
+}
+
+func (r AgentRunParamsSources) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunParamsSources
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunParamsSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type AgentRunParamsSourcesAllow struct {
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r AgentRunParamsSourcesAllow) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunParamsSourcesAllow
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunParamsSourcesAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Domains, Title are required.
+type AgentRunParamsSourcesBlock struct {
+	// Domains included in this source group.
+	Domains []string `json:"domains,omitzero" api:"required"`
+	// Source group title.
+	Title string `json:"title" api:"required"`
+	// Zero-based source group position.
+	Order param.Opt[int64] `json:"order,omitzero"`
+	paramObj
+}
+
+func (r AgentRunParamsSourcesBlock) MarshalJSON() (data []byte, err error) {
+	type shadow AgentRunParamsSourcesBlock
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentRunParamsSourcesBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
