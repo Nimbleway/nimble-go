@@ -171,3 +171,53 @@ func TestAgentGet(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
+
+func TestAgentRunWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := githubcomnimblewaynimblego.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Run(context.TODO(), githubcomnimblewaynimblego.AgentRunParams{
+		Input:        "input",
+		Effort:       githubcomnimblewaynimblego.AgentRunParamsEffortLow,
+		EnableEvents: githubcomnimblewaynimblego.Bool(true),
+		InputData: githubcomnimblewaynimblego.AgentRunParamsInputDataUnion{
+			OfMapOfAnyMap: []map[string]any{{
+				"foo": "bar",
+			}},
+		},
+		OutputSchema: map[string]any{
+			"foo": "bar",
+		},
+		PreviousInteractionID: githubcomnimblewaynimblego.String("previous_interaction_id"),
+		Sources: githubcomnimblewaynimblego.AgentRunParamsSources{
+			Allow: []githubcomnimblewaynimblego.AgentRunParamsSourcesAllow{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Avoid: githubcomnimblewaynimblego.String("avoid"),
+			Block: []githubcomnimblewaynimblego.AgentRunParamsSourcesBlock{{
+				Domains: []string{"string"},
+				Title:   "title",
+				Order:   githubcomnimblewaynimblego.Int(0),
+			}},
+			Prioritize: githubcomnimblewaynimblego.String("prioritize"),
+		},
+	})
+	if err != nil {
+		var apierr *githubcomnimblewaynimblego.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
