@@ -5,6 +5,7 @@ package githubcomnimblewaynimblego_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -257,3 +258,114 @@ func TestContextDeadline(t *testing.T) {
 		}
 	}
 }
+
+func TestContextDeadlineStreaming(t *testing.T) {
+	testTimeout := time.After(3 * time.Second)
+	testDone := make(chan struct{})
+
+	deadline := time.Now().Add(100 * time.Millisecond)
+	deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	go func() {
+		client := githubcomnimblewaynimblego.NewClient(
+			option.WithAPIKey("My API Key"),
+			option.WithHTTPClient(&http.Client{
+				Transport: &closureTransport{
+					fn: func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: 200,
+							Status:     "200 OK",
+							Body: io.NopCloser(
+								io.Reader(readerFunc(func([]byte) (int, error) {
+									<-req.Context().Done()
+									return 0, req.Context().Err()
+								})),
+							),
+						}, nil
+					},
+				},
+			}),
+		)
+		stream := client.Agents.Runs.StreamEventsStreaming(
+			deadlineCtx,
+			"run_id",
+			githubcomnimblewaynimblego.AgentRunStreamEventsParams{
+				AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
+			},
+		)
+		for stream.Next() {
+			_ = stream.Current()
+		}
+		if stream.Err() == nil {
+			t.Error("expected there to be a deadline error")
+		}
+		close(testDone)
+	}()
+
+	select {
+	case <-testTimeout:
+		t.Fatal("client didn't finish in time")
+	case <-testDone:
+		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
+			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
+		}
+	}
+}
+
+func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
+	testTimeout := time.After(3 * time.Second)
+	testDone := make(chan struct{})
+	deadline := time.Now().Add(100 * time.Millisecond)
+
+	go func() {
+		client := githubcomnimblewaynimblego.NewClient(
+			option.WithAPIKey("My API Key"),
+			option.WithHTTPClient(&http.Client{
+				Transport: &closureTransport{
+					fn: func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: 200,
+							Status:     "200 OK",
+							Body: io.NopCloser(
+								io.Reader(readerFunc(func([]byte) (int, error) {
+									<-req.Context().Done()
+									return 0, req.Context().Err()
+								})),
+							),
+						}, nil
+					},
+				},
+			}),
+		)
+		stream := client.Agents.Runs.StreamEventsStreaming(
+			context.Background(),
+			"run_id",
+			githubcomnimblewaynimblego.AgentRunStreamEventsParams{
+				AgentID: "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e",
+			},
+			option.WithRequestTimeout((100 * time.Millisecond)),
+		)
+		for stream.Next() {
+			_ = stream.Current()
+		}
+		if stream.Err() == nil {
+			t.Error("expected there to be a deadline error")
+		}
+		close(testDone)
+	}()
+
+	select {
+	case <-testTimeout:
+		t.Fatal("client didn't finish in time")
+	case <-testDone:
+		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
+			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
+		}
+	}
+}
+
+type readerFunc func([]byte) (int, error)
+
+func (f readerFunc) Read(p []byte) (int, error) { return f(p) }
+func (f readerFunc) Close() error               { return nil }

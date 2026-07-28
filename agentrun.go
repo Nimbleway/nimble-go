@@ -18,6 +18,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 	"github.com/Nimbleway/nimble-go/packages/param"
 	"github.com/Nimbleway/nimble-go/packages/respjson"
+	"github.com/Nimbleway/nimble-go/packages/ssestream"
 )
 
 // AgentRunService contains methods and other services that help with interacting
@@ -112,20 +113,24 @@ func (r *AgentRunService) Result(ctx context.Context, runID string, query AgentR
 // [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
 // (`text/event-stream`). Create the run with `enable_events: true` to have events
 // published. A keep-alive comment is sent every 15 seconds.
-func (r *AgentRunService) StreamEvents(ctx context.Context, runID string, query AgentRunStreamEventsParams, opts ...option.RequestOption) (err error) {
+func (r *AgentRunService) StreamEventsStreaming(ctx context.Context, runID string, query AgentRunStreamEventsParams, opts ...option.RequestOption) (stream *ssestream.Stream[AgentRunStreamEventsResponse]) {
+	var (
+		raw *http.Response
+		err error
+	)
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
 	if query.AgentID == "" {
 		err = errors.New("missing required agent_id parameter")
-		return err
+		return ssestream.NewStream[AgentRunStreamEventsResponse](nil, err)
 	}
 	if runID == "" {
 		err = errors.New("missing required run_id parameter")
-		return err
+		return ssestream.NewStream[AgentRunStreamEventsResponse](nil, err)
 	}
 	path := fmt.Sprintf("v2/agents/%s/runs/%s/events", query.AgentID, runID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, nil, opts...)
-	return err
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	return ssestream.NewStream[AgentRunStreamEventsResponse](ssestream.NewDecoder(raw), err)
 }
 
 type AgentRunNewResponse struct {
@@ -1316,6 +1321,8 @@ func (r AgentRunResultResponseTaskRunFailedResultPublicV2RunError) RawJSON() str
 func (r *AgentRunResultResponseTaskRunFailedResultPublicV2RunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type AgentRunStreamEventsResponse = any
 
 type AgentRunNewParams struct {
 	// User prompt or task instructions for the run.
