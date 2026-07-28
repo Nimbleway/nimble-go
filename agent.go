@@ -1226,8 +1226,14 @@ func (r AgentListParams) URLQuery() (v url.Values, err error) {
 type AgentRunParams struct {
 	// User prompt or task instructions for the run.
 	Input string `json:"input" api:"required"`
+	// Stable agent name. On this no-agent-id route, an unseen name creates a new
+	// agent; an existing name reuses it. Ignored on the /{agent_id}/runs route.
+	AgentName param.Opt[string] `json:"agent_name,omitzero"`
 	// Previous interaction identifier used to continue a conversation.
 	PreviousInteractionID param.Opt[string] `json:"previous_interaction_id,omitzero"`
+	// Skill override for this run. One-time only, except when this run creates a new
+	// agent via agent_name, in which case it becomes the new agent's stored skill.
+	Skill param.Opt[string] `json:"skill,omitzero"`
 	// Whether to stream run events when supported.
 	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
 	// Canonical effort tier names for the research graph.
@@ -1241,6 +1247,17 @@ type AgentRunParams struct {
 	OutputSchema map[string]any `json:"output_schema,omitzero"`
 	// Source guidance overriding the agent default.
 	Sources AgentRunParamsSources `json:"sources,omitzero"`
+	// Only settable when this run creates a new agent (via agent_name, or when no
+	// agent is resolved), in which case it becomes the new agent's stored use_case.
+	// For a run against an existing agent, this must match the agent's own use_case —
+	// passing the same value is accepted as a no-op, a different value is rejected.
+	//
+	// Any of "research", "enrichment", "dataset_building".
+	UseCase AgentRunParamsUseCase `json:"use_case,omitzero"`
+	// Origin of public API runs. Public requests are always API-originated.
+	//
+	// Any of "api".
+	Origin AgentRunParamsOrigin `json:"origin,omitzero"`
 	paramObj
 }
 
@@ -1287,6 +1304,13 @@ func (u *AgentRunParamsInputDataUnion) asAny() any {
 	}
 	return nil
 }
+
+// Origin of public API runs. Public requests are always API-originated.
+type AgentRunParamsOrigin string
+
+const (
+	AgentRunParamsOriginAPI AgentRunParamsOrigin = "api"
+)
 
 // Source guidance overriding the agent default.
 type AgentRunParamsSources struct {
@@ -1346,3 +1370,15 @@ func (r AgentRunParamsSourcesBlock) MarshalJSON() (data []byte, err error) {
 func (r *AgentRunParamsSourcesBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Only settable when this run creates a new agent (via agent_name, or when no
+// agent is resolved), in which case it becomes the new agent's stored use_case.
+// For a run against an existing agent, this must match the agent's own use_case —
+// passing the same value is accepted as a no-op, a different value is rejected.
+type AgentRunParamsUseCase string
+
+const (
+	AgentRunParamsUseCaseResearch        AgentRunParamsUseCase = "research"
+	AgentRunParamsUseCaseEnrichment      AgentRunParamsUseCase = "enrichment"
+	AgentRunParamsUseCaseDatasetBuilding AgentRunParamsUseCase = "dataset_building"
+)
