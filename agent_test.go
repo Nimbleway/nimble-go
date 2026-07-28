@@ -187,6 +187,7 @@ func TestAgentRunWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Run(context.TODO(), githubcomnimblewaynimblego.AgentRunParams{
 		Input:        "input",
+		AgentName:    githubcomnimblewaynimblego.String("agent_name"),
 		Effort:       githubcomnimblewaynimblego.AgentRunParamsEffortLow,
 		EnableEvents: githubcomnimblewaynimblego.Bool(true),
 		InputData: githubcomnimblewaynimblego.AgentRunParamsInputDataUnion{
@@ -194,10 +195,12 @@ func TestAgentRunWithOptionalParams(t *testing.T) {
 				"foo": "bar",
 			}},
 		},
+		Origin: githubcomnimblewaynimblego.AgentRunParamsOriginAPI,
 		OutputSchema: map[string]any{
 			"foo": "bar",
 		},
 		PreviousInteractionID: githubcomnimblewaynimblego.String("previous_interaction_id"),
+		Skill:                 githubcomnimblewaynimblego.String("skill"),
 		Sources: githubcomnimblewaynimblego.AgentRunParamsSources{
 			Allow: []githubcomnimblewaynimblego.AgentRunParamsSourcesAllow{{
 				Domains: []string{"string"},
@@ -212,6 +215,7 @@ func TestAgentRunWithOptionalParams(t *testing.T) {
 			}},
 			Prioritize: githubcomnimblewaynimblego.String("prioritize"),
 		},
+		UseCase: githubcomnimblewaynimblego.AgentRunParamsUseCaseResearch,
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
