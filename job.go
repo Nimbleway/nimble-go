@@ -187,11 +187,16 @@ type JobNewResponseInputs struct {
 	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
 	// types.
 	FilePath string `json:"file_path" api:"nullable"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
 		Data        respjson.Field
 		FilePath    respjson.Field
+		NodeData    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -331,11 +336,16 @@ type JobUpdateResponseInputs struct {
 	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
 	// types.
 	FilePath string `json:"file_path" api:"nullable"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
 		Data        respjson.Field
 		FilePath    respjson.Field
+		NodeData    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -501,11 +511,16 @@ type JobListResponseItemInputs struct {
 	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
 	// types.
 	FilePath string `json:"file_path" api:"nullable"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
 		Data        respjson.Field
 		FilePath    respjson.Field
+		NodeData    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -632,11 +647,16 @@ type JobGetResponseInputs struct {
 	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
 	// types.
 	FilePath string `json:"file_path" api:"nullable"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
 		Data        respjson.Field
 		FilePath    respjson.Field
+		NodeData    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -756,6 +776,10 @@ type JobNewParamsInputs struct {
 	FilePath param.Opt[string] `json:"file_path,omitzero"`
 	// Inline list of input records. Used when type is 'inline'.
 	Data []map[string]any `json:"data,omitzero"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data,omitzero"`
 	paramObj
 }
 
@@ -862,6 +886,10 @@ type JobUpdateParamsInputs struct {
 	FilePath param.Opt[string] `json:"file_path,omitzero"`
 	// Inline list of input records. Used when type is 'inline'.
 	Data []map[string]any `json:"data,omitzero"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data,omitzero"`
 	paramObj
 }
 

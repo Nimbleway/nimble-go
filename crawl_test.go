@@ -228,7 +228,8 @@ func TestCrawlRunWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsReferrerTypeRandom,
+			RealtimeTotalTimeout: githubcomnimblewaynimblego.Float(15000),
+			ReferrerType:         githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsReferrerTypeRandom,
 			Render: githubcomnimblewaynimblego.CrawlRunParamsExtractOptionsRenderUnion{
 				OfBool: githubcomnimblewaynimblego.Bool(true),
 			},

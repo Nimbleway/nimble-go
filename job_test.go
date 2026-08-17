@@ -42,6 +42,11 @@ func TestJobNewWithOptionalParams(t *testing.T) {
 				"foo": "bar",
 			}},
 			FilePath: githubcomnimblewaynimblego.String("file_path"),
+			NodeData: map[string][]map[string]any{
+				"foo": {{
+					"foo": "bar",
+				}},
+			},
 		},
 		Schedule: githubcomnimblewaynimblego.JobNewParamsSchedule{
 			Cron:    "cron",
@@ -87,6 +92,11 @@ func TestJobUpdateWithOptionalParams(t *testing.T) {
 					"foo": "bar",
 				}},
 				FilePath: githubcomnimblewaynimblego.String("file_path"),
+				NodeData: map[string][]map[string]any{
+					"foo": {{
+						"foo": "bar",
+					}},
+				},
 			},
 			Schedule: githubcomnimblewaynimblego.JobUpdateParamsSchedule{
 				Cron:    "cron",

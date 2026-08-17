@@ -1166,6 +1166,11 @@ type SearchParams struct {
 	StartDate param.Opt[string] `json:"start_date,omitzero"`
 	// Country code for geo-targeted results (e.g., 'US', 'GB', 'IL')
 	Country param.Opt[string] `json:"country,omitzero"`
+	// Return richer per-result content on the fast path. With search_depth='fast',
+	// enables live crawling of both web and news sources so results carry full
+	// markdown content instead of snippets only. Higher recall and cost. Ignored for
+	// other search_depth values.
+	FullContent param.Opt[bool] `json:"full_content,omitzero"`
 	// Generate an LLM-powered answer summary based on search result snippets.
 	IncludeAnswer param.Opt[bool] `json:"include_answer,omitzero"`
 	// Language/locale code (e.g., 'en', 'fr', 'de')
