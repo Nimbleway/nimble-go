@@ -113,9 +113,8 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.List(context.TODO(), githubcomnimblewaynimblego.AgentListParams{
-		Limit:       githubcomnimblewaynimblego.Int(1),
-		Offset:      githubcomnimblewaynimblego.Int(0),
-		WorkspaceID: githubcomnimblewaynimblego.String("182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"),
+		Limit:  githubcomnimblewaynimblego.Int(1),
+		Offset: githubcomnimblewaynimblego.Int(0),
 	})
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error

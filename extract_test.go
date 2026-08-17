@@ -185,7 +185,8 @@ func TestExtractAsyncWithOptionalParams(t *testing.T) {
 				"myParser": "bar",
 			},
 		},
-		ReferrerType: githubcomnimblewaynimblego.ExtractAsyncParamsReferrerTypeRandom,
+		RealtimeTotalTimeout: githubcomnimblewaynimblego.Float(15000),
+		ReferrerType:         githubcomnimblewaynimblego.ExtractAsyncParamsReferrerTypeRandom,
 		Render: githubcomnimblewaynimblego.ExtractAsyncParamsRenderUnion{
 			OfBool: githubcomnimblewaynimblego.Bool(true),
 		},
@@ -387,7 +388,8 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType: githubcomnimblewaynimblego.ExtractBatchParamsInputReferrerTypeRandom,
+			RealtimeTotalTimeout: githubcomnimblewaynimblego.Float(15000),
+			ReferrerType:         githubcomnimblewaynimblego.ExtractBatchParamsInputReferrerTypeRandom,
 			Render: githubcomnimblewaynimblego.ExtractBatchParamsInputRenderUnion{
 				OfBool: githubcomnimblewaynimblego.Bool(false),
 			},
@@ -567,7 +569,8 @@ func TestExtractBatchWithOptionalParams(t *testing.T) {
 					"myParser": "bar",
 				},
 			},
-			ReferrerType: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsReferrerTypeRandom,
+			RealtimeTotalTimeout: githubcomnimblewaynimblego.Float(15000),
+			ReferrerType:         githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsReferrerTypeRandom,
 			Render: githubcomnimblewaynimblego.ExtractBatchParamsSharedInputsRenderUnion{
 				OfBool: githubcomnimblewaynimblego.Bool(false),
 			},
@@ -770,7 +773,8 @@ func TestExtractRunWithOptionalParams(t *testing.T) {
 				"myParser": "bar",
 			},
 		},
-		ReferrerType: githubcomnimblewaynimblego.ExtractRunParamsReferrerTypeRandom,
+		RealtimeTotalTimeout: githubcomnimblewaynimblego.Float(15000),
+		ReferrerType:         githubcomnimblewaynimblego.ExtractRunParamsReferrerTypeRandom,
 		Render: githubcomnimblewaynimblego.ExtractRunParamsRenderUnion{
 			OfBool: githubcomnimblewaynimblego.Bool(true),
 		},

@@ -140,7 +140,7 @@ type AgentRunNewResponse struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentRunNewResponseEffort `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -192,6 +192,7 @@ const (
 	AgentRunNewResponseEffortMedium AgentRunNewResponseEffort = "medium"
 	AgentRunNewResponseEffortHigh   AgentRunNewResponseEffort = "high"
 	AgentRunNewResponseEffortXHigh  AgentRunNewResponseEffort = "x-high"
+	AgentRunNewResponseEffort5xHigh AgentRunNewResponseEffort = "5x-high"
 	AgentRunNewResponseEffortMax    AgentRunNewResponseEffort = "max"
 )
 
@@ -260,7 +261,7 @@ type AgentRunListResponseItem struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -332,7 +333,7 @@ type AgentRunGetResponse struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentRunGetResponseEffort `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -384,6 +385,7 @@ const (
 	AgentRunGetResponseEffortMedium AgentRunGetResponseEffort = "medium"
 	AgentRunGetResponseEffortHigh   AgentRunGetResponseEffort = "high"
 	AgentRunGetResponseEffortXHigh  AgentRunGetResponseEffort = "x-high"
+	AgentRunGetResponseEffort5xHigh AgentRunGetResponseEffort = "5x-high"
 	AgentRunGetResponseEffortMax    AgentRunGetResponseEffort = "max"
 )
 
@@ -1141,7 +1143,7 @@ type AgentRunResultResponseTaskRunResultPublicV2Run struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -1255,7 +1257,7 @@ type AgentRunResultResponseTaskRunFailedResultPublicV2Run struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -1339,7 +1341,7 @@ type AgentRunNewParams struct {
 	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
 	// Canonical effort tier names for the research graph.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentRunNewParamsEffort `json:"effort,omitzero"`
 	// Existing records to ENRICH: a list of partial rows, or a single object,
 	// mirroring output_schema's shape.
@@ -1378,6 +1380,7 @@ const (
 	AgentRunNewParamsEffortMedium AgentRunNewParamsEffort = "medium"
 	AgentRunNewParamsEffortHigh   AgentRunNewParamsEffort = "high"
 	AgentRunNewParamsEffortXHigh  AgentRunNewParamsEffort = "x-high"
+	AgentRunNewParamsEffort5xHigh AgentRunNewParamsEffort = "5x-high"
 	AgentRunNewParamsEffortMax    AgentRunNewParamsEffort = "max"
 )
 
