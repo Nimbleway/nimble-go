@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 (2026-08-17)
+
+Full Changelog: [v1.2.0...v1.3.0](https://github.com/Nimbleway/nimble-go/compare/v1.2.0...v1.3.0)
+
+### Features
+
+* **api:** api update ([e41b101](https://github.com/Nimbleway/nimble-go/commit/e41b101c59dec79489fd2fc84d83b1d6b5d9f722))
+
 ## 1.2.0 (2026-07-28)
 
 Full Changelog: [v1.1.0...v1.2.0](https://github.com/Nimbleway/nimble-go/compare/v1.1.0...v1.2.0)
