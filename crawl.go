@@ -1131,6 +1131,10 @@ type CrawlRunParamsExtractOptions struct {
 	IsXhr param.Opt[bool] `json:"is_xhr,omitzero"`
 	// Whether to parse the response content
 	Parse param.Opt[bool] `json:"parse,omitzero"`
+	// Overall deadline in milliseconds for a realtime request. Clamped to the account
+	// total timeout — it can shorten the deadline but never extend it. Has no effect
+	// on async requests.
+	RealtimeTotalTimeout param.Opt[float64] `json:"realtime_total_timeout,omitzero"`
 	// Request timeout in milliseconds
 	RequestTimeout param.Opt[float64] `json:"request_timeout,omitzero"`
 	// User-defined tag for request identification

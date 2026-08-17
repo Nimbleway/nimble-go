@@ -66,6 +66,7 @@ func TestSearchWithOptionalParams(t *testing.T) {
 		Focus: githubcomnimblewaynimblego.SearchParamsFocusUnion{
 			OfString: githubcomnimblewaynimblego.String("string"),
 		},
+		FullContent:    githubcomnimblewaynimblego.Bool(true),
 		IncludeAnswer:  githubcomnimblewaynimblego.Bool(true),
 		IncludeDomains: []string{"string"},
 		Locale:         githubcomnimblewaynimblego.String("locale"),

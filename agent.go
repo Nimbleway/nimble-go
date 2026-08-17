@@ -126,7 +126,7 @@ type AgentNewResponse struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for this agent's runs.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentNewResponseEffort `json:"effort" api:"required"`
 	// Ordered goals for the agent to follow.
 	Goals []AgentNewResponseGoal `json:"goals" api:"required"`
@@ -186,6 +186,7 @@ const (
 	AgentNewResponseEffortMedium AgentNewResponseEffort = "medium"
 	AgentNewResponseEffortHigh   AgentNewResponseEffort = "high"
 	AgentNewResponseEffortXHigh  AgentNewResponseEffort = "x-high"
+	AgentNewResponseEffort5xHigh AgentNewResponseEffort = "5x-high"
 	AgentNewResponseEffortMax    AgentNewResponseEffort = "max"
 )
 
@@ -334,7 +335,7 @@ type AgentUpdateResponse struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for this agent's runs.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentUpdateResponseEffort `json:"effort" api:"required"`
 	// Ordered goals for the agent to follow.
 	Goals []AgentUpdateResponseGoal `json:"goals" api:"required"`
@@ -394,6 +395,7 @@ const (
 	AgentUpdateResponseEffortMedium AgentUpdateResponseEffort = "medium"
 	AgentUpdateResponseEffortHigh   AgentUpdateResponseEffort = "high"
 	AgentUpdateResponseEffortXHigh  AgentUpdateResponseEffort = "x-high"
+	AgentUpdateResponseEffort5xHigh AgentUpdateResponseEffort = "5x-high"
 	AgentUpdateResponseEffortMax    AgentUpdateResponseEffort = "max"
 )
 
@@ -568,7 +570,7 @@ type AgentListResponseItem struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for this agent's runs.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Ordered goals for the agent to follow.
 	Goals []AgentListResponseItemGoal `json:"goals" api:"required"`
@@ -756,7 +758,7 @@ type AgentGetResponse struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for this agent's runs.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentGetResponseEffort `json:"effort" api:"required"`
 	// Ordered goals for the agent to follow.
 	Goals []AgentGetResponseGoal `json:"goals" api:"required"`
@@ -816,6 +818,7 @@ const (
 	AgentGetResponseEffortMedium AgentGetResponseEffort = "medium"
 	AgentGetResponseEffortHigh   AgentGetResponseEffort = "high"
 	AgentGetResponseEffortXHigh  AgentGetResponseEffort = "x-high"
+	AgentGetResponseEffort5xHigh AgentGetResponseEffort = "5x-high"
 	AgentGetResponseEffortMax    AgentGetResponseEffort = "max"
 )
 
@@ -960,7 +963,7 @@ type AgentRunResponse struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Effort level used for the run.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentRunResponseEffort `json:"effort" api:"required"`
 	// Interaction ID.
 	InteractionID string `json:"interaction_id" api:"required"`
@@ -1012,6 +1015,7 @@ const (
 	AgentRunResponseEffortMedium AgentRunResponseEffort = "medium"
 	AgentRunResponseEffortHigh   AgentRunResponseEffort = "high"
 	AgentRunResponseEffortXHigh  AgentRunResponseEffort = "x-high"
+	AgentRunResponseEffort5xHigh AgentRunResponseEffort = "5x-high"
 	AgentRunResponseEffortMax    AgentRunResponseEffort = "max"
 )
 
@@ -1071,7 +1075,7 @@ type AgentNewParams struct {
 	UseCase AgentNewParamsUseCase `json:"use_case,omitzero"`
 	// Default effort level for this agent's runs.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentNewParamsEffort `json:"effort,omitzero"`
 	// Ordered goals for the agent to follow.
 	Goals []string `json:"goals,omitzero"`
@@ -1098,6 +1102,7 @@ const (
 	AgentNewParamsEffortMedium AgentNewParamsEffort = "medium"
 	AgentNewParamsEffortHigh   AgentNewParamsEffort = "high"
 	AgentNewParamsEffortXHigh  AgentNewParamsEffort = "x-high"
+	AgentNewParamsEffort5xHigh AgentNewParamsEffort = "5x-high"
 	AgentNewParamsEffortMax    AgentNewParamsEffort = "max"
 )
 
@@ -1209,9 +1214,8 @@ func init() {
 }
 
 type AgentListParams struct {
-	WorkspaceID param.Opt[string] `query:"workspace_id,omitzero" format:"uuid" json:"-"`
-	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
-	Offset      param.Opt[int64]  `query:"offset,omitzero" json:"-"`
+	Limit  param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Offset param.Opt[int64] `query:"offset,omitzero" json:"-"`
 	paramObj
 }
 
@@ -1238,7 +1242,7 @@ type AgentRunParams struct {
 	EnableEvents param.Opt[bool] `json:"enable_events,omitzero"`
 	// Canonical effort tier names for the research graph.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentRunParamsEffort `json:"effort,omitzero"`
 	// Existing records to ENRICH: a list of partial rows, or a single object,
 	// mirroring output_schema's shape.
@@ -1277,6 +1281,7 @@ const (
 	AgentRunParamsEffortMedium AgentRunParamsEffort = "medium"
 	AgentRunParamsEffortHigh   AgentRunParamsEffort = "high"
 	AgentRunParamsEffortXHigh  AgentRunParamsEffort = "x-high"
+	AgentRunParamsEffort5xHigh AgentRunParamsEffort = "5x-high"
 	AgentRunParamsEffortMax    AgentRunParamsEffort = "max"
 )
 

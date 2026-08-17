@@ -96,7 +96,7 @@ type AgentTemplateListResponseItem struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for runs created from this template.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort string `json:"effort" api:"required"`
 	// Ordered goals for the template.
 	Goals []AgentTemplateListResponseItemGoal `json:"goals" api:"required"`
@@ -228,7 +228,7 @@ type AgentTemplateGetResponse struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Default effort level for runs created from this template.
 	//
-	// Any of "low", "medium", "high", "x-high", "max".
+	// Any of "low", "medium", "high", "x-high", "5x-high", "max".
 	Effort AgentTemplateGetResponseEffort `json:"effort" api:"required"`
 	// Ordered goals for the template.
 	Goals []AgentTemplateGetResponseGoal `json:"goals" api:"required"`
@@ -285,6 +285,7 @@ const (
 	AgentTemplateGetResponseEffortMedium AgentTemplateGetResponseEffort = "medium"
 	AgentTemplateGetResponseEffortHigh   AgentTemplateGetResponseEffort = "high"
 	AgentTemplateGetResponseEffortXHigh  AgentTemplateGetResponseEffort = "x-high"
+	AgentTemplateGetResponseEffort5xHigh AgentTemplateGetResponseEffort = "5x-high"
 	AgentTemplateGetResponseEffortMax    AgentTemplateGetResponseEffort = "max"
 )
 
