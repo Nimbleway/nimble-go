@@ -278,6 +278,9 @@ func WithAPIKey(value string) RequestOption {
 func WithClientSource(value string) RequestOption {
 	return requestconfig.PreRequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.ClientSource = value
+		if r.Request == nil {
+			return nil
+		}
 		return r.Apply(WithHeader("X-Client-Source", value))
 	})
 }
