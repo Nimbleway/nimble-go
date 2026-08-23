@@ -38,6 +38,7 @@ func TestSerpRunWithOptionalParams(t *testing.T) {
 		Parse:             githubcomnimblewaynimblego.Bool(true),
 		Query:             githubcomnimblewaynimblego.String("nimble web data"),
 		Render:            githubcomnimblewaynimblego.Bool(false),
+		ResolveURL:        githubcomnimblewaynimblego.Bool(true),
 		ShowHiddenResults: githubcomnimblewaynimblego.Bool(false),
 	})
 	if err != nil {
@@ -75,6 +76,7 @@ func TestSerpRunAsyncWithOptionalParams(t *testing.T) {
 		Parse:             githubcomnimblewaynimblego.Bool(true),
 		Query:             githubcomnimblewaynimblego.String("nimble web data"),
 		Render:            githubcomnimblewaynimblego.Bool(false),
+		ResolveURL:        githubcomnimblewaynimblego.Bool(true),
 		ShowHiddenResults: githubcomnimblewaynimblego.Bool(false),
 		StorageCompress:   githubcomnimblewaynimblego.Bool(true),
 		StorageObjectName: githubcomnimblewaynimblego.String("result-2024-01-15.json"),
@@ -116,6 +118,7 @@ func TestSerpRunBatchWithOptionalParams(t *testing.T) {
 			Parse:             githubcomnimblewaynimblego.Bool(true),
 			Query:             githubcomnimblewaynimblego.String("nimble web data"),
 			Render:            githubcomnimblewaynimblego.Bool(false),
+			ResolveURL:        githubcomnimblewaynimblego.Bool(true),
 			SearchEngine:      "google_search",
 			ShowHiddenResults: githubcomnimblewaynimblego.Bool(false),
 			StorageCompress:   githubcomnimblewaynimblego.Bool(true),
@@ -135,6 +138,7 @@ func TestSerpRunBatchWithOptionalParams(t *testing.T) {
 			Parse:             githubcomnimblewaynimblego.Bool(true),
 			Query:             githubcomnimblewaynimblego.String("nimble web data"),
 			Render:            githubcomnimblewaynimblego.Bool(false),
+			ResolveURL:        githubcomnimblewaynimblego.Bool(true),
 			SearchEngine:      "google_search",
 			ShowHiddenResults: githubcomnimblewaynimblego.Bool(false),
 			StorageCompress:   githubcomnimblewaynimblego.Bool(true),

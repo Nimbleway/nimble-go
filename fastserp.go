@@ -705,6 +705,10 @@ type FastSerpRunParams struct {
 	Query param.Opt[string] `json:"query,omitzero"`
 	// Whether to render the page in a browser before extracting.
 	Render param.Opt[bool] `json:"render,omitzero"`
+	// When true, search result links that point at a search-engine redirector are
+	// resolved to their final destination URLs. Best-effort within a time budget:
+	// links that cannot be resolved in time are returned unchanged.
+	ResolveURL param.Opt[bool] `json:"resolve_url,omitzero"`
 	// When true, disables Google result filtering (filter=0) so omitted/duplicate and
 	// highly similar pages are also returned. Applies to Google search engines.
 	ShowHiddenResults param.Opt[bool] `json:"show_hidden_results,omitzero"`
