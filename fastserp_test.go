@@ -38,6 +38,7 @@ func TestFastSerpRunWithOptionalParams(t *testing.T) {
 		Parse:             githubcomnimblewaynimblego.Bool(true),
 		Query:             githubcomnimblewaynimblego.String("nimble web data"),
 		Render:            githubcomnimblewaynimblego.Bool(false),
+		ResolveURL:        githubcomnimblewaynimblego.Bool(true),
 		ShowHiddenResults: githubcomnimblewaynimblego.Bool(false),
 	})
 	if err != nil {
