@@ -41,14 +41,14 @@ func NewJobRunService(opts ...option.RequestOption) (r JobRunService) {
 }
 
 // Trigger Job Run Public V2
-func (r *JobRunService) New(ctx context.Context, jobID string, opts ...option.RequestOption) (res *JobRunNewResponse, err error) {
+func (r *JobRunService) New(ctx context.Context, jobID string, body JobRunNewParams, opts ...option.RequestOption) (res *JobRunNewResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if jobID == "" {
 		err = errors.New("missing required job_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v2/jobs/%s/runs", jobID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -435,6 +435,55 @@ type JobRunGetResponseSummary struct {
 func (r JobRunGetResponseSummary) RawJSON() string { return r.JSON.raw }
 func (r *JobRunGetResponseSummary) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+type JobRunNewParams struct {
+	// Configuration for the input data a job processes.
+	Inputs JobRunNewParamsInputs `json:"inputs,omitzero"`
+	paramObj
+}
+
+func (r JobRunNewParams) MarshalJSON() (data []byte, err error) {
+	type shadow JobRunNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *JobRunNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Configuration for the input data a job processes.
+//
+// The property Type is required.
+type JobRunNewParamsInputs struct {
+	// How inputs are supplied: an 's3' bucket, 'inline' records, or an uploaded
+	// 'file'.
+	//
+	// Any of "s3", "inline", "file".
+	Type string `json:"type,omitzero" api:"required"`
+	// Path to the input file; must start with 's3' or 'file\_'. Used for 's3'/'file'
+	// types.
+	FilePath param.Opt[string] `json:"file_path,omitzero"`
+	// Inline list of input records. Used when type is 'inline'.
+	Data []map[string]any `json:"data,omitzero"`
+	// Inline input records keyed by source node id, e.g. {'source_a': [{...}]}. Used
+	// when type is 'inline' on a dynamic-workflow job, which has one source node per
+	// input file. Mutually exclusive with 'data'.
+	NodeData map[string][]map[string]any `json:"node_data,omitzero"`
+	paramObj
+}
+
+func (r JobRunNewParamsInputs) MarshalJSON() (data []byte, err error) {
+	type shadow JobRunNewParamsInputs
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *JobRunNewParamsInputs) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[JobRunNewParamsInputs](
+		"type", "s3", "inline", "file",
+	)
 }
 
 type JobRunListParams struct {
