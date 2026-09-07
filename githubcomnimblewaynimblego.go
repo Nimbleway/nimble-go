@@ -1158,7 +1158,8 @@ const (
 type SearchParams struct {
 	// Search query string
 	Query string `json:"query" api:"required"`
-	// Deprecated. Use search_depth instead. true maps to 'deep', false maps to 'lite'.
+	// Deprecated. Use search_depth with full_content instead. true maps to 'lite' with
+	// full_content=true, false maps to 'lite'.
 	DeepSearch param.Opt[bool] `json:"deep_search,omitzero"`
 	// Filter results before this date (format: YYYY-MM-DD or YYYY)
 	EndDate param.Opt[string] `json:"end_date,omitzero"`
@@ -1166,10 +1167,8 @@ type SearchParams struct {
 	StartDate param.Opt[string] `json:"start_date,omitzero"`
 	// Country code for geo-targeted results (e.g., 'US', 'GB', 'IL')
 	Country param.Opt[string] `json:"country,omitzero"`
-	// Return richer per-result content on the fast path. With search_depth='fast',
-	// enables live crawling of both web and news sources so results carry full
-	// markdown content instead of snippets only. Higher recall and cost. Ignored for
-	// other search_depth values.
+	// Return full page content for each result, in addition to its title, url, and
+	// description. Works with either search_depth value. Higher recall and cost.
 	FullContent param.Opt[bool] `json:"full_content,omitzero"`
 	// Generate an LLM-powered answer summary based on search result snippets.
 	IncludeAnswer param.Opt[bool] `json:"include_answer,omitzero"`
@@ -1193,10 +1192,9 @@ type SearchParams struct {
 	//
 	//   - lite: Token-efficient metadata for high-volume pipelines (title, URL,
 	//     description only)
-	//   - fast: Rich content (~2K chars) optimized for AI agents
-	//   - deep: Full page content via Webit scraping for comprehensive analysis
+	//   - standard: Rich content (~2K chars) optimized for AI agents
 	//
-	// Any of "lite", "fast", "deep".
+	// Any of "lite", "standard".
 	SearchDepth SearchParamsSearchDepth `json:"search_depth,omitzero"`
 	// Time range filters passed to Webit SERP API as 'time' parameter.
 	//
@@ -1258,14 +1256,12 @@ const (
 //
 //   - lite: Token-efficient metadata for high-volume pipelines (title, URL,
 //     description only)
-//   - fast: Rich content (~2K chars) optimized for AI agents
-//   - deep: Full page content via Webit scraping for comprehensive analysis
+//   - standard: Rich content (~2K chars) optimized for AI agents
 type SearchParamsSearchDepth string
 
 const (
-	SearchParamsSearchDepthLite SearchParamsSearchDepth = "lite"
-	SearchParamsSearchDepthFast SearchParamsSearchDepth = "fast"
-	SearchParamsSearchDepthDeep SearchParamsSearchDepth = "deep"
+	SearchParamsSearchDepthLite     SearchParamsSearchDepth = "lite"
+	SearchParamsSearchDepthStandard SearchParamsSearchDepth = "standard"
 )
 
 // Time range filters passed to Webit SERP API as 'time' parameter.
