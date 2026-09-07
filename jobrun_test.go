@@ -13,7 +13,7 @@ import (
 	"github.com/Nimbleway/nimble-go/option"
 )
 
-func TestJobRunNew(t *testing.T) {
+func TestJobRunNewWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,7 +26,24 @@ func TestJobRunNew(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Jobs.Runs.New(context.TODO(), "job_id")
+	_, err := client.Jobs.Runs.New(
+		context.TODO(),
+		"job_id",
+		githubcomnimblewaynimblego.JobRunNewParams{
+			Inputs: githubcomnimblewaynimblego.JobRunNewParamsInputs{
+				Type: "s3",
+				Data: []map[string]any{{
+					"foo": "bar",
+				}},
+				FilePath: githubcomnimblewaynimblego.String("file_path"),
+				NodeData: map[string][]map[string]any{
+					"foo": {{
+						"foo": "bar",
+					}},
+				},
+			},
+		},
+	)
 	if err != nil {
 		var apierr *githubcomnimblewaynimblego.Error
 		if errors.As(err, &apierr) {

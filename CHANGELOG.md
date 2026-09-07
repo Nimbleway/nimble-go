@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.0 (2026-09-07)
+
+Full Changelog: [v1.4.0...v1.5.0](https://github.com/Nimbleway/nimble-go/compare/v1.4.0...v1.5.0)
+
+### Features
+
+* **api:** api update ([9390669](https://github.com/Nimbleway/nimble-go/commit/9390669d39a4dabe6e8d8ee0b7e463327edbabc6))
+* **api:** api update ([16f2a33](https://github.com/Nimbleway/nimble-go/commit/16f2a338cdca4551ad96b985c747eac0c37259cb))
+
 ## 1.4.0 (2026-08-23)
 
 Full Changelog: [v1.3.0...v1.4.0](https://github.com/Nimbleway/nimble-go/compare/v1.3.0...v1.4.0)
