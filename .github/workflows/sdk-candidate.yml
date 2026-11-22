@@ -1,0 +1,30 @@
+name: SDK candidate
+
+on:
+  pull_request:
+    paths:
+      - 'candidate/**'
+      - '.github/workflows/sdk-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+      - name: Verify frozen SDK input
+        run: echo '283b1079b67453be6e8f06ccd3bf9955fedd553a9ab881e3f1f3904467d87cca  candidate/contract/openapi.yaml' | sha256sum --check
+      - name: Regenerate selected client
+        run: |
+          go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.2 \
+            -generate types,client -package nimble \
+            candidate/contract/openapi.yaml > candidate/generated/nimble.go
+          test -z "$(git status --porcelain -- candidate/generated/nimble.go)"
+      - name: Compile candidate
+        working-directory: candidate/generated
+        run: go test ./...
