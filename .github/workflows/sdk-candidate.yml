@@ -1,0 +1,41 @@
+name: SDK candidate
+
+on:
+  pull_request:
+    paths:
+      - 'candidate/**'
+      - '.github/workflows/sdk-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+      - name: Verify frozen SDK input
+        run: echo '283b1079b67453be6e8f06ccd3bf9955fedd553a9ab881e3f1f3904467d87cca  candidate/contract/openapi.yaml' | sha256sum --check
+      - name: Regenerate selected client
+        run: |
+          go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.2 \
+            -generate types,client -package nimble \
+            candidate/contract/openapi.yaml > candidate/generated/nimble.go
+          test -z "$(git status --porcelain -- candidate/generated/nimble.go)"
+      - name: Compile candidate
+        working-directory: candidate/generated
+        run: go test ./...
+      - name: Archive candidate module
+        run: |
+          mkdir -p "$RUNNER_TEMP/sdk-artifact"
+          tar -czf "$RUNNER_TEMP/sdk-artifact/nimble-go-candidate.tar.gz" \
+            -C candidate/generated go.mod go.sum nimble.go
+          sha256sum "$RUNNER_TEMP/sdk-artifact/nimble-go-candidate.tar.gz"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: go-sdk-candidate
+          path: ${{ runner.temp }}/sdk-artifact/*.tar.gz
+          if-no-files-found: error
