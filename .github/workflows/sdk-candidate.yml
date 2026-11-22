@@ -28,3 +28,14 @@ jobs:
       - name: Compile candidate
         working-directory: candidate/generated
         run: go test ./...
+      - name: Archive candidate module
+        run: |
+          mkdir -p "$RUNNER_TEMP/sdk-artifact"
+          tar -czf "$RUNNER_TEMP/sdk-artifact/nimble-go-candidate.tar.gz" \
+            -C candidate/generated go.mod go.sum nimble.go
+          sha256sum "$RUNNER_TEMP/sdk-artifact/nimble-go-candidate.tar.gz"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: go-sdk-candidate
+          path: ${{ runner.temp }}/sdk-artifact/*.tar.gz
+          if-no-files-found: error
